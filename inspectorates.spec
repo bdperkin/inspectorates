@@ -1,5 +1,5 @@
 Name:		inspectorates
-Version:	0.0.1
+Version:	0.0.2
 Release:	1%{?dist}
 Summary:	Internet connection bandwidth test tool
 
@@ -35,6 +35,9 @@ install inspectorates $RPM_BUILD_ROOT/usr/bin
 
 
 %changelog
+* Tue Jan 29 2013 Brandon Perkins <bperkins@redhat.com> 0.0.2-1
+- new package built with tito
+
 * Mon Jan 28 2013 Brandon Perkins <bperkins@redhat.com> 0.0.1-1
 - new package built with tito
 
