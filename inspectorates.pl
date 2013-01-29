@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 # 
-# inspectorates - Internet connection bandwidth speed test tool.
+# %{NAME} - Internet connection bandwidth speed test tool.
 # Copyright (C) 2013  Brandon Perkins <bperkins@redhat.com>
 # 
 # This program is free software; you can redistribute it and/or
@@ -20,5 +20,8 @@
 
 use strict;
 use warnings;
+
+my $version="%{VERSION}";
+my $release="%{RELEASE}";
 
 exit 0;

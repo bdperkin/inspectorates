@@ -7,6 +7,7 @@ License:	GPLv2
 URL:		https://github.com/bdperkin/inspectorates
 Source0:	https://github.com/bdperkin/inspectorates/sources/inspectorates-%{version}.tar.gz
 
+BuildArch:	noarch
 BuildRequires:	perl-devel
 Requires:	perl
 
@@ -16,19 +17,20 @@ Perl script to test Internet connection bandwidth to locations around the world.
 %prep
 %setup -q
 
-
-%build
-%configure
-make %{?_smp_mflags}
-
+%clean
+rm -rf $RPM_BUILD_ROOT
 
 %install
 rm -rf $RPM_BUILD_ROOT
-%make_install
-
+mkdir -p $RPM_BUILD_ROOT/usr/{bin,doc,man}
+cat inspectorates.pl | sed -e s/%{NAME}/%{name}/g | sed -e s/%{VERSION}/%{version}/g | sed -e s/%{RELEASE}/%{release}/g > inspectorates
+install inspectorates $RPM_BUILD_ROOT/usr/bin
 
 %files
-%doc
+%defattr(-,root,root,-)
+/usr/bin/inspectorates
+
+%doc AUTHORS  COPYING  LICENSE  README.md
 
 
 
