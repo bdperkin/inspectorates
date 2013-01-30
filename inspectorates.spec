@@ -1,5 +1,5 @@
 Name:		inspectorates
-Version:	0.0.3
+Version:	0.0.4
 Release:	1%{?dist}
 Summary:	Internet connection bandwidth test tool
 
@@ -40,6 +40,9 @@ install %{name} %{buildroot}%{_bindir}
 
 
 %changelog
+* Wed Jan 30 2013 Brandon Perkins <bperkins@redhat.com> 0.0.4-1
+- Added man page and other docs. (bperkins@redhat.com)
+
 * Wed Jan 30 2013 Brandon Perkins <bperkins@redhat.com> 0.0.3-1
 - Automatic commit of package [inspectorates] release [0.0.2-1].
   (bperkins@redhat.com)
