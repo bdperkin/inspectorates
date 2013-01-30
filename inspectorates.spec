@@ -35,7 +35,7 @@ install inspectorates $RPM_BUILD_ROOT/usr/bin
 
 
 %changelog
-* Wed Jan 30 2013 Brandon Perkins <bperkins@redhat.com> 0.0.2-1
+* Tue Jan 29 2013 Brandon Perkins <bperkins@redhat.com> 0.0.2-1
 - new package built with tito
 
 * Mon Jan 28 2013 Brandon Perkins <bperkins@redhat.com> 0.0.1-1
