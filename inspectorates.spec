@@ -19,17 +19,17 @@ Perl script to test Internet connection bandwidth to locations around the world.
 %setup -q
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+%{__rm} -rf $RPM_BUILD_ROOT
 
 %build
 a2x -d manpage -f manpage %{name}.8.asciidoc
 
 %install
-rm -rf $RPM_BUILD_ROOT
+%{__rm} -rf $RPM_BUILD_ROOT
 %{__mkdir_p} %{buildroot}%{_bindir}
 %{__mkdir_p} %{buildroot}%{_mandir}/man8
-cat %{name}.pl | sed -e s/%{NAME}/%{name}/g | sed -e s/%{VERSION}/%{version}/g | sed -e s/%{RELEASE}/%{release}/g > %{name}
-install %{name} %{buildroot}%{_bindir}
+%{__cat} %{name}.pl | %{__sed} -e s/%{NAME}/%{name}/g | %{__sed} -e s/%{VERSION}/%{version}/g | %{__sed} -e s/%{RELEASE}/%{release}/g > %{name}
+%{__install} %{name} %{buildroot}%{_bindir}
 %{__gzip} -c %{name}.8 > %{buildroot}/%{_mandir}/man8/%{name}.8.gz
 
 %files
