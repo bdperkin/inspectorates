@@ -4,11 +4,12 @@ Release:	1%{?dist}
 Summary:	Internet connection bandwidth test tool
 
 License:	GPLv2
-URL:		https://github.com/bdperkin/inspectorates
-Source0:	https://github.com/bdperkin/inspectorates/sources/inspectorates-%{version}.tar.gz
+URL:		https://github.com/bdperkin/%{name}
+Source0:	https://github.com/bdperkin/%{name}/sources/%{name}-%{version}.tar.gz
 
 BuildArch:	noarch
 BuildRequires:	perl-devel
+BuildRequires:	asciidoc
 Requires:	perl
 
 %description
@@ -20,18 +21,22 @@ Perl script to test Internet connection bandwidth to locations around the world.
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%build
+a2x -d manpage -f manpage %{name}.8.asciidoc
+
 %install
 rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT/usr/{bin,doc,man}
-cat inspectorates.pl | sed -e s/%{NAME}/%{name}/g | sed -e s/%{VERSION}/%{version}/g | sed -e s/%{RELEASE}/%{release}/g > inspectorates
-install inspectorates $RPM_BUILD_ROOT/usr/bin
+%{__mkdir_p} %{buildroot}%{_bindir}
+%{__mkdir_p} %{buildroot}%{_mandir}/man8
+cat %{name}.pl | sed -e s/%{NAME}/%{name}/g | sed -e s/%{VERSION}/%{version}/g | sed -e s/%{RELEASE}/%{release}/g > %{name}
+install %{name} %{buildroot}%{_bindir}
+%{__gzip} -c %{name}.8 > %{buildroot}/%{_mandir}/man8/%{name}.8.gz
 
 %files
 %defattr(-,root,root,-)
-/usr/bin/inspectorates
-
-%doc AUTHORS  COPYING  LICENSE  README.md
-
+%{_bindir}/%{name}
+%doc AUTHORS  BUGS  COPYING  LICENSE  README.md
+%doc %{_mandir}/man8/%{name}.8.gz
 
 
 %changelog
