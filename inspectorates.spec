@@ -28,11 +28,11 @@ Perl script to test Internet connection bandwidth to locations around the world.
 
 %build
 %{__cp} %{name}.pl %{name}
-%{__sed} -e s/%{NAME}/%{name}/g %{SubFiles}
-%{__sed} -e s/%{NAMEUPPER}/%{NameUpper}/g %{SubFiles}
-%{__sed} -e s/%{NAMEMIXED}/%{NameMixed}/g %{SubFiles}
-%{__sed} -e s/%{VERSION}/%{version}/g %{SubFiles}
-%{__sed} -e s/%{RELEASE}/%{release}/g %{SubFiles}
+%{__sed} -i -e s/%{NAME}/%{name}/g %{SubFiles}
+%{__sed} -i -e s/%{NAMEUPPER}/%{NameUpper}/g %{SubFiles}
+%{__sed} -i -e s/%{NAMEMIXED}/%{NameMixed}/g %{SubFiles}
+%{__sed} -i -e s/%{VERSION}/%{version}/g %{SubFiles}
+%{__sed} -i -e s/%{RELEASE}/%{release}/g %{SubFiles}
 a2x -d manpage -f manpage %{name}.8.asciidoc
 
 %install
