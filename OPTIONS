@@ -1,14 +1,17 @@
+*-d, --debug*::
+    Debug output.
+
 *-h, --help*::
     Print or show help information and exit.
+
+*-m, --man*::
+    Print the entire manual page and exit.
 
 *-q, --quiet*::
     Quiet output.
 
 *-v, --verbose*::
     Verbose output.
-
-*-d, --debug*::
-    Debug output.
 
 *-V, --version*::
     Print or show the program version and release number and exit.
