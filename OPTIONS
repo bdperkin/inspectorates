@@ -1,9 +1,14 @@
 *-h, --help*::
     Print or show help information and exit.
 
+*-q, --quiet*::
+    Quiet output.
+
 *-v, --verbose*::
-    Verbosely print processing information and configuration file
-    checks to stderr.
+    Verbose output.
+
+*-d, --debug*::
+    Debug output.
 
 *-V, --version*::
     Print or show the program version and release number and exit.

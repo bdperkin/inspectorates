@@ -18,36 +18,90 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-use strict;
-use warnings;
-use Getopt::Long;
+#################################################################################
+# Import some semantics into the current package from the named modules
+#################################################################################
+use strict;         # Restrict unsafe constructs
+use warnings;       # Control optional warnings
+use Getopt::Long;   # Getopt::Long - Extended processing of command line options
 
-my $name    = "%{NAME}";
-my $version = "%{VERSION}";
-my $release = "%{RELEASE}";
+#################################################################################
+# Declare constants
+#################################################################################
+my $name    = "%{NAME}";       # Name string
+my $version = "%{VERSION}";    # Version number
+my $release = "%{RELEASE}";    # Release string
 
+#################################################################################
+# Specify module configuration options to be enabled
+#################################################################################
+# Allow single-character options to be bundled. To distinguish bundles from long
+# option names, long options must be introduced with '--' and bundles with '-'.
+# Do not allow '+' to start options.
 Getopt::Long::Configure(qw(bundling no_getopt_compat));
 
+#################################################################################
+# Initialize variables
+#################################################################################
+my $DBG = 1;
+my $optdebug;
 my $opthelp;
+my $optquiet;
+my $optverbose;
 my $optversion;
 
+#################################################################################
+# Parse command line options.  This function adheres to the POSIX syntax for CLI
+# options, with GNU extensions.
+#################################################################################
 GetOptions(
     "h"       => \$opthelp,
     "help"    => \$opthelp,
+    "d"       => \$optdebug,
+    "debug"   => \$optdebug,
+    "q"       => \$optquiet,
+    "quiet"   => \$optquiet,
+    "v"       => \$optverbose,
+    "verbose" => \$optverbose,
     "V"       => \$optversion,
     "version" => \$optversion
 );
 
+#################################################################################
+# Help function
+#################################################################################
 if ($opthelp) {
     print STDERR <<HELP;
 usage: $name {-V|--version|-h|--help}
+       $name [-q|--quiet] [-v|--verbose] [-d|--debug]
 HELP
     exit 0;
 }
 
+#################################################################################
+# Version function
+#################################################################################
 if ($optversion) {
     print "$name $version ($release)\n";
     exit 0;
+}
+
+#################################################################################
+# Set output level
+#################################################################################
+if ($optquiet) {
+    $DBG = 0;
+}
+if ($optverbose) {
+    $DBG = 2;
+}
+if ($optdebug) {
+    $DBG = 3;
+}
+
+# If multiple outputs are specified, the most verbose will be used.
+if ( $DBG > 2 ) {
+    print "== Debugging Level Set to $DBG ==\n";
 }
 
 exit 0;
