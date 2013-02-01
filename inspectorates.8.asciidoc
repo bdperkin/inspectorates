@@ -27,6 +27,7 @@ include::OPTIONS[]
 [[X1]]
 EXIT STATUS
 -----------
+
 *0*::
     Success
 
