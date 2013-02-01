@@ -15,7 +15,7 @@ Requires:	perl
 %define NameUpper INSPECTORATES
 %define NameMixed Inspectorates
 %define DocFiles AUTHORS BUGS COPYING DESCRIPTION LICENSE NAME NOTES OPTIONS OUTPUT README.md RESOURCES SYNOPSIS
-%define SubFiles %{name} %{DocFiles} man.asciidoc
+%define SubFiles %{name} %{name}.8.asciidoc %{DocFiles} man.asciidoc
 
 %description
 Perl script to test Internet connection bandwidth to locations around the world. Uses Speedtest.net - The Global Broadband Speed Test.
