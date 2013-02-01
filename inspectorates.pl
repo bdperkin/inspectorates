@@ -24,6 +24,7 @@
 use strict;         # Restrict unsafe constructs
 use warnings;       # Control optional warnings
 use Getopt::Long;   # Getopt::Long - Extended processing of command line options
+use Pod::Usage;     # Pod::Usage - Print usage message from embedded pod docs
 
 #################################################################################
 # Declare constants
@@ -46,6 +47,7 @@ Getopt::Long::Configure(qw(bundling no_getopt_compat));
 my $DBG = 1;
 my $optdebug;
 my $opthelp;
+my $optman;
 my $optquiet;
 my $optverbose;
 my $optversion;
@@ -57,6 +59,7 @@ my $optversion;
 GetOptions(
     "h"       => \$opthelp,
     "help"    => \$opthelp,
+    "man"     => \$optman,
     "d"       => \$optdebug,
     "debug"   => \$optdebug,
     "q"       => \$optquiet,
@@ -65,18 +68,13 @@ GetOptions(
     "verbose" => \$optverbose,
     "V"       => \$optversion,
     "version" => \$optversion
-);
+) or pod2usage(2);
 
 #################################################################################
 # Help function
 #################################################################################
-if ($opthelp) {
-    print STDERR <<HELP;
-usage: $name {-V|--version|-h|--help}
-       $name [-q|--quiet] [-v|--verbose] [-d|--debug]
-HELP
-    exit 0;
-}
+pod2usage(1) if $opthelp;
+pod2usage( -exitstatus => 0, -verbose => 2 ) if $optman;
 
 #################################################################################
 # Version function
@@ -89,6 +87,7 @@ if ($optversion) {
 #################################################################################
 # Set output level
 #################################################################################
+# If multiple outputs are specified, the most verbose will be used.
 if ($optquiet) {
     $DBG = 0;
 }
@@ -99,9 +98,10 @@ if ($optdebug) {
     $DBG = 3;
 }
 
-# If multiple outputs are specified, the most verbose will be used.
 if ( $DBG > 2 ) {
     print "== Debugging Level Set to $DBG ==\n";
 }
 
 exit 0;
+
+ __END__
