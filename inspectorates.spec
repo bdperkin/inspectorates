@@ -12,6 +12,11 @@ BuildRequires:	perl-devel
 BuildRequires:	asciidoc
 Requires:	perl
 
+%define NameUpper INSPECTORATES
+%define NameMixed Inspectorates
+%define DocFiles AUTHORS BUGS COPYING DESCRIPTION LICENSE NAME NOTES OPTIONS OUTPUT README.md RESOURCES SYNOPSIS
+%define SubFiles %{name} %{DocFiles} man.asciidoc
+
 %description
 Perl script to test Internet connection bandwidth to locations around the world. Uses Speedtest.net - The Global Broadband Speed Test.
 
@@ -28,14 +33,19 @@ a2x -d manpage -f manpage %{name}.8.asciidoc
 %{__rm} -rf $RPM_BUILD_ROOT
 %{__mkdir_p} %{buildroot}%{_bindir}
 %{__mkdir_p} %{buildroot}%{_mandir}/man8
-%{__cat} %{name}.pl | %{__sed} -e s/%{NAME}/%{name}/g | %{__sed} -e s/%{VERSION}/%{version}/g | %{__sed} -e s/%{RELEASE}/%{release}/g > %{name}
+%{__cp} %{name}.pl %{name}
+%{__sed} -e s/%{NAME}/%{name}/g %{SubFiles}
+%{__sed} -e s/%{NAMEUPPER}/%{NameUpper}/g %{SubFiles}
+%{__sed} -e s/%{NAMEMIXED}/%{NameMixed}/g %{SubFiles}
+%{__sed} -e s/%{VERSION}/%{version}/g %{SubFiles}
+%{__sed} -e s/%{RELEASE}/%{release}/g %{SubFiles}
 %{__install} %{name} %{buildroot}%{_bindir}
 %{__gzip} -c %{name}.8 > %{buildroot}/%{_mandir}/man8/%{name}.8.gz
 
 %files
 %defattr(-,root,root,-)
 %{_bindir}/%{name}
-%doc AUTHORS  BUGS  COPYING  LICENSE  README.md
+%doc %{DocFiles}
 %doc %{_mandir}/man8/%{name}.8.gz
 
 

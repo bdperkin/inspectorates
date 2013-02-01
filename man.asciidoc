@@ -1,0 +1,3 @@
+:doctype: manpage
+:man source:  %{NAME}
+:man manual:  %{NAMEMIXED} User Manual

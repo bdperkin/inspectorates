@@ -1,38 +1,27 @@
-INSPECTORATES(8)
+%{NAMEUPPER}(8)
 ================
+include::man.asciidoc[]
 :doctype: manpage
 
 
 NAME
 ----
-inspectorates - Internet connection bandwidth test tool
+include::NAME[]
 
 
 SYNOPSIS
 --------
-*inspectorates* ['OPTIONS']
+include::SYNOPSIS[]
 
 
 DESCRIPTION
 -----------
-The inspectorates(8) command is a Perl script to test Internet connection
-bandwidth to locations around the world. Uses Speedtest.net - The Global
-Broadband Speed Test.
+include::DESCRIPTION[]
 
 
 OPTIONS
 -------
-*-h, --help* ['TOPIC']::
-    Print help TOPIC. *--help* 'topics' will print a list of help
-    topics, *--help* 'syntax' summarizes Inspectorates syntax,
-    *--help* 'manpage' prints the Inspectorates manpage.
-
-*-v, --verbose*::
-    Verbosely print processing information and configuration file
-    checks to stderr.
-
-*--version*::
-    Print program version number.
+include::OPTIONS[]
 
 
 [[X1]]
@@ -47,7 +36,7 @@ EXIT STATUS
 
 BUGS
 ----
-See the Inspectorates distribution BUGS file.
+include::BUGS[]
 
 
 AUTHOR
@@ -57,24 +46,9 @@ include::AUTHORS[]
 
 RESOURCES
 ---------
-GitHub: <https://github.com/bdperkin/inspectorates>
+include::RESOURCES[]
 
 
 COPYING
 -------
-Copyright \(C) 2013  Brandon Perkins <bperkins@redhat.com>
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+include::COPYING[]
