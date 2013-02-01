@@ -7,6 +7,6 @@
     Verbosely print processing information and configuration file
     checks to stderr.
 
-*--version*::
-    Print program version number.
+*-V, --version*::
+    Print or show the program version number and exit.
 
