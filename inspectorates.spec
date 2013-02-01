@@ -13,6 +13,8 @@ BuildRequires:	asciidoc
 BuildRequires:	groff-base
 BuildRequires:	rman
 Requires:	perl
+Requires:	perl-Pod-Perldoc
+Requires:	less
 
 %define NameUpper INSPECTORATES
 %define NameMixed Inspectorates
@@ -36,7 +38,7 @@ Perl script to test Internet connection bandwidth to locations around the world.
 %{__sed} -i -e s/%{VERSION}/%{version}/g %{SubFiles}
 %{__sed} -i -e s/%{RELEASE}/%{release}/g %{SubFiles}
 a2x -d manpage -f manpage %{name}.8.asciidoc
-groff -e -mandoc -Tascii %{name}.8 | rman -f POD >> %{name}
+groff -e -mandoc -Tutf8 %{name}.8 | rman -f POD >> %{name}
 
 %install
 %{__rm} -rf $RPM_BUILD_ROOT

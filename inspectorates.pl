@@ -29,9 +29,10 @@ use Pod::Usage;     # Pod::Usage - Print usage message from embedded pod docs
 #################################################################################
 # Declare constants
 #################################################################################
-my $name    = "%{NAME}";       # Name string
-my $version = "%{VERSION}";    # Version number
-my $release = "%{RELEASE}";    # Release string
+$ENV{PATH} = "/usr/bin";    # Keep taint happy
+my $name    = "%{NAME}";    # Name string
+my $version = "%{VERSION}"; # Version number
+my $release = "%{RELEASE}"; # Release string
 
 #################################################################################
 # Specify module configuration options to be enabled
@@ -59,6 +60,7 @@ my $optversion;
 GetOptions(
     "h"       => \$opthelp,
     "help"    => \$opthelp,
+    "m"       => \$optman,
     "man"     => \$optman,
     "d"       => \$optdebug,
     "debug"   => \$optdebug,
