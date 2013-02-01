@@ -1,12 +1,9 @@
-*-h, --help* ['TOPIC']::
-    Print help TOPIC. *--help* 'topics' will print a list of help
-    topics, *--help* 'syntax' summarizes %{NAMEMIXED} syntax,
-    *--help* 'manpage' prints the %{NAMEMIXED} manpage.
+*-h, --help*::
+    Print or show help information and exit.
 
 *-v, --verbose*::
     Verbosely print processing information and configuration file
     checks to stderr.
 
 *-V, --version*::
-    Print or show the program version number and exit.
-
+    Print or show the program version and release number and exit.

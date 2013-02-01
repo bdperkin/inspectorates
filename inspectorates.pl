@@ -28,12 +28,22 @@ my $release = "%{RELEASE}";
 
 Getopt::Long::Configure(qw(bundling no_getopt_compat));
 
+my $opthelp;
 my $optversion;
 
 GetOptions(
+    "h"       => \$opthelp,
+    "help"    => \$opthelp,
     "V"       => \$optversion,
     "version" => \$optversion
 );
+
+if ($opthelp) {
+    print STDERR <<HELP;
+usage: $name {-V|--version|-h|--help}
+HELP
+    exit 0;
+}
 
 if ($optversion) {
     print "$name $version ($release)\n";
