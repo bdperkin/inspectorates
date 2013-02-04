@@ -27,9 +27,10 @@ include::OPTIONS[]
 [[X1]]
 EXIT STATUS
 -----------
+The %{NAMELOWER} return code to the parent process (or caller) when it has finished executing may be one of:
 
 *0*::
-    Success
+    Success.
 
 *1*::
     Failure (syntax or usage error; configuration error; unexpected error).
