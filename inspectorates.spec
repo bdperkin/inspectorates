@@ -10,8 +10,10 @@ Source0:	https://github.com/bdperkin/%{name}/sources/%{name}-%{version}.tar.gz
 
 BuildArch:	noarch
 BuildRequires:	asciidoc
+BuildRequires:	docbook-style-xsl
 BuildRequires:	/usr/bin/groff
 BuildRequires:	rman
+BuildRequires:	libxslt
 Requires:	perl
 Requires:	perl-Pod-Perldoc
 Requires:	less
