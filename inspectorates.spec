@@ -40,7 +40,8 @@ Perl script to test Internet connection bandwidth to locations around the world.
 a2x -d manpage -f manpage %{name}.8.asciidoc
 groff -e -mandoc -Tascii %{name}.8 | rman -f POD >> %{name}
 for i in $(%{__grep} '^=head1 ' %{name} | %{__awk} '{print $2,$3,$4}'); do echo -n "$i => "; j=$(echo $i | %{__sed} -e 's/B<//g' | %{__sed} -e 's/>//g' | tr [:lower:] [:upper:]); echo $j; %{__sed} -i -e "s/$i/$j/g" %{name}; done
-%{__sed} -i -e "s/^B\</=item B\</g" %{name}
+%{__sed} -i -e 's/^B</=item B</g' %{name}
+%{__sed} -i -e 's/^=over 5$//g' %{name}
 
 %install
 %{__rm} -rf $RPM_BUILD_ROOT
