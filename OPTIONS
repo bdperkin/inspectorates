@@ -1,3 +1,5 @@
+Command line options are used to specify various startup options for %{NAMELOWER}:
+
 *-d, --debug*::
     Debug output.
 
