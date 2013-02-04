@@ -1,5 +1,5 @@
 Name:		inspectorates
-Version:	0.0.4
+Version:	0.0.5
 Release:	1%{?dist}
 Summary:	Internet connection bandwidth test tool
 
@@ -58,6 +58,12 @@ for i in $(%{__grep} '^=head1 ' %{name} | %{__awk} '{print $2,$3,$4}'); do echo 
 
 
 %changelog
+* Mon Feb 04 2013 Brandon Perkins <bperkins@redhat.com> 0.0.5-1
+- Dynamic copyright. (bperkins@redhat.com)
+- Make help/man better by using POD. (bperkins@redhat.com)
+- Add verbosity and comments. (bperkins@redhat.com)
+- Print or show help information and exit. (bperkins@redhat.com)
+- Print or show the program version number and exit. (bperkins@redhat.com)
 * Wed Jan 30 2013 Brandon Perkins <bperkins@redhat.com> 0.0.4-1
 - Added man page and other docs. (bperkins@redhat.com)
 
