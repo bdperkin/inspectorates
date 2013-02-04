@@ -3,14 +3,14 @@ Version:	0.0.5
 Release:	1%{?dist}
 Summary:	Internet connection bandwidth test tool
 
+Group:		Applications/Internet
 License:	GPLv2
 URL:		https://github.com/bdperkin/%{name}
 Source0:	https://github.com/bdperkin/%{name}/sources/%{name}-%{version}.tar.gz
 
 BuildArch:	noarch
-BuildRequires:	perl-devel
 BuildRequires:	asciidoc
-BuildRequires:	groff-base
+BuildRequires:	/usr/bin/groff
 BuildRequires:	rman
 Requires:	perl
 Requires:	perl-Pod-Perldoc
