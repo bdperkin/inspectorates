@@ -40,8 +40,8 @@ BUGS
 include::BUGS[]
 
 
-AUTHOR
-------
+AUTHORS
+-------
 include::AUTHORS[]
 
 
