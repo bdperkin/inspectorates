@@ -1,7 +1,7 @@
 #!/usr/bin/perl -Tw
 #
 # %{NAME} - Internet connection bandwidth speed test tool.
-# Copyright (C) 2013  Brandon Perkins <bperkins@redhat.com>
+# Copyright (C) 2013-%{YEAR}  Brandon Perkins <bperkins@redhat.com>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

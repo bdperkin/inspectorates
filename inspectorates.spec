@@ -18,6 +18,7 @@ Requires:	less
 
 %define NameUpper INSPECTORATES
 %define NameMixed Inspectorates
+%define Year %{expand:%%(date "+%Y")}
 %define DocFiles AUTHORS BUGS COPYING DESCRIPTION LICENSE NAME NOTES OPTIONS OUTPUT README.md RESOURCES SYNOPSIS
 %define SubFiles %{name} %{name}.8.asciidoc %{DocFiles} man.asciidoc
 
@@ -37,6 +38,7 @@ Perl script to test Internet connection bandwidth to locations around the world.
 %{__sed} -i -e s/%{NAMEMIXED}/%{NameMixed}/g %{SubFiles}
 %{__sed} -i -e s/%{VERSION}/%{version}/g %{SubFiles}
 %{__sed} -i -e s/%{RELEASE}/%{release}/g %{SubFiles}
+%{__sed} -i -e s/%{YEAR}/%{Year}/g %{SubFiles}
 a2x -d manpage -f manpage %{name}.8.asciidoc
 groff -e -mandoc -Tascii %{name}.8 | rman -f POD >> %{name}
 for i in $(%{__grep} '^=head1 ' %{name} | %{__awk} '{print $2,$3,$4}'); do echo -n "$i => "; j=$(echo $i | %{__sed} -e 's/B<//g' | %{__sed} -e 's/>//g' | tr [:lower:] [:upper:]); echo $j; %{__sed} -i -e "s/$i/$j/g" %{name}; done
