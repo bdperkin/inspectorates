@@ -29,7 +29,7 @@ use Pod::Usage;     # Pod::Usage - Print usage message from embedded pod docs
 #################################################################################
 # Declare constants
 #################################################################################
-$ENV{PATH}  = "/usr/bin";    # Keep taint happy
+$ENV{PATH}  = "/usr/bin:/bin";    # Keep taint happy
 $ENV{PAGER} = "more";        # Keep pod2usage output happy
 my $name    = "%{NAME}";     # Name string
 my $version = "%{VERSION}";  # Version number
