@@ -21,13 +21,13 @@
 #################################################################################
 # Import some semantics into the current package from the named modules
 #################################################################################
-use strict;         # Restrict unsafe constructs
-use warnings;       # Control optional warnings
-use Getopt::Long;   # Getopt::Long - Extended processing of command line options
-use LWP 5.64;       # LWP - The World-Wide Web library for Perl
-use Math::Trig;     # Math::Trig - Trigonometric functions
-use Pod::Usage;     # Pod::Usage - Print usage message from embedded pod docs
-use XML::XPath;     # XML::XPath - Parsing and evaluating XPath statements
+use strict;          # Restrict unsafe constructs
+use warnings;        # Control optional warnings
+use Getopt::Long;    # Getopt::Long - Extended processing of command line options
+use LWP 5.64;        # LWP - The World-Wide Web library for Perl
+use Math::Trig;      # Math::Trig - Trigonometric functions
+use Pod::Usage;      # Pod::Usage - Print usage message from embedded pod docs
+use XML::XPath;      # XML::XPath - Parsing and evaluating XPath statements
 
 #################################################################################
 # Declare constants
@@ -69,6 +69,7 @@ Getopt::Long::Configure(qw(bundling no_getopt_compat));
 my $DBG          = 1;
 my $numservers   = 5;
 my $totalservers = 0;
+
 my $optdebug;
 my $opthelp;
 my $optman;
@@ -125,7 +126,6 @@ if ($optverbose) {
 if ($optdebug) {
     $DBG = 3;
 }
-
 if ( $DBG > 2 ) {
     print "== Debugging Level Set to $DBG ==\n";
     print "== $name $version ($release) ==\n";
@@ -143,6 +143,7 @@ my $browser = LWP::UserAgent->new;
 if ( $DBG > 1 ) {
     print "= Retrieving $domain configuration...";
 }
+
 my $configxml = $browser->get($cnfguri);
 die "\nCannot get $cnfguri -- ", $configxml->status_line
   unless $configxml->is_success;
@@ -157,12 +158,14 @@ if ( $DBG > 1 ) {
 #################################################################################
 if ( $DBG > 1 ) {
     print "= Reading $domain configuration...";
-}
-my $configxp = XML::XPath->new( $configxml->content );
-if ( $DBG > 1 ) {
-    print "done. =\n";
+    if ( $DBG > 2 ) {
+        print "\n";
+    }
 }
 
+my $configxp = XML::XPath->new( $configxml->content );
+
+# client settings hash
 my %client;
 $client{ip}        = $configxp->find('/settings/client/@ip');
 $client{lat}       = $configxp->find('/settings/client/@lat')->string_value;
@@ -174,6 +177,7 @@ $client{ispdlavg}  = $configxp->find('/settings/client/@ispdlavg');
 $client{ispulavg}  = $configxp->find('/settings/client/@ispulavg');
 $client{loggedin}  = $configxp->find('/settings/client/@loggedin');
 
+# times settings hash
 my %times;
 $times{dl1} = $configxp->find('/settings/times/@dl1');
 $times{dl2} = $configxp->find('/settings/times/@dl2');
@@ -182,11 +186,13 @@ $times{ul1} = $configxp->find('/settings/times/@ul1');
 $times{ul2} = $configxp->find('/settings/times/@ul2');
 $times{ul3} = $configxp->find('/settings/times/@ul3');
 
+# download settings hash
 my %download;
 $download{testlength}  = $configxp->find('/settings/download/@testlength');
 $download{initialtest} = $configxp->find('/settings/download/@initialtest');
 $download{mintestsize} = $configxp->find('/settings/download/@mintestsize');
 
+# upload settings hash
 my %upload;
 $upload{testlength}    = $configxp->find('/settings/upload/@testlength');
 $upload{ratio}         = $configxp->find('/settings/upload/@ratio');
@@ -195,8 +201,8 @@ $upload{mintestsize}   = $configxp->find('/settings/upload/@mintestsize');
 $upload{threads}       = $configxp->find('/settings/upload/@threads');
 $upload{maxchunksize}  = $configxp->find('/settings/upload/@maxchunksize');
 $upload{maxchunkcount} = $configxp->find('/settings/upload/@maxchunkcount');
-
 if ( $DBG > 2 ) {
+
     foreach my $name ( sort keys %client ) {
         my $info = $client{$name};
         print "== client:: $name: $info ==\n";
@@ -214,10 +220,17 @@ if ( $DBG > 2 ) {
         print "== upload:: $name: $info ==\n";
     }
 }
-
 if ( $DBG > 1 ) {
-    print "= Finding all $domain servers...";
+    print "done. =\n";
 }
+
+#################################################################################
+# Retrieve speedtest.net servers list
+#################################################################################
+if ( $DBG > 1 ) {
+    print "= Retrieving $domain servers...";
+}
+
 my $serversxml = $browser->get($srvruri);
 die "\nCannot get $srvruri -- ", $serversxml->status_line
   unless $serversxml->is_success;
@@ -225,6 +238,16 @@ die "\nDid not receive XML, got -- ", $serversxml->content_type
   unless $serversxml->content_type eq 'text/xml';
 if ( $DBG > 1 ) {
     print "done. =\n";
+}
+
+#################################################################################
+# Read speedtest.net servers list
+#################################################################################
+if ( $DBG > 1 ) {
+    print "= Reading $domain servers...";
+    if ( $DBG > 2 ) {
+        print "\n";
+    }
 }
 
 my $serversxp   = XML::XPath->new( $serversxml->content );
@@ -235,9 +258,8 @@ foreach my $serverid ( $servernodes->get_nodelist ) {
     my $id  = $serverid->find('@id')->string_value;
     my $lat = $serverid->find('@lat')->string_value;
     my $lon = $serverid->find('@lon')->string_value;
-    my $radius = 6371;    # Several different ways of modeling the Earth as a
-         # sphere each yield a mean radius of 6,371 km (≈3,959 mi).
-
+    my $radius = 6371;   # Several different ways of modeling the Earth as a
+                         # sphere each yield a mean radius of 6,371 km (≈3,959 mi).
     my $dlat = deg2rad( $lat - $client{lat} );
     my $dlon = deg2rad( $lon - $client{lon} );
     my $a    = (
@@ -259,32 +281,33 @@ foreach my $serverid ( $servernodes->get_nodelist ) {
 if ( $DBG > 2 ) {
     print "== Total number of test servers: $totalservers ==\n";
 }
+if ( $DBG > 1 ) {
+    print "done. =\n";
+}
 
 #################################################################################
 # Set number of test servers
 #################################################################################
-# If multiple outputs are specified, the most verbose will be used.
+# Error if input is less than one or greater than the total number of servers.
 if ($optservers) {
     if ( $optservers > 0 && $optservers <= $totalservers ) {
         $numservers = $optservers;
     }
     else {
-        print STDERR
-          "Value \"$optservers\" invalid for number of servers option.\n";
+        print STDERR "Value \"$optservers\" invalid for number of servers option.\n";
         print STDERR "Please select an integer between 1 and $totalservers.\n";
         pod2usage(1);
     }
 }
-
 if ( $DBG > 2 ) {
     print "== Number of Test Servers Set to $numservers ==\n";
 }
 if ( $DBG > 1 ) {
     print "= Determining the $numservers closest $domain servers =\n";
     print "= based on geographic distance...";
-}
-if ( $DBG > 2 ) {
-    print "\n";
+    if ( $DBG > 2 ) {
+        print "\n";
+    }
 }
 
 #################################################################################
@@ -298,6 +321,9 @@ sub hashValueDescendingNum {
     $serverdistance{$b} <=> $serverdistance{$a};
 }
 
+#################################################################################
+# Create list of closest servers
+#################################################################################
 my @closestservers = ();
 foreach my $name ( sort hashValueAscendingNum ( keys(%serverdistance) ) ) {
     my $info = $serverdistance{$name};
@@ -312,6 +338,9 @@ if ( $DBG > 1 ) {
     print "done. =\n";
 }
 
+#################################################################################
+# Select best server based on ping from pool of closest servers
+#################################################################################
 if ( $DBG > 1 ) {
     print "= Selecting best server based on ping...";
     if ( $DBG > 2 ) {
@@ -327,6 +356,9 @@ if ( $DBG > 1 ) {
     print "done. =\n";
 }
 
+#################################################################################
+# All done
+#################################################################################
 exit 0;
 
  __END__

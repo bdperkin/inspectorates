@@ -1,5 +1,7 @@
-*%{NAME}* [-q|--quiet] [-v|--verbose] [-d|--debug] [-s 'servers'|--servers='servers']
+*%{NAME}* [*-q*|*--quiet*] [*-v*|*--verbose*] [*-d*|*--debug*] [*-s* 'servers'|*--servers*='servers']
 
-*%{NAME}* {--version|-V}
+*%{NAME}* {*--version*|*-V*}
 
-*%{NAME}* {--help|-h}
+*%{NAME}* {*--help*|*-h*}
+
+*%{NAME}* {*--man*|*-m*}

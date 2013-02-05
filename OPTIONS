@@ -1,22 +1,22 @@
 Command line options are used to specify various startup options for %{NAMELOWER}:
 
-*-d, --debug*::
+*-d*, *--debug*::
     Debug output.
 
-*-h, --help*::
+*-h*, *--help*::
     Print or show help information and exit.
 
-*-m, --man*::
+*-m*, *--man*::
     Print the entire manual page and exit.
 
-*-q, --quiet*::
+*-q*, *--quiet*::
     Quiet output.
 
-*-s 'servers', --server='servers'*::
+*-s* 'servers', *--server*='servers'::
     Number of closest servers for ping test and test pool.
 
-*-v, --verbose*::
+*-v*, *--verbose*::
     Verbose output.
 
-*-V, --version*::
+*-V*, *--version*::
     Print or show the program version and release number and exit.
