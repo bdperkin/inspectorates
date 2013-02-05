@@ -30,10 +30,10 @@ use Pod::Usage;     # Pod::Usage - Print usage message from embedded pod docs
 # Declare constants
 #################################################################################
 $ENV{PATH}  = "/usr/bin:/bin";    # Keep taint happy
-$ENV{PAGER} = "more";        # Keep pod2usage output happy
-my $name    = "%{NAME}";     # Name string
-my $version = "%{VERSION}";  # Version number
-my $release = "%{RELEASE}";  # Release string
+$ENV{PAGER} = "more";             # Keep pod2usage output happy
+my $name    = "%{NAME}";          # Name string
+my $version = "%{VERSION}";       # Version number
+my $release = "%{RELEASE}";       # Release string
 
 #################################################################################
 # Specify module configuration options to be enabled
