@@ -228,10 +228,11 @@ my $servernodes = $serversxp->find('/settings/servers/server');
 
 my %serverdistance;
 foreach my $serverid ( $servernodes->get_nodelist ) {
-    my $id     = $serverid->find('@id')->string_value;
-    my $lat    = $serverid->find('@lat')->string_value;
-    my $lon    = $serverid->find('@lon')->string_value;
-    my $radius = 6371;
+    my $id  = $serverid->find('@id')->string_value;
+    my $lat = $serverid->find('@lat')->string_value;
+    my $lon = $serverid->find('@lon')->string_value;
+    my $radius = 6371;    # Several different ways of modeling the Earth as a
+         # sphere each yield a mean radius of 6,371 km (≈3,959 mi).
 
     my $dlat = deg2rad( $lat - $client{lat} );
     my $dlon = deg2rad( $lon - $client{lon} );
