@@ -61,6 +61,7 @@ for i in $(%{__grep} '^=head1 ' %{name} | %{__awk} '{print $2,$3,$4}'); do echo 
 %{_bindir}/%{name}
 %doc %{DocFiles}
 %doc %{_mandir}/man8/%{name}.8.gz
+%doc article manpage book
 
 
 %changelog
