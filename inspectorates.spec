@@ -15,11 +15,11 @@ BuildRequires:	/usr/bin/groff
 BuildRequires:	rman
 BuildRequires:	libxslt
 Requires:	coreutils
-Requires:	more
 Requires:	perl
 %if 0%{?fedora} >= 17
 Requires:	perl-Pod-Perldoc
 %endif
+Requires:	util-linux
 
 %define NameUpper INSPECTORATES
 %define NameMixed Inspectorates
