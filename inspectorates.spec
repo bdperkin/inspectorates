@@ -1,5 +1,5 @@
 Name:		inspectorates
-Version:	0.0.5
+Version:	0.0.6
 Release:	1%{?dist}
 Summary:	Internet connection bandwidth test tool
 
@@ -63,6 +63,15 @@ for i in $(%{__grep} '^=head1 ' %{name} | %{__awk} '{print $2,$3,$4}'); do echo 
 
 
 %changelog
+* Tue Feb 05 2013 Brandon Perkins <bperkins@redhat.com> 0.0.6-1
+- Merge in original offline work. (bperkins@redhat.com)
+- Add /bin to PATH for older OS versions.  Require coreutils.  Replace less
+  with more.  Only Require perl-Pod-Perldoc on newer OS versions.
+  (bperkins@redhat.com)
+- The build requires docbook-style-xsl and libxslt. (bperkins@redhat.com)
+- Add to Applications/Internet Group, remove perl-devel BuildRequires, require
+  groff command instead of package. (bperkins@redhat.com)
+
 * Mon Feb 04 2013 Brandon Perkins <bperkins@redhat.com> 0.0.5-1
 - Dynamic copyright. (bperkins@redhat.com)
 - Make help/man better by using POD. (bperkins@redhat.com)
