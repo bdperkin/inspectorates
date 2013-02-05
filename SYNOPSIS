@@ -1,4 +1,4 @@
-*%{NAME}* [-q|--quiet] [-v|--verbose] [-d|--debug]
+*%{NAME}* [-q|--quiet] [-v|--verbose] [-d|--debug] [-s 'servers'|--servers='servers']
 
 *%{NAME}* {--version|-V}
 

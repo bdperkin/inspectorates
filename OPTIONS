@@ -12,6 +12,9 @@ Command line options are used to specify various startup options for %{NAMELOWER
 *-q, --quiet*::
     Quiet output.
 
+*-s 'servers', --server='servers'*::
+    Number of closest servers for ping test and test pool.
+
 *-v, --verbose*::
     Verbose output.
 

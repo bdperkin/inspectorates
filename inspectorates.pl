@@ -66,31 +66,36 @@ Getopt::Long::Configure(qw(bundling no_getopt_compat));
 #################################################################################
 # Initialize variables
 #################################################################################
-my $DBG = 1;
+my $DBG          = 1;
+my $numservers   = 5;
+my $totalservers = 0;
 my $optdebug;
 my $opthelp;
 my $optman;
 my $optquiet;
 my $optverbose;
 my $optversion;
+my $optservers;
 
 #################################################################################
 # Parse command line options.  This function adheres to the POSIX syntax for CLI
 # options, with GNU extensions.
 #################################################################################
 GetOptions(
-    "h"       => \$opthelp,
-    "help"    => \$opthelp,
-    "m"       => \$optman,
-    "man"     => \$optman,
-    "d"       => \$optdebug,
-    "debug"   => \$optdebug,
-    "q"       => \$optquiet,
-    "quiet"   => \$optquiet,
-    "v"       => \$optverbose,
-    "verbose" => \$optverbose,
-    "V"       => \$optversion,
-    "version" => \$optversion
+    "h"         => \$opthelp,
+    "help"      => \$opthelp,
+    "m"         => \$optman,
+    "man"       => \$optman,
+    "d"         => \$optdebug,
+    "debug"     => \$optdebug,
+    "q"         => \$optquiet,
+    "quiet"     => \$optquiet,
+    "s=i"       => \$optservers,
+    "servers=i" => \$optservers,
+    "v"         => \$optverbose,
+    "verbose"   => \$optverbose,
+    "V"         => \$optversion,
+    "version"   => \$optversion
 ) or pod2usage(2);
 
 #################################################################################
@@ -151,7 +156,7 @@ if ( $DBG > 1 ) {
 # Read speedtest.net configuration
 #################################################################################
 if ( $DBG > 1 ) {
-    print "= Read $domain configuration...";
+    print "= Reading $domain configuration...";
 }
 my $configxp = XML::XPath->new( $configxml->content );
 if ( $DBG > 1 ) {
@@ -211,8 +216,7 @@ if ( $DBG > 2 ) {
 }
 
 if ( $DBG > 1 ) {
-    print "= Determining the five closest $domain servers =\n";
-    print "= based on geographic distance...";
+    print "= Finding all $domain servers...";
 }
 my $serversxml = $browser->get($srvruri);
 die "\nCannot get $srvruri -- ", $serversxml->status_line
@@ -250,8 +254,42 @@ foreach my $serverid ( $servernodes->get_nodelist ) {
         print "== $id a: $a c: $c d: $d ==\n";
     }
     $serverdistance{$id} = $d;
+    $totalservers++;
+}
+if ( $DBG > 2 ) {
+    print "== Total number of test servers: $totalservers ==\n";
 }
 
+#################################################################################
+# Set number of test servers
+#################################################################################
+# If multiple outputs are specified, the most verbose will be used.
+if ($optservers) {
+    if ( $optservers > 0 && $optservers <= $totalservers ) {
+        $numservers = $optservers;
+    }
+    else {
+        print STDERR
+          "Value \"$optservers\" invalid for number of servers option.\n";
+        print STDERR "Please select an integer between 1 and $totalservers.\n";
+        pod2usage(1);
+    }
+}
+
+if ( $DBG > 2 ) {
+    print "== Number of Test Servers Set to $numservers ==\n";
+}
+if ( $DBG > 1 ) {
+    print "= Determining the $numservers closest $domain servers =\n";
+    print "= based on geographic distance...";
+}
+if ( $DBG > 2 ) {
+    print "\n";
+}
+
+#################################################################################
+# Hash sorting functions
+#################################################################################
 sub hashValueAscendingNum {
     $serverdistance{$a} <=> $serverdistance{$b};
 }
@@ -263,12 +301,15 @@ sub hashValueDescendingNum {
 my @closestservers = ();
 foreach my $name ( sort hashValueAscendingNum ( keys(%serverdistance) ) ) {
     my $info = $serverdistance{$name};
-    if ( @closestservers < 5 ) {
+    if ( @closestservers < $numservers ) {
         push( @closestservers, $name );
     }
     if ( $DBG > 2 ) {
         print "== serverdistance:: $name: $info ==\n";
     }
+}
+if ( $DBG > 1 ) {
+    print "done. =\n";
 }
 
 if ( $DBG > 1 ) {
