@@ -56,7 +56,7 @@ pandoc -f html -t markdown -s -o README.md xhtml/%{name}.8.html
 %{__mkdir_p} %{buildroot}%{_bindir}
 %{__mkdir_p} %{buildroot}%{_mandir}/man8
 %{__install} %{name} %{buildroot}%{_bindir}
-%{__gzip} -c %{name}.8 > %{buildroot}/%{_mandir}/man8/%{name}.8.gz
+%{__gzip} -c manpage/%{name}.8 > %{buildroot}/%{_mandir}/man8/%{name}.8.gz
 
 %files
 %defattr(-,root,root,-)
