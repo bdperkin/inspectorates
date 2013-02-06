@@ -27,8 +27,13 @@ class CustomBuilder(builder.Builder):
 
     def _rpm(self):
         super(CustomBuilder, self)._rpm()
+        temp_uuid = common.run_command("uuidgen")
+        git_co_branch = common.run_command("git checkout -b %s" % temp_uuid)
         readme_md = os.path.join(self.git_root, "README.md")
         readme_md_rpm = common.run_command("rpm -qlp %s | grep README.md$" % self.artifacts[2])
         readme_md_git = common.run_command("rpm2cpio %s | cpio --quiet -idmuv .%s 2>&1" % (self.artifacts[2], readme_md_rpm))
-        output = common.run_command("mv -v %s %s" % (readme_md_git, readme_md))
-        print (output)
+        readme_mv = common.run_command("mv %s %s" % (readme_md_git, readme_md))
+        git_commit = common.run_command("git commit -m \"Updated README markdown file.\" README.md")
+        git_checkout = common.run_command("git checkout master")
+        git_merge = common.run_command("git merge %s" % temp_uuid)
+        git_del_branch = common.run_command("git branch -d %s" % temp_uuid)
