@@ -12,9 +12,10 @@ BuildArch:	noarch
 BuildRequires:	asciidoc
 BuildRequires:	docbook-style-xsl
 BuildRequires:	/usr/bin/groff
+BuildRequires:	libxslt
 BuildRequires:	pandoc
 BuildRequires:	rman
-BuildRequires:	libxslt
+BuildRequires:	w3m
 Requires:	coreutils
 Requires:	perl
 %if 0%{?fedora} >= 17
