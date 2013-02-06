@@ -12,6 +12,7 @@ BuildArch:	noarch
 BuildRequires:	asciidoc
 BuildRequires:	docbook-style-xsl
 BuildRequires:	/usr/bin/groff
+BuildRequires:	pandoc
 BuildRequires:	rman
 BuildRequires:	libxslt
 Requires:	coreutils
@@ -26,6 +27,7 @@ Requires:	util-linux
 %define Year %{expand:%%(date "+%Y")}
 %define DocFiles AUTHORS BUGS COPYING DESCRIPTION LICENSE NAME NOTES OPTIONS OUTPUT README.md RESOURCES SYNOPSIS
 %define SubFiles %{name} %{name}.8.asciidoc %{DocFiles} man.asciidoc
+%define DocFormats chunked htmlhelp manpage text xhtml
 
 %description
 Perl script to test Internet connection bandwidth to locations around the world. Uses Speedtest.net - The Global Broadband Speed Test.
@@ -44,10 +46,10 @@ Perl script to test Internet connection bandwidth to locations around the world.
 %{__sed} -i -e s/%{VERSION}/%{version}/g %{SubFiles}
 %{__sed} -i -e s/%{RELEASE}/%{release}/g %{SubFiles}
 %{__sed} -i -e s/%{YEAR}/%{Year}/g %{SubFiles}
-for d in article manpage book; do %{__mkdir_p} $d; for f in chunked htmlhelp manpage text xhtml; do %{__mkdir_p} $d/$f; a2x -D $d/$f -d $d -f $f %{name}.8.asciidoc; done; done
-a2x -d manpage -f manpage %{name}.8.asciidoc
-groff -e -mandoc -Tascii %{name}.8 | rman -f POD >> %{name}
+for f in %{DocFormats}; do %{__mkdir_p} $f; a2x -D $f -d manpage -f $f %{name}.8.asciidoc; done
+groff -e -mandoc -Tascii manpage/%{name}.8 | rman -f POD >> %{name}
 for i in $(%{__grep} '^=head1 ' %{name} | %{__awk} '{print $2,$3,$4}'); do echo -n "$i => "; j=$(echo $i | %{__sed} -e 's/B<//g' | %{__sed} -e 's/>//g' | tr [:lower:] [:upper:]); echo $j; %{__sed} -i -e "s/$i/$j/g" %{name}; done
+pandoc -f html -t markdown -s -o README.md xhtml/%{name}.8.html
 
 %install
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -60,8 +62,8 @@ for i in $(%{__grep} '^=head1 ' %{name} | %{__awk} '{print $2,$3,$4}'); do echo 
 %defattr(-,root,root,-)
 %{_bindir}/%{name}
 %doc %{DocFiles}
+%doc %{DocFormats}
 %doc %{_mandir}/man8/%{name}.8.gz
-%doc article manpage book
 
 
 %changelog
