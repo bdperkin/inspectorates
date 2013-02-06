@@ -26,26 +26,35 @@ The Global Broadband Speed Test.
 OPTIONS
 -------
 
+
  *-d*, *--debug* 
 :   Debug output.
+
  *-h*, *--help* 
 :   Print or show help information and exit.
+
  *-m*, *--man* 
 :   Print the entire manual page and exit.
+
  *-q*, *--quiet* 
 :   Quiet output.
+
  *-s* *servers*, *--server*=*servers* 
 :   Number of closest servers for ping test and test pool.
+
  *-v*, *--verbose* 
 :   Verbose output.
+
  *-V*, *--version* 
 :   Print or show the program version and release number and exit.
 
 EXIT STATUS
 -----------
 
+
  *0* 
 :   Success.
+
  *1* 
 :   Failure (syntax or usage error; configuration error; unexpected
     error).
