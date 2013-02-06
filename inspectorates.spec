@@ -1,5 +1,5 @@
 Name:		inspectorates
-Version:	0.0.6
+Version:	0.0.7
 Release:	1%{?dist}
 Summary:	Internet connection bandwidth test tool
 
@@ -67,6 +67,16 @@ pandoc -f html -t markdown -s -o README.md xhtml/%{name}.8.html
 
 
 %changelog
+* Wed Feb 06 2013 Brandon Perkins <bperkins@redhat.com> 0.0.7-1
+- Auto README markdown commit. (bperkins@redhat.com)
+- Python libraries for new builder. (bperkins@redhat.com)
+- Multiple format documentation. (bperkins@redhat.com)
+- Comments, Docs, and Clean-up. (bperkins@redhat.com)
+- Remove "5" as a magic number and make it a default · Issue #1 ·
+  bdperkin/inspectorates · GitHub Added -s/--server option with value error
+  checking. Code clean-up. (bperkins@redhat.com)
+- Add comment WRT mean radius of the Earth. (bperkins@redhat.com)
+
 * Tue Feb 05 2013 Brandon Perkins <bperkins@redhat.com> 0.0.6-1
 - Merge in original offline work. (bperkins@redhat.com)
 - Add /bin to PATH for older OS versions.  Require coreutils.  Replace less
