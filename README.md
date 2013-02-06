@@ -8,7 +8,7 @@ Synopsis
 --------
 
 *inspectorates* [ *-q* | *--quiet* ] [ *-v* | *--verbose* ]
-[ *-d* | *--debug* ] [ *-s* *servers* | *--servers*=*servers* ]
+[ *-d* | *--debug* ] [ *-s* *servers* | *--servers* = *servers* ]
 
 *inspectorates* { *--version* | *-V* }
 
@@ -39,7 +39,7 @@ OPTIONS
  *-q*, *--quiet* 
 :   Quiet output.
 
- *-s* *servers*, *--server*=*servers* 
+ *-s* *servers*, *--server* = *servers* 
 :   Number of closest servers for ping test and test pool.
 
  *-v*, *--verbose* 
