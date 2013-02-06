@@ -1,6 +1,3 @@
-% inspectorates
-% 
-% 
 
 Name
 ----
@@ -10,14 +7,14 @@ inspectorates — Internet connection bandwidth test tool
 Synopsis
 --------
 
-**inspectorates** [**-q**|**--quiet**] [**-v**|**--verbose**]
-[**-d**|**--debug**] [**-s** *servers*|**--servers**=*servers*]
+*inspectorates* [*-q*|*--quiet*] [*-v*|*--verbose*]
+[*-d*|*--debug*] [*-s* *servers*|*--servers*=*servers*]
 
-**inspectorates** {**--version**|**-V**}
+*inspectorates* {*--version*|*-V*}
 
-**inspectorates** {**--help**|**-h**}
+*inspectorates* {*--help*|*-h*}
 
-**inspectorates** {**--man**|**-m**}
+*inspectorates* {*--man*|*-m*}
 
 DESCRIPTION
 -----------
@@ -29,27 +26,27 @@ The Global Broadband Speed Test.
 OPTIONS
 -------
 
- **-d**, **--debug** 
+ *-d*, *--debug* 
 :   Debug output.
- **-h**, **--help** 
+ *-h*, *--help* 
 :   Print or show help information and exit.
- **-m**, **--man** 
+ *-m*, *--man* 
 :   Print the entire manual page and exit.
- **-q**, **--quiet** 
+ *-q*, *--quiet* 
 :   Quiet output.
- **-s** *servers*, **--server**=*servers* 
+ *-s* *servers*, *--server*=*servers* 
 :   Number of closest servers for ping test and test pool.
- **-v**, **--verbose** 
+ *-v*, *--verbose* 
 :   Verbose output.
- **-V**, **--version** 
+ *-V*, *--version* 
 :   Print or show the program version and release number and exit.
 
 EXIT STATUS
 -----------
 
- **0** 
+ *0* 
 :   Success.
- **1** 
+ *1* 
 :   Failure (syntax or usage error; configuration error; unexpected
     error).
 
