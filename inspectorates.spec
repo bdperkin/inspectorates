@@ -49,7 +49,8 @@ Perl script to test Internet connection bandwidth to locations around the world.
 for f in %{DocFormats}; do %{__mkdir_p} $f; a2x -D $f -d manpage -f $f %{name}.8.asciidoc; done
 groff -e -mandoc -Tascii manpage/%{name}.8 | rman -f POD >> %{name}
 for i in $(%{__grep} '^=head1 ' %{name} | %{__awk} '{print $2,$3,$4}'); do echo -n "$i => "; j=$(echo $i | %{__sed} -e 's/B<//g' | %{__sed} -e 's/>//g' | tr [:lower:] [:upper:]); echo $j; %{__sed} -i -e "s/$i/$j/g" %{name}; done
-pandoc -f html -t markdown -s -o README.md xhtml/%{name}.8.html
+pandoc -f html -t markdown -s -o README.md.pandoc xhtml/%{name}.8.html
+cat README.md.pandoc | %{__grep} -v ^% | %{__sed} -e 's/\*\*/\*/g' | %{__sed} -e 's/^\ \*/\n\ \*/g' | %{__sed} -e 's/\[\*/\[\ \*/g' | %{__sed} -e 's/\*\]/\*\ \]/g' | %{__sed} -e 's/{\*/{\ \*/g' | %{__sed} -e 's/\*}/\*\ }/g' | %{__sed} -e 's/|\*/|\ \*/g' | %{__sed} -e 's/\*|/\*\ |/g' > README.md 
 
 %install
 %{__rm} -rf $RPM_BUILD_ROOT
