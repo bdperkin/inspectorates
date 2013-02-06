@@ -7,14 +7,14 @@ inspectorates — Internet connection bandwidth test tool
 Synopsis
 --------
 
-*inspectorates* [*-q*|*--quiet*] [*-v*|*--verbose*]
-[*-d*|*--debug*] [*-s* *servers*|*--servers*=*servers*]
+*inspectorates* [ *-q* | *--quiet* ] [ *-v* | *--verbose* ]
+[ *-d* | *--debug* ] [ *-s* *servers* | *--servers*=*servers* ]
 
-*inspectorates* {*--version*|*-V*}
+*inspectorates* { *--version* | *-V* }
 
-*inspectorates* {*--help*|*-h*}
+*inspectorates* { *--help* | *-h* }
 
-*inspectorates* {*--man*|*-m*}
+*inspectorates* { *--man* | *-m* }
 
 DESCRIPTION
 -----------
