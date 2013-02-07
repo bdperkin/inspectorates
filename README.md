@@ -8,7 +8,8 @@ Synopsis
 --------
 
 *inspectorates* [ *-q* | *--quiet* ] [ *-v* | *--verbose* ]
-[ *-d* | *--debug* ] [ *-s* *servers* | *--servers* = *servers* ]
+[ *-d* | *--debug* ] [ *-s* *servers* | *--servers* = *servers* ] [ *-p*
+*pings* | *--pings* = *pings* ]
 
 *inspectorates* { *--version* | *-V* }
 
@@ -36,10 +37,13 @@ OPTIONS
  *-m*, *--man* 
 :   Print the entire manual page and exit.
 
+ *-p* *pings*, *--pings* = *pings* 
+:   Number of ping tests to perform against candidate servers.
+
  *-q*, *--quiet* 
 :   Quiet output.
 
- *-s* *servers*, *--server* = *servers* 
+ *-s* *servers*, *--servers* = *servers* 
 :   Number of closest servers for ping test and test pool.
 
  *-v*, *--verbose* 
