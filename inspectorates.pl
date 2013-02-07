@@ -21,17 +21,24 @@
 #################################################################################
 # Import some semantics into the current package from the named modules
 #################################################################################
-use strict;          # Restrict unsafe constructs
-use warnings;        # Control optional warnings
+use strict;      # Restrict unsafe constructs
+use warnings;    # Control optional warnings
+use File::Basename
+  ;    # File::Basename - Parse file paths into directory, filename and suffix
 use Getopt::Long;    # Getopt::Long - Extended processing of command line options
 use LWP 5.64;        # LWP - The World-Wide Web library for Perl
 use Math::Trig;      # Math::Trig - Trigonometric functions
 use Pod::Usage;      # Pod::Usage - Print usage message from embedded pod docs
-use XML::XPath;      # XML::XPath - Parsing and evaluating XPath statements
+use URI::Split qw(uri_split uri_join);   # URI::Split - Parse and compose URI strings
+use XML::XPath;    # XML::XPath - Parsing and evaluating XPath statements
 
 #################################################################################
 # Declare constants
 #################################################################################
+binmode STDOUT, ":utf8";    # Output UTF-8 using the :utf8 output layer.
+                            # This ensures that the output is completely
+                            # UTF-8, and removes any debug warnings.
+
 $ENV{PATH}  = "/usr/bin:/bin";    # Keep taint happy
 $ENV{PAGER} = "more";             # Keep pod2usage output happy
 
@@ -69,10 +76,12 @@ Getopt::Long::Configure(qw(bundling no_getopt_compat));
 my $DBG          = 1;
 my $numservers   = 5;
 my $totalservers = 0;
+my $numpingtest  = 3;
 
 my $optdebug;
 my $opthelp;
 my $optman;
+my $optpings;
 my $optquiet;
 my $optverbose;
 my $optversion;
@@ -89,6 +98,8 @@ GetOptions(
     "man"       => \$optman,
     "d"         => \$optdebug,
     "debug"     => \$optdebug,
+    "p=i"       => \$optpings,
+    "pings=i"   => \$optpings,
     "q"         => \$optquiet,
     "quiet"     => \$optquiet,
     "s=i"       => \$optservers,
@@ -135,6 +146,9 @@ if ( $DBG > 2 ) {
 #################################################################################
 # Main function
 #################################################################################
+if ( $DBG > 0 ) {
+    print "Loading...\n";
+}
 my $browser = LWP::UserAgent->new;
 
 #################################################################################
@@ -203,19 +217,19 @@ $upload{maxchunksize}  = $configxp->find('/settings/upload/@maxchunksize');
 $upload{maxchunkcount} = $configxp->find('/settings/upload/@maxchunkcount');
 if ( $DBG > 2 ) {
 
-    foreach my $name ( sort keys %client ) {
+    foreach my $name ( keys %client ) {
         my $info = $client{$name};
         print "== client:: $name: $info ==\n";
     }
-    foreach my $name ( sort keys %times ) {
+    foreach my $name ( keys %times ) {
         my $info = $times{$name};
         print "== times:: $name: $info ==\n";
     }
-    foreach my $name ( sort keys %download ) {
+    foreach my $name ( keys %download ) {
         my $info = $download{$name};
         print "== download:: $name: $info ==\n";
     }
-    foreach my $name ( sort keys %upload ) {
+    foreach my $name ( keys %upload ) {
         my $info = $upload{$name};
         print "== upload:: $name: $info ==\n";
     }
@@ -223,12 +237,15 @@ if ( $DBG > 2 ) {
 if ( $DBG > 1 ) {
     print "done. =\n";
 }
-
+if ( $DBG > 0 ) {
+    print "Client IP Address: $client{ip}\n";
+    print "Client Internet Service Provider: $client{isp}\n";
+}
 #################################################################################
 # Retrieve speedtest.net servers list
 #################################################################################
 if ( $DBG > 1 ) {
-    print "= Retrieving $domain servers...";
+    print "= Retrieving $domain servers list...";
 }
 
 my $serversxml = $browser->get($srvruri);
@@ -244,7 +261,7 @@ if ( $DBG > 1 ) {
 # Read speedtest.net servers list
 #################################################################################
 if ( $DBG > 1 ) {
-    print "= Reading $domain servers...";
+    print "= Reading $domain servers list...";
     if ( $DBG > 2 ) {
         print "\n";
     }
@@ -253,11 +270,48 @@ if ( $DBG > 1 ) {
 my $serversxp   = XML::XPath->new( $serversxml->content );
 my $servernodes = $serversxp->find('/settings/servers/server');
 
-my %serverdistance;
+# server attributes
+my @serveratts =
+  ( 'url', 'lat', 'lon', 'name', 'country', 'cc', 'sponsor', 'id', 'url2' );
+
+# server list hash
+my %servers;
 foreach my $serverid ( $servernodes->get_nodelist ) {
-    my $id  = $serverid->find('@id')->string_value;
-    my $lat = $serverid->find('@lat')->string_value;
-    my $lon = $serverid->find('@lon')->string_value;
+    my $id = $serverid->find('@id')->string_value;
+    foreach my $serveratt (@serveratts) {
+        my $att = "@" . "$serveratt";
+        $servers{$id}{$serveratt} = $serverid->find($att)->string_value;
+    }
+}
+if ( $DBG > 2 ) {
+    foreach my $name ( keys %servers ) {
+        print "== servers:: $name: ";
+        foreach my $serveratt (@serveratts) {
+            print " $serveratt: $servers{$name}{$serveratt}";
+        }
+        print " ==\n";
+    }
+}
+if ( $DBG > 1 ) {
+    print "done. =\n";
+}
+
+#################################################################################
+# Determine the distance between the client and all test servers
+#################################################################################
+if ( $DBG > 1 ) {
+    print "= Determining the distance between client and $domain servers...";
+    if ( $DBG > 2 ) {
+        print "\n";
+    }
+}
+
+push( @serveratts, 'distance' );
+
+foreach my $serverid ( keys %servers ) {
+    my $id  = $servers{$serverid}{id};
+    my $lat = $servers{$serverid}{lat};
+    my $lon = $servers{$serverid}{lon};
     my $radius = 6371;   # Several different ways of modeling the Earth as a
                          # sphere each yield a mean radius of 6,371 km (≈3,959 mi).
     my $dlat = deg2rad( $lat - $client{lat} );
@@ -275,7 +329,7 @@ foreach my $serverid ( $servernodes->get_nodelist ) {
     if ( $DBG > 2 ) {
         print "== $id a: $a c: $c d: $d ==\n";
     }
-    $serverdistance{$id} = $d;
+    $servers{$id}{distance} = $d;
     $totalservers++;
 }
 if ( $DBG > 2 ) {
@@ -314,19 +368,19 @@ if ( $DBG > 1 ) {
 # Hash sorting functions
 #################################################################################
 sub hashValueAscendingNum {
-    $serverdistance{$a} <=> $serverdistance{$b};
+    $servers{$a}{distance} <=> $servers{$b}{distance};
 }
 
 sub hashValueDescendingNum {
-    $serverdistance{$b} <=> $serverdistance{$a};
+    $servers{$b}{distance} <=> $servers{$a}{distance};
 }
 
 #################################################################################
 # Create list of closest servers
 #################################################################################
 my @closestservers = ();
-foreach my $name ( sort hashValueAscendingNum ( keys(%serverdistance) ) ) {
-    my $info = $serverdistance{$name};
+foreach my $name ( sort hashValueAscendingNum ( keys(%servers) ) ) {
+    my $info = $servers{$name}{distance};
     if ( @closestservers < $numservers ) {
         push( @closestservers, $name );
     }
@@ -339,17 +393,60 @@ if ( $DBG > 1 ) {
 }
 
 #################################################################################
+# Set number of ping tests against candidate servers
+#################################################################################
+# Error if input is less than one.
+if ($optpings) {
+    if ( $optpings > 0 ) {
+        $numpingtest = $optpings;
+    }
+    else {
+        print STDERR
+          "Value \"$optpings\" invalid for number of ping tests option.\n";
+        print STDERR "Please select an integer greater than zero.\n";
+        pod2usage(1);
+    }
+}
+if ( $DBG > 2 ) {
+    print "== Number of Ping Tests Set to $numpingtest ==\n";
+}
+
+#################################################################################
 # Select best server based on ping from pool of closest servers
 #################################################################################
 if ( $DBG > 1 ) {
-    print "= Selecting best server based on ping...";
+    print "= Selecting best server based on ping...\n";
     if ( $DBG > 2 ) {
         print "\n";
     }
 }
 foreach my $server (@closestservers) {
-    if ( $DBG > 2 ) {
-        print "== SERVER: $server ==\n";
+    if ( $DBG > 1 ) {
+        print
+          "= Checking $servers{$server}{name} Hosted by $servers{$server}{sponsor}";
+        if ( $DBG > 2 ) {
+            print "== SERVER: $server ==\n";
+            foreach my $serveratt (@serveratts) {
+                print "== \t $serveratt: $servers{$server}{$serveratt} ==\n";
+            }
+            print " ==\n";
+        }
+    }
+    my $cum = 0;
+    my ( $scheme, $auth, $path, $query, $frag ) =
+      uri_split( $servers{$server}{url} );
+    my $dirname   = dirname($path);
+    my $url       = uri_join( $scheme, $auth, $dirname );
+    my $pingcount = 0;
+    while ( $pingcount < $numpingtest ) {
+        if ( $DBG > 1 ) {
+            print ".";
+        }
+        my $latencyuri = $url . "/latency.txt";
+        $pingcount++;
+    }
+    if ( $DBG > 1 ) {
+        print "done. =\n";
     }
 }
 if ( $DBG > 1 ) {
