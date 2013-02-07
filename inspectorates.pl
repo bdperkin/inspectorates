@@ -21,13 +21,16 @@
 #################################################################################
 # Import some semantics into the current package from the named modules
 #################################################################################
-use strict;          # Restrict unsafe constructs
-use warnings;        # Control optional warnings
+use strict;      # Restrict unsafe constructs
+use warnings;    # Control optional warnings
+use File::Basename
+  ;    # File::Basename - Parse file paths into directory, filename and suffix
 use Getopt::Long;    # Getopt::Long - Extended processing of command line options
 use LWP 5.64;        # LWP - The World-Wide Web library for Perl
 use Math::Trig;      # Math::Trig - Trigonometric functions
 use Pod::Usage;      # Pod::Usage - Print usage message from embedded pod docs
-use XML::XPath;      # XML::XPath - Parsing and evaluating XPath statements
+use URI::Split qw(uri_split uri_join);   # URI::Split - Parse and compose URI strings
+use XML::XPath;    # XML::XPath - Parsing and evaluating XPath statements
 
 #################################################################################
 # Declare constants
@@ -73,10 +76,12 @@ Getopt::Long::Configure(qw(bundling no_getopt_compat));
 my $DBG          = 1;
 my $numservers   = 5;
 my $totalservers = 0;
+my $numpingtest  = 3;
 
 my $optdebug;
 my $opthelp;
 my $optman;
+my $optpings;
 my $optquiet;
 my $optverbose;
 my $optversion;
@@ -93,6 +98,8 @@ GetOptions(
     "man"       => \$optman,
     "d"         => \$optdebug,
     "debug"     => \$optdebug,
+    "p=i"       => \$optpings,
+    "pings=i"   => \$optpings,
     "q"         => \$optquiet,
     "quiet"     => \$optquiet,
     "s=i"       => \$optservers,
@@ -386,21 +393,60 @@ if ( $DBG > 1 ) {
 }
 
 #################################################################################
+# Set number of ping tests against candidate servers
+#################################################################################
+# Error if input is less than one.
+if ($optpings) {
+    if ( $optpings > 0 ) {
+        $numpingtest = $optpings;
+    }
+    else {
+        print STDERR
+          "Value \"$optpings\" invalid for number of ping tests option.\n";
+        print STDERR "Please select an integer greater than zero.\n";
+        pod2usage(1);
+    }
+}
+if ( $DBG > 2 ) {
+    print "== Number of Ping Tests Set to $numpingtest ==\n";
+}
+
+#################################################################################
 # Select best server based on ping from pool of closest servers
 #################################################################################
 if ( $DBG > 1 ) {
-    print "= Selecting best server based on ping...";
+    print "= Selecting best server based on ping...\n";
     if ( $DBG > 2 ) {
         print "\n";
     }
 }
 foreach my $server (@closestservers) {
-    if ( $DBG > 2 ) {
-        print "== SERVER: $server ==\n";
-        foreach my $serveratt (@serveratts) {
-            print "== \t $serveratt: $servers{$server}{$serveratt} ==\n";
+    if ( $DBG > 1 ) {
+        print
+          "= Checking $servers{$server}{name} Hosted by $servers{$server}{sponsor}";
+        if ( $DBG > 2 ) {
+            print "== SERVER: $server ==\n";
+            foreach my $serveratt (@serveratts) {
+                print "== \t $serveratt: $servers{$server}{$serveratt} ==\n";
+            }
+            print " ==\n";
         }
-        print " ==\n";
+    }
+    my $cum = 0;
+    my ( $scheme, $auth, $path, $query, $frag ) =
+      uri_split( $servers{$server}{url} );
+    my $dirname   = dirname($path);
+    my $url       = uri_join( $scheme, $auth, $dirname );
+    my $pingcount = 0;
+    while ( $pingcount < $numpingtest ) {
+        if ( $DBG > 1 ) {
+            print ".";
+        }
+        my $latencyuri = $url . "/latency.txt";
+        $pingcount++;
+    }
+    if ( $DBG > 1 ) {
+        print "done. =\n";
     }
 }
 if ( $DBG > 1 ) {
