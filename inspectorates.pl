@@ -228,7 +228,7 @@ if ( $DBG > 1 ) {
 # Retrieve speedtest.net servers list
 #################################################################################
 if ( $DBG > 1 ) {
-    print "= Retrieving $domain servers...";
+    print "= Retrieving $domain servers list...";
 }
 
 my $serversxml = $browser->get($srvruri);
@@ -244,7 +244,7 @@ if ( $DBG > 1 ) {
 # Read speedtest.net servers list
 #################################################################################
 if ( $DBG > 1 ) {
-    print "= Reading $domain servers...";
+    print "= Reading $domain servers list...";
     if ( $DBG > 2 ) {
         print "\n";
     }
@@ -252,6 +252,42 @@ if ( $DBG > 1 ) {
 
 my $serversxp   = XML::XPath->new( $serversxml->content );
 my $servernodes = $serversxp->find('/settings/servers/server');
+
+# server attributes
+my @serveratts =
+  ( 'url', 'lat', 'lon', 'name', 'country', 'cc', 'sponsor', 'id', 'url2' );
+
+# server list hash
+my %servers;
+foreach my $serverid ( $servernodes->get_nodelist ) {
+    my $id = $serverid->find('@id')->string_value;
+    foreach my $serveratt (@serveratts) {
+        my $att = "@" . "$serveratt";
+        $servers{$id}{$serveratt} = $serverid->find($att)->string_value;
+    }
+}
+if ( $DBG > 2 ) {
+    foreach my $name ( sort keys %servers ) {
+        print "== servers:: $name: ";
+        foreach my $serveratt (@serveratts) {
+            print " $serveratt: $servers{$name}{$serveratt}";
+        }
+        print " ==\n";
+    }
+}
+if ( $DBG > 1 ) {
+    print "done. =\n";
+}
+
+#################################################################################
+# Determine the distance between the client and all test servers
+#################################################################################
+if ( $DBG > 1 ) {
+    print "= Determining the distance between client and $domain servers...";
+    if ( $DBG > 2 ) {
+        print "\n";
+    }
+}
 
 my %serverdistance;
 foreach my $serverid ( $servernodes->get_nodelist ) {
@@ -350,6 +386,10 @@ if ( $DBG > 1 ) {
 foreach my $server (@closestservers) {
     if ( $DBG > 2 ) {
         print "== SERVER: $server ==\n";
+        foreach my $serveratt (@serveratts) {
+            print "== \t $serveratt: $servers{$server}{$serveratt} ==\n";
+        }
+        print " ==\n";
     }
 }
 if ( $DBG > 1 ) {
