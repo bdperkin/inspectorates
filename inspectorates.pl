@@ -32,6 +32,10 @@ use XML::XPath;      # XML::XPath - Parsing and evaluating XPath statements
 #################################################################################
 # Declare constants
 #################################################################################
+binmode STDOUT, ":utf8";    # Output UTF-8 using the :utf8 output layer.
+                            # This ensures that the output is completely
+                            # UTF-8, and removes any debug warnings.
+
 $ENV{PATH}  = "/usr/bin:/bin";    # Keep taint happy
 $ENV{PAGER} = "more";             # Keep pod2usage output happy
 
@@ -203,19 +207,19 @@ $upload{maxchunksize}  = $configxp->find('/settings/upload/@maxchunksize');
 $upload{maxchunkcount} = $configxp->find('/settings/upload/@maxchunkcount');
 if ( $DBG > 2 ) {
 
-    foreach my $name ( sort keys %client ) {
+    foreach my $name ( keys %client ) {
         my $info = $client{$name};
         print "== client:: $name: $info ==\n";
     }
-    foreach my $name ( sort keys %times ) {
+    foreach my $name ( keys %times ) {
         my $info = $times{$name};
         print "== times:: $name: $info ==\n";
     }
-    foreach my $name ( sort keys %download ) {
+    foreach my $name ( keys %download ) {
         my $info = $download{$name};
         print "== download:: $name: $info ==\n";
     }
-    foreach my $name ( sort keys %upload ) {
+    foreach my $name ( keys %upload ) {
         my $info = $upload{$name};
         print "== upload:: $name: $info ==\n";
     }
@@ -267,7 +271,7 @@ foreach my $serverid ( $servernodes->get_nodelist ) {
     }
 }
 if ( $DBG > 2 ) {
-    foreach my $name ( sort keys %servers ) {
+    foreach my $name ( keys %servers ) {
         print "== servers:: $name: ";
         foreach my $serveratt (@serveratts) {
             print " $serveratt: $servers{$name}{$serveratt}";
@@ -289,11 +293,12 @@ if ( $DBG > 1 ) {
     }
 }
 
-my %serverdistance;
-foreach my $serverid ( $servernodes->get_nodelist ) {
-    my $id  = $serverid->find('@id')->string_value;
-    my $lat = $serverid->find('@lat')->string_value;
-    my $lon = $serverid->find('@lon')->string_value;
+push( @serveratts, 'distance' );
+
+foreach my $serverid ( keys %servers ) {
+    my $id  = $servers{$serverid}{id};
+    my $lat = $servers{$serverid}{lat};
+    my $lon = $servers{$serverid}{lon};
     my $radius = 6371;   # Several different ways of modeling the Earth as a
                          # sphere each yield a mean radius of 6,371 km (≈3,959 mi).
     my $dlat = deg2rad( $lat - $client{lat} );
@@ -311,7 +316,7 @@ foreach my $serverid ( $servernodes->get_nodelist ) {
     if ( $DBG > 2 ) {
         print "== $id a: $a c: $c d: $d ==\n";
     }
-    $serverdistance{$id} = $d;
+    $servers{$id}{distance} = $d;
     $totalservers++;
 }
 if ( $DBG > 2 ) {
@@ -350,19 +355,19 @@ if ( $DBG > 1 ) {
 # Hash sorting functions
 #################################################################################
 sub hashValueAscendingNum {
-    $serverdistance{$a} <=> $serverdistance{$b};
+    $servers{$a}{distance} <=> $servers{$b}{distance};
 }
 
 sub hashValueDescendingNum {
-    $serverdistance{$b} <=> $serverdistance{$a};
+    $servers{$b}{distance} <=> $servers{$a}{distance};
 }
 
 #################################################################################
 # Create list of closest servers
 #################################################################################
 my @closestservers = ();
-foreach my $name ( sort hashValueAscendingNum ( keys(%serverdistance) ) ) {
-    my $info = $serverdistance{$name};
+foreach my $name ( sort hashValueAscendingNum ( keys(%servers) ) ) {
+    my $info = $servers{$name}{distance};
     if ( @closestservers < $numservers ) {
         push( @closestservers, $name );
     }
