@@ -29,6 +29,7 @@ use Getopt::Long;    # Getopt::Long - Extended processing of command line option
 use LWP 5.64;        # LWP - The World-Wide Web library for Perl
 use Math::Trig;      # Math::Trig - Trigonometric functions
 use Pod::Usage;      # Pod::Usage - Print usage message from embedded pod docs
+use Time::HiRes qw(gettimeofday);
 use URI::Split qw(uri_split uri_join);   # URI::Split - Parse and compose URI strings
 use XML::XPath;    # XML::XPath - Parsing and evaluating XPath statements
 
@@ -283,6 +284,10 @@ foreach my $serverid ( $servernodes->get_nodelist ) {
         $servers{$id}{$serveratt} = $serverid->find($att)->string_value;
     }
 }
+
+# ping latency hash
+my %latencyresults;
+
 if ( $DBG > 2 ) {
     foreach my $name ( keys %servers ) {
         print "== servers:: $name: ";
@@ -367,11 +372,11 @@ if ( $DBG > 1 ) {
 #################################################################################
 # Hash sorting functions
 #################################################################################
-sub hashValueAscendingNum {
+sub hashValueAscendingDist {
     $servers{$a}{distance} <=> $servers{$b}{distance};
 }
 
-sub hashValueDescendingNum {
+sub hashValueDescendingDist {
     $servers{$b}{distance} <=> $servers{$a}{distance};
 }
 
@@ -379,7 +384,7 @@ sub hashValueDescendingNum {
 # Create list of closest servers
 #################################################################################
 my @closestservers = ();
-foreach my $name ( sort hashValueAscendingNum ( keys(%servers) ) ) {
+foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
     my $info = $servers{$name}{distance};
     if ( @closestservers < $numservers ) {
         push( @closestservers, $name );
@@ -412,6 +417,17 @@ if ( $DBG > 2 ) {
 }
 
 #################################################################################
+# Hash sorting functions
+#################################################################################
+sub hashValueAscendingPing {
+    $latencyresults{$a}{avgelapsed} <=> $latencyresults{$b}{avgelapsed};
+}
+
+sub hashValueDescendingPing {
+    $latencyresults{$b}{avgelapsed} <=> $latencyresults{$a}{avgelapsed};
+}
+
+#################################################################################
 # Select best server based on ping from pool of closest servers
 #################################################################################
 if ( $DBG > 1 ) {
@@ -432,22 +448,70 @@ foreach my $server (@closestservers) {
             print " ==\n";
         }
     }
-    my $cum = 0;
     my ( $scheme, $auth, $path, $query, $frag ) =
       uri_split( $servers{$server}{url} );
     my $dirname   = dirname($path);
     my $url       = uri_join( $scheme, $auth, $dirname );
     my $pingcount = 0;
+    $latencyresults{$server}{totalelapsed} = 0;
+    $latencyresults{$server}{totalpings}   = 0;
     while ( $pingcount < $numpingtest ) {
+
         if ( $DBG > 1 ) {
             print ".";
+            if ( $DBG > 2 ) {
+                print "\n";
+            }
         }
         my $latencyuri = $url . "/latency.txt";
+        if ( $DBG > 2 ) {
+            print "== Retrieving $url latency $pingcount took ";
+        }
+
+        my $t0         = gettimeofday;
+        my $latencytxt = $browser->get($latencyuri);
+        my $t1         = gettimeofday;
+        warn "\nCannot get $latencyuri -- ", $latencytxt->status_line
+          unless $latencytxt->is_success;
+        warn "\nDid not receive TXT, got -- ", $latencytxt->content_type
+          unless $latencytxt->content_type eq 'text/plain';
+        my $elapsed = $t1 - $t0;
+        if (   $latencytxt->decoded_content =~ m/^test=test/
+            && $latencytxt->content_type eq 'text/plain'
+            && $latencytxt->is_success )
+        {
+            $latencyresults{$server}{totalelapsed} =
+              $latencyresults{$server}{totalelapsed} + $elapsed;
+            $latencyresults{$server}{totalpings}++;
+        }
+        if ( $DBG > 2 ) {
+            print "$elapsed seconds. done. ==\n";
+        }
+
         $pingcount++;
     }
-    if ( $DBG > 1 ) {
-        print "done. =\n";
+    if ( $DBG > 2 ) {
+        print
+"== $latencyresults{$server}{totalpings} runs took $latencyresults{$server}{totalelapsed} seconds. ==\n";
     }
+    $latencyresults{$server}{avgelapsed} =
+      $latencyresults{$server}{totalelapsed} / $latencyresults{$server}{totalpings};
+
+    if ( $DBG > 1 ) {
+        print "done: $latencyresults{$server}{avgelapsed} second average. =\n";
+    }
+}
+my $bestserver = -1;
+foreach my $name ( sort hashValueDescendingPing ( keys(%latencyresults) ) ) {
+    my $info = $latencyresults{$name}{avgelapsed};
+    if ( $DBG > 2 ) {
+        print "== pingaverage:: $name: $info ==\n";
+    }
+    $bestserver = $name;
+}
+if ( $DBG > 0 ) {
+    print
+"Server Selected: $servers{$bestserver}{name} Hosted by $servers{$bestserver}{sponsor}\n";
 }
 if ( $DBG > 1 ) {
     print "done. =\n";
