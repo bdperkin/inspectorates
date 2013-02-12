@@ -15,27 +15,35 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+# USA.
 #
 
-#################################################################################
+################################################################################
 # Import some semantics into the current package from the named modules
-#################################################################################
-use strict;      # Restrict unsafe constructs
-use warnings;    # Control optional warnings
-use File::Basename
-  ;    # File::Basename - Parse file paths into directory, filename and suffix
-use Getopt::Long;    # Getopt::Long - Extended processing of command line options
-use LWP 5.64;        # LWP - The World-Wide Web library for Perl
-use Math::Trig;      # Math::Trig - Trigonometric functions
-use Pod::Usage;      # Pod::Usage - Print usage message from embedded pod docs
-use Time::HiRes qw(gettimeofday);
-use URI::Split qw(uri_split uri_join);   # URI::Split - Parse and compose URI strings
-use XML::XPath;    # XML::XPath - Parsing and evaluating XPath statements
+################################################################################
+use strict;                            # Restrict unsafe constructs
+use warnings;                          # Control optional warnings
+use File::Basename;                    # File::Basename - Parse file paths into
+                                       # directory, filename and suffix.
+use Getopt::Long;                      # Getopt::Long - Extended processing of
+                                       # command line options
+use LWP 5.64;                          # LWP - The World-Wide Web library for
+                                       # Perl
+use Math::Trig;                        # Math::Trig - trigonometric functions
+use Pod::Usage;                        # Pod::Usage, pod2usage() - print a
+                                       # usage message from embedded pod
+                                       # documentation
+use Time::HiRes qw(gettimeofday);      # Time::HiRes - High resolution alarm,
+                                       # sleep, gettimeofday, interval timers
+use URI::Split qw(uri_split uri_join); # URI::Split - Parse and compose URI
+                                       # strings
+use XML::XPath;                        # XML::XPath - a set of modules for
+                                       # parsing and evaluating XPath statements
 
-#################################################################################
+################################################################################
 # Declare constants
-#################################################################################
+################################################################################
 binmode STDOUT, ":utf8";    # Output UTF-8 using the :utf8 output layer.
                             # This ensures that the output is completely
                             # UTF-8, and removes any debug warnings.
@@ -51,9 +59,9 @@ my $protocol = "http";            # Use unencrypted HTTP protocol
 my $domain   = "speedtest.net";   # Speedtest.net domain
 my $host     = "www";             # World-Wide Web host
 
-#################################################################################
+################################################################################
 # Generate composite constants
-#################################################################################
+################################################################################
 my $wsnuri = "$protocol://$host.$domain";
 my $csnuri = "$protocol://c.$domain";
 
@@ -63,17 +71,17 @@ my $aapiuri = "$wsnuri/api/api.php";
 my $flshuri = "$csnuri/flash/speedtest.swf";
 my $rslturi = "$wsnuri/result/%s.png";
 
-#################################################################################
+################################################################################
 # Specify module configuration options to be enabled
-#################################################################################
+################################################################################
 # Allow single-character options to be bundled. To distinguish bundles from long
 # option names, long options must be introduced with '--' and bundles with '-'.
 # Do not allow '+' to start options.
 Getopt::Long::Configure(qw(bundling no_getopt_compat));
 
-#################################################################################
+################################################################################
 # Initialize variables
-#################################################################################
+################################################################################
 my $DBG          = 1;
 my $numservers   = 5;
 my $totalservers = 0;
@@ -88,10 +96,10 @@ my $optverbose;
 my $optversion;
 my $optservers;
 
-#################################################################################
+################################################################################
 # Parse command line options.  This function adheres to the POSIX syntax for CLI
 # options, with GNU extensions.
-#################################################################################
+################################################################################
 GetOptions(
     "h"         => \$opthelp,
     "help"      => \$opthelp,
@@ -111,23 +119,23 @@ GetOptions(
     "version"   => \$optversion
 ) or pod2usage(2);
 
-#################################################################################
+################################################################################
 # Help function
-#################################################################################
+################################################################################
 pod2usage(1) if $opthelp;
 pod2usage( -exitstatus => 0, -verbose => 2 ) if $optman;
 
-#################################################################################
+################################################################################
 # Version function
-#################################################################################
+################################################################################
 if ($optversion) {
     print "$name $version ($release)\n";
     exit 0;
 }
 
-#################################################################################
+################################################################################
 # Set output level
-#################################################################################
+################################################################################
 # If multiple outputs are specified, the most verbose will be used.
 if ($optquiet) {
     $DBG = 0;
@@ -144,17 +152,17 @@ if ( $DBG > 2 ) {
     print "== This is libwww-perl-$LWP::VERSION ==\n";
 }
 
-#################################################################################
+################################################################################
 # Main function
-#################################################################################
+################################################################################
 if ( $DBG > 0 ) {
     print "Loading...\n";
 }
 my $browser = LWP::UserAgent->new;
 
-#################################################################################
+################################################################################
 # Retrieve speedtest.net configuration
-#################################################################################
+################################################################################
 if ( $DBG > 1 ) {
     print "= Retrieving $domain configuration...";
 }
@@ -168,9 +176,9 @@ if ( $DBG > 1 ) {
     print "done. =\n";
 }
 
-#################################################################################
+################################################################################
 # Read speedtest.net configuration
-#################################################################################
+################################################################################
 if ( $DBG > 1 ) {
     print "= Reading $domain configuration...";
     if ( $DBG > 2 ) {
@@ -242,9 +250,9 @@ if ( $DBG > 0 ) {
     print "Client IP Address: $client{ip}\n";
     print "Client Internet Service Provider: $client{isp}\n";
 }
-#################################################################################
+################################################################################
 # Retrieve speedtest.net servers list
-#################################################################################
+################################################################################
 if ( $DBG > 1 ) {
     print "= Retrieving $domain servers list...";
 }
@@ -258,9 +266,9 @@ if ( $DBG > 1 ) {
     print "done. =\n";
 }
 
-#################################################################################
+################################################################################
 # Read speedtest.net servers list
-#################################################################################
+################################################################################
 if ( $DBG > 1 ) {
     print "= Reading $domain servers list...";
     if ( $DBG > 2 ) {
@@ -301,9 +309,9 @@ if ( $DBG > 1 ) {
     print "done. =\n";
 }
 
-#################################################################################
+################################################################################
 # Determine the distance between the client and all test servers
-#################################################################################
+################################################################################
 if ( $DBG > 1 ) {
     print "= Determining the distance between client and $domain servers...";
     if ( $DBG > 2 ) {
@@ -317,8 +325,9 @@ foreach my $serverid ( keys %servers ) {
     my $id  = $servers{$serverid}{id};
     my $lat = $servers{$serverid}{lat};
     my $lon = $servers{$serverid}{lon};
-    my $radius = 6371;   # Several different ways of modeling the Earth as a
-                         # sphere each yield a mean radius of 6,371 km (≈3,959 mi).
+    my $radius = 6371;    # Several different ways of modeling the Earth as a
+                          # sphere each yield a mean radius of 6,371 km
+                          # (≈3,959 mi).
     my $dlat = deg2rad( $lat - $client{lat} );
     my $dlon = deg2rad( $lon - $client{lon} );
     my $a    = (
@@ -344,17 +353,18 @@ if ( $DBG > 1 ) {
     print "done. =\n";
 }
 
-#################################################################################
+################################################################################
 # Set number of test servers
-#################################################################################
+################################################################################
 # Error if input is less than one or greater than the total number of servers.
 if ($optservers) {
     if ( $optservers > 0 && $optservers <= $totalservers ) {
         $numservers = $optservers;
     }
     else {
-        print STDERR "Value \"$optservers\" invalid for number of servers option.\n";
-        print STDERR "Please select an integer between 1 and $totalservers.\n";
+        print STDERR "Value \"$optservers\" invalid for number of servers ";
+        print STDERR "option.\nPlease select an integer between 1 and ";
+        print STDERR "$totalservers.\n";
         pod2usage(1);
     }
 }
@@ -369,9 +379,9 @@ if ( $DBG > 1 ) {
     }
 }
 
-#################################################################################
+################################################################################
 # Hash sorting functions
-#################################################################################
+################################################################################
 sub hashValueAscendingDist {
     $servers{$a}{distance} <=> $servers{$b}{distance};
 }
@@ -380,9 +390,9 @@ sub hashValueDescendingDist {
     $servers{$b}{distance} <=> $servers{$a}{distance};
 }
 
-#################################################################################
+################################################################################
 # Create list of closest servers
-#################################################################################
+################################################################################
 my @closestservers = ();
 foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
     my $info = $servers{$name}{distance};
@@ -397,18 +407,17 @@ if ( $DBG > 1 ) {
     print "done. =\n";
 }
 
-#################################################################################
+################################################################################
 # Set number of ping tests against candidate servers
-#################################################################################
+################################################################################
 # Error if input is less than one.
 if ($optpings) {
     if ( $optpings > 0 ) {
         $numpingtest = $optpings;
     }
     else {
-        print STDERR
-          "Value \"$optpings\" invalid for number of ping tests option.\n";
-        print STDERR "Please select an integer greater than zero.\n";
+        print STDERR "Value \"$optpings\" invalid for number of ping tests ";
+        print STDERR "option.\nPlease select an integer greater than zero.\n";
         pod2usage(1);
     }
 }
@@ -416,9 +425,9 @@ if ( $DBG > 2 ) {
     print "== Number of Ping Tests Set to $numpingtest ==\n";
 }
 
-#################################################################################
+################################################################################
 # Hash sorting functions
-#################################################################################
+################################################################################
 sub hashValueAscendingPing {
     $latencyresults{$a}{avgelapsed} <=> $latencyresults{$b}{avgelapsed};
 }
@@ -427,9 +436,9 @@ sub hashValueDescendingPing {
     $latencyresults{$b}{avgelapsed} <=> $latencyresults{$a}{avgelapsed};
 }
 
-#################################################################################
+################################################################################
 # Select best server based on ping from pool of closest servers
-#################################################################################
+################################################################################
 if ( $DBG > 1 ) {
     print "= Selecting best server based on ping...\n";
     if ( $DBG > 2 ) {
@@ -438,8 +447,8 @@ if ( $DBG > 1 ) {
 }
 foreach my $server (@closestservers) {
     if ( $DBG > 1 ) {
-        print
-          "= Checking $servers{$server}{name} Hosted by $servers{$server}{sponsor}";
+        print "= Checking $servers{$server}{name} Hosted by ";
+        print "$servers{$server}{sponsor}";
         if ( $DBG > 2 ) {
             print "== SERVER: $server ==\n";
             foreach my $serveratt (@serveratts) {
@@ -491,11 +500,12 @@ foreach my $server (@closestservers) {
         $pingcount++;
     }
     if ( $DBG > 2 ) {
-        print
-"== $latencyresults{$server}{totalpings} runs took $latencyresults{$server}{totalelapsed} seconds. ==\n";
+        print "== $latencyresults{$server}{totalpings} runs took ";
+        print "$latencyresults{$server}{totalelapsed} seconds. ==\n";
     }
     $latencyresults{$server}{avgelapsed} =
-      $latencyresults{$server}{totalelapsed} / $latencyresults{$server}{totalpings};
+      $latencyresults{$server}{totalelapsed} /
+      $latencyresults{$server}{totalpings};
 
     if ( $DBG > 1 ) {
         print "done: $latencyresults{$server}{avgelapsed} second average. =\n";
@@ -510,16 +520,16 @@ foreach my $name ( sort hashValueDescendingPing ( keys(%latencyresults) ) ) {
     $bestserver = $name;
 }
 if ( $DBG > 0 ) {
-    print
-"Server Selected: $servers{$bestserver}{name} Hosted by $servers{$bestserver}{sponsor}\n";
+    print "Server Selected: $servers{$bestserver}{name} Hosted by ";
+    print "$servers{$bestserver}{sponsor}\n";
 }
 if ( $DBG > 1 ) {
     print "done. =\n";
 }
 
-#################################################################################
+################################################################################
 # All done
-#################################################################################
+################################################################################
 exit 0;
 
  __END__
