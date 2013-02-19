@@ -235,27 +235,32 @@ $upload{maxchunksize}  = $configxp->find('/settings/upload/@maxchunksize');
 $upload{maxchunkcount} = $configxp->find('/settings/upload/@maxchunkcount');
 if ( $DBG > 2 ) {
 
+    print "=================== CLIENT ====================\n";
     foreach my $name ( keys %client ) {
         my $info = $client{$name};
-        print "== client:: $name: $info ==\n";
+        printf( "==   client:: %13s: %-15s ==\n", $name, $info );
     }
+    print "==================== TIMES ====================\n";
     foreach my $name ( keys %times ) {
         my $info = $times{$name};
-        print "== times:: $name: $info ==\n";
+        printf( "==    times:: %13s: %-15s ==\n", $name, $info );
     }
+    print "================== DOWNLOAD ===================\n";
     foreach my $name ( keys %download ) {
         my $info = $download{$name};
-        print "== download:: $name: $info ==\n";
+        printf( "== download:: %13s: %-15s ==\n", $name, $info );
     }
+    print "=================== UPLOAD ====================\n";
     foreach my $name ( keys %upload ) {
         my $info = $upload{$name};
-        print "== upload:: $name: $info ==\n";
+        printf( "==   upload:: %13s: %-15s ==\n", $name, $info );
     }
-}
-if ( $DBG > 1 ) {
-    print "done. =\n";
+    print "===============================================\n";
 }
 if ( $DBG > 0 ) {
+    if ( $DBG > 1 ) {
+        print "done. =\n";
+    }
     print "Client IP Address: $client{ip}\n";
     print "Client Internet Service Provider: $client{isp}\n";
 }
@@ -308,16 +313,19 @@ foreach my $serverid ( $servernodes->get_nodelist ) {
 # ping latency hash
 my %latencyresults;
 
-if ( $DBG > 2 ) {
-    foreach my $name ( keys %servers ) {
-        print "== servers:: $name: ";
-        foreach my $serveratt (@serveratts) {
-            print " $serveratt: $servers{$name}{$serveratt}";
-        }
-        print " ==\n";
-    }
-}
 if ( $DBG > 1 ) {
+    if ( $DBG > 2 ) {
+        print "=================== SERVERS ===================\n";
+        foreach my $name ( keys %servers ) {
+            printf( "== servers:: %5.5s: ", $name );
+            foreach my $serveratt (@serveratts) {
+                printf( " %10.10s: %-20.20s",
+                    $serveratt, $servers{$name}{$serveratt} );
+            }
+            print " ==\n";
+        }
+        print "===============================================\n";
+    }
     print "done. =\n";
 }
 
@@ -327,7 +335,7 @@ if ( $DBG > 1 ) {
 if ( $DBG > 1 ) {
     print "= Determining the distance between client and $domain servers...";
     if ( $DBG > 2 ) {
-        print "\n";
+        print "\n================== DISTANCE ===================\n";
     }
 }
 
@@ -353,15 +361,17 @@ foreach my $serverid ( keys %servers ) {
     my $d = $radius * $c;
 
     if ( $DBG > 2 ) {
-        print "== $id a: $a c: $c d: $d ==\n";
+        my $df = sprintf( "%05.6f", $d );
+        printf( "== %5.5s a: %1.4f c: %1.4f d: %12s ==\n", $id, $a, $c, $df );
     }
     $servers{$id}{distance} = $d;
     $totalservers++;
 }
-if ( $DBG > 2 ) {
-    print "== Total number of test servers: $totalservers ==\n";
-}
 if ( $DBG > 1 ) {
+    if ( $DBG > 2 ) {
+        print "===============================================\n";
+        print "== Total number of test servers: $totalservers ==\n";
+    }
     print "done. =\n";
 }
 
@@ -380,14 +390,14 @@ if ($optservers) {
         pod2usage(1);
     }
 }
-if ( $DBG > 2 ) {
-    print "== Number of Test Servers Set to $numservers ==\n";
-}
 if ( $DBG > 1 ) {
+    if ( $DBG > 2 ) {
+        print "== Number of Test Servers Set to $numservers ==\n";
+    }
     print "= Determining the $numservers closest $domain servers ";
     print "based on geographic distance...";
     if ( $DBG > 2 ) {
-        print "\n";
+        print "\n================== DISTANCE ===================\n";
     }
 }
 
@@ -412,10 +422,14 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
         push( @closestservers, $name );
     }
     if ( $DBG > 2 ) {
-        print "== serverdistance:: $name: $info ==\n";
+        my $df = sprintf( "%05.11f", $info );
+        printf( "== serverdistance:: %5.5s: %17s ==\n", $name, $df );
     }
 }
 if ( $DBG > 1 ) {
+    if ( $DBG > 2 ) {
+        print "===============================================\n";
+    }
     print "done. =\n";
 }
 
@@ -462,10 +476,13 @@ foreach my $server (@closestservers) {
         print "= Checking $servers{$server}{name} Hosted by ";
         print "$servers{$server}{sponsor}";
         if ( $DBG > 2 ) {
-            print "\n== SERVER: $server ==\n";
+            printf( "\n================ SERVER: %5.5s ================\n",
+                $server );
             foreach my $serveratt (@serveratts) {
-                print "== \t $serveratt: $servers{$server}{$serveratt} ==\n";
+                printf( "== %8.8s: %-31.31s ==\n",
+                    $serveratt, $servers{$server}{$serveratt} );
             }
+            print "===============================================\n";
         }
     }
     my ( $scheme, $auth, $path, $query, $frag ) =
@@ -532,14 +549,20 @@ foreach my $server (@closestservers) {
     }
 }
 my $bestserver = -1;
+if ( $DBG > 2 ) {
+    print "================ PING AVERAGE =================\n";
+}
 foreach my $name ( sort hashValueDescendingPing ( keys(%latencyresults) ) ) {
     my $info = $latencyresults{$name}{avgelapsed};
     if ( $DBG > 2 ) {
-        print "== pingaverage:: $name: $info ==\n";
+        printf( "== pingaverage:: %5.5s: %-20.20s ==\n", $name, $info );
     }
     $bestserver = $name;
 }
 if ( $DBG > 0 ) {
+    if ( $DBG > 2 ) {
+        print "===============================================\n";
+    }
     my $distancekm = sprintf( "%.${DBG}f", $servers{$bestserver}{distance} );
     my $distancemi =
       sprintf( "%.${DBG}f", ( $servers{$bestserver}{distance} * 0.621371 ) );
@@ -547,9 +570,9 @@ if ( $DBG > 0 ) {
     print "$servers{$bestserver}{sponsor}\n";
     print "Distance Between Client and Server: $distancekm km ";
     print "($distancemi mi)\n";
-}
-if ( $DBG > 1 ) {
-    print "done. =\n";
+    if ( $DBG > 1 ) {
+        print "done. =\n";
+    }
 }
 
 ################################################################################
@@ -577,10 +600,13 @@ if ( $DBG > 1 ) {
     print "= Checking ping against $servers{$bestserver}{name} Hosted by ";
     print "$servers{$bestserver}{sponsor}\n";
     if ( $DBG > 2 ) {
-        print "== SERVER: $bestserver ==\n";
+        printf( "\n================ SERVER: %5.5s ================\n",
+            $bestserver );
         foreach my $serveratt (@serveratts) {
-            print "== \t $serveratt: $servers{$bestserver}{$serveratt} ==\n";
+            printf( "== %8.8s: %-31.31s ==\n",
+                $serveratt, $servers{$bestserver}{$serveratt} );
         }
+        print "===============================================\n";
     }
 }
 my ( $scheme, $auth, $path, $query, $frag ) =
@@ -638,13 +664,12 @@ $latencyresults{$bestserver}{avgelapsed} =
   $latencyresults{$bestserver}{totalpings};
 printf( "Ping: %.${DBG}f ms\n", $latencyresults{$bestserver}{avgelapsed} );
 
-if ( $DBG > 2 ) {
-    print "== $latencyresults{$bestserver}{totalpings} runs took ";
-    printf( "%.${DBG}f milliseconds. ==\n",
-        $latencyresults{$bestserver}{totalelapsed} );
-}
-
 if ( $DBG > 1 ) {
+    if ( $DBG > 2 ) {
+        print "== $latencyresults{$bestserver}{totalpings} runs took ";
+        printf( "%.${DBG}f milliseconds. ==\n",
+            $latencyresults{$bestserver}{totalelapsed} );
+    }
     printf( "done: %.${DBG}f millisecond average. =\n",
         $latencyresults{$bestserver}{avgelapsed} );
 }
