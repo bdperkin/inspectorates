@@ -9,7 +9,7 @@ Synopsis
 
 *inspectorates* [ *-q* | *--quiet* ] [ *-v* | *--verbose* ]
 [ *-d* | *--debug* ] [ *-s* *servers* | *--servers* = *servers* ] [ *-p*
-*pings* | *--pings* = *pings* ]
+*pings* | *--pings* = *pings* ] [ *-c* *count* | *--count* = *count* ]
 
 *inspectorates* { *--version* | *-V* }
 
@@ -27,6 +27,9 @@ The Global Broadband Speed Test.
 OPTIONS
 -------
 
+
+ *-c* *count*, *--count* = *count* 
+:   Count of latency tests to perform against selected server.
 
  *-d*, *--debug* 
 :   Debug output.
