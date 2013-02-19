@@ -372,8 +372,8 @@ if ( $DBG > 2 ) {
     print "== Number of Test Servers Set to $numservers ==\n";
 }
 if ( $DBG > 1 ) {
-    print "= Determining the $numservers closest $domain servers =\n";
-    print "= based on geographic distance...";
+    print "= Determining the $numservers closest $domain servers ";
+    print "based on geographic distance...";
     if ( $DBG > 2 ) {
         print "\n";
     }
@@ -520,9 +520,17 @@ foreach my $name ( sort hashValueDescendingPing ( keys(%latencyresults) ) ) {
     $bestserver = $name;
 }
 if ( $DBG > 0 ) {
+    my $distancekm = sprintf( "%.${DBG}f", $servers{$bestserver}{distance} );
+    my $distancemi =
+      sprintf( "%.${DBG}f", ( $servers{$bestserver}{distance} * 0.621371 ) );
     print "Server Selected: $servers{$bestserver}{name} Hosted by ";
     print "$servers{$bestserver}{sponsor}\n";
+    print "Distance Between Client and Server: $distancekm km ";
+    print "($distancemi mi)\n";
 }
+my $pingms =
+  sprintf( "%.${DBG}f", ( $latencyresults{$bestserver}{avgelapsed} * 1000 ) );
+print "Ping: $pingms ms\n";
 if ( $DBG > 1 ) {
     print "done. =\n";
 }
