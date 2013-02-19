@@ -1,5 +1,5 @@
 Name:		inspectorates
-Version:	0.0.7
+Version:	0.0.8
 Release:	1%{?dist}
 Summary:	Internet connection bandwidth test tool
 
@@ -72,6 +72,19 @@ cat README.md.pandoc | %{__grep} -v ^% | %{__sed} -e 's/\*\*/\*/g' | %{__sed} -e
 
 
 %changelog
+* Tue Feb 19 2013 Brandon Perkins <bperkins@redhat.com> 0.0.8-1
+- Implemented Ping/Latency functionality. (bperkins@redhat.com)
+- Only Require perl-Time-HiRes on RHEL 6. (bperkins@redhat.com)
+- Best server selection complete. (bperkins@redhat.com)
+- Add normal output level messages. (bperkins@redhat.com)
+- Force UTF-8 output, remove unneeded hash sorts, remove serverdistance hash
+  and include distance data within the server hash within the servers hash.
+  (bperkins@redhat.com)
+- Collect all server attributes in hash.  More details on selected servers.
+  (bperkins@redhat.com)
+- Add w3m Build Requires. (bperkins@redhat.com)
+- Updated README markdown file. (bperkins@redhat.com)
+
 * Wed Feb 06 2013 Brandon Perkins <bperkins@redhat.com> 0.0.7-1
 - Auto README markdown commit. (bperkins@redhat.com)
 - Python libraries for new builder. (bperkins@redhat.com)
