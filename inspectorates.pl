@@ -165,6 +165,9 @@ my $browser = LWP::UserAgent->new;
 ################################################################################
 if ( $DBG > 1 ) {
     print "= Retrieving $domain configuration...";
+    if ( $DBG > 2 ) {
+        print "\n== GET $cnfguri ==\n";
+    }
 }
 
 my $configxml = $browser->get($cnfguri);
@@ -255,6 +258,9 @@ if ( $DBG > 0 ) {
 ################################################################################
 if ( $DBG > 1 ) {
     print "= Retrieving $domain servers list...";
+    if ( $DBG > 2 ) {
+        print "\n== GET $srvruri ==\n";
+    }
 }
 
 my $serversxml = $browser->get($srvruri);
@@ -472,43 +478,52 @@ foreach my $server (@closestservers) {
                 print "\n";
             }
         }
-        my $latencyuri = $url . "/latency.txt";
+
+        ( my $sepoch, my $usecepoch ) = gettimeofday();
+        my $msecepoch  = ( $usecepoch / 1000 );
+        my $msepoch    = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
+        my $latencyuri = $url . "/latency.txt?x=" . $msepoch;
         if ( $DBG > 2 ) {
-            print "== Retrieving $url latency $pingcount took ";
+            print "== Retrieving $latencyuri latency $pingcount took ";
         }
 
-        my $t0         = gettimeofday;
+        ( my $s0, my $usec0 ) = gettimeofday();
         my $latencytxt = $browser->get($latencyuri);
-        my $t1         = gettimeofday;
+        ( my $s1, my $usec1 ) = gettimeofday();
         warn "\nCannot get $latencyuri -- ", $latencytxt->status_line
           unless $latencytxt->is_success;
         warn "\nDid not receive TXT, got -- ", $latencytxt->content_type
           unless $latencytxt->content_type eq 'text/plain';
-        my $elapsed = $t1 - $t0;
+        my $selapsed        = $s1 - $s0;
+        my $usecelapsed     = $usec1 - $usec0;
+        my $stomselapsed    = ( $selapsed * 1000 );
+        my $usectomselapsed = ( $usecelapsed / 1000 );
+        my $mselapsed       = $stomselapsed + $usectomselapsed;
         if (   $latencytxt->decoded_content =~ m/^test=test/
             && $latencytxt->content_type eq 'text/plain'
             && $latencytxt->is_success )
         {
             $latencyresults{$server}{totalelapsed} =
-              $latencyresults{$server}{totalelapsed} + $elapsed;
+              $latencyresults{$server}{totalelapsed} + $mselapsed;
             $latencyresults{$server}{totalpings}++;
         }
         if ( $DBG > 2 ) {
-            print "$elapsed seconds. done. ==\n";
+            print "$mselapsed milliseconds. done. ==\n";
         }
 
         $pingcount++;
     }
     if ( $DBG > 2 ) {
         print "== $latencyresults{$server}{totalpings} runs took ";
-        print "$latencyresults{$server}{totalelapsed} seconds. ==\n";
+        print "$latencyresults{$server}{totalelapsed} milliseconds. ==\n";
     }
     $latencyresults{$server}{avgelapsed} =
       $latencyresults{$server}{totalelapsed} /
       $latencyresults{$server}{totalpings};
 
     if ( $DBG > 1 ) {
-        print "done: $latencyresults{$server}{avgelapsed} second average. =\n";
+        printf( "done: %.${DBG}f millisecond average. =\n",
+            $latencyresults{$server}{avgelapsed} );
     }
 }
 my $bestserver = -1;
@@ -528,9 +543,6 @@ if ( $DBG > 0 ) {
     print "Distance Between Client and Server: $distancekm km ";
     print "($distancemi mi)\n";
 }
-my $pingms =
-  sprintf( "%.${DBG}f", ( $latencyresults{$bestserver}{avgelapsed} * 1000 ) );
-print "Ping: $pingms ms\n";
 if ( $DBG > 1 ) {
     print "done. =\n";
 }
