@@ -86,27 +86,31 @@ my $DBG          = 1;
 my $numservers   = 5;
 my $totalservers = 0;
 my $numpingtest  = 3;
+my $numpingcount = 10;
 
+my $optcount;
 my $optdebug;
 my $opthelp;
 my $optman;
 my $optpings;
 my $optquiet;
+my $optservers;
 my $optverbose;
 my $optversion;
-my $optservers;
 
 ################################################################################
 # Parse command line options.  This function adheres to the POSIX syntax for CLI
 # options, with GNU extensions.
 ################################################################################
 GetOptions(
+    "c=i"       => \$optcount,
+    "count=i"   => \$optcount,
+    "d"         => \$optdebug,
+    "debug"     => \$optdebug,
     "h"         => \$opthelp,
     "help"      => \$opthelp,
     "m"         => \$optman,
     "man"       => \$optman,
-    "d"         => \$optdebug,
-    "debug"     => \$optdebug,
     "p=i"       => \$optpings,
     "pings=i"   => \$optpings,
     "q"         => \$optquiet,
@@ -142,9 +146,11 @@ if ($optquiet) {
 }
 if ($optverbose) {
     $DBG = 2;
+    $|   = 1;
 }
 if ($optdebug) {
     $DBG = 3;
+    $|   = 1;
 }
 if ( $DBG > 2 ) {
     print "== Debugging Level Set to $DBG ==\n";
@@ -456,11 +462,10 @@ foreach my $server (@closestservers) {
         print "= Checking $servers{$server}{name} Hosted by ";
         print "$servers{$server}{sponsor}";
         if ( $DBG > 2 ) {
-            print "== SERVER: $server ==\n";
+            print "\n== SERVER: $server ==\n";
             foreach my $serveratt (@serveratts) {
                 print "== \t $serveratt: $servers{$server}{$serveratt} ==\n";
             }
-            print " ==\n";
         }
     }
     my ( $scheme, $auth, $path, $query, $frag ) =
@@ -545,6 +550,103 @@ if ( $DBG > 0 ) {
 }
 if ( $DBG > 1 ) {
     print "done. =\n";
+}
+
+################################################################################
+# Set number of latency tests against selected server
+################################################################################
+# Error if input is less than one.
+if ($optcount) {
+    if ( $optcount > 0 ) {
+        $numpingcount = $optcount;
+    }
+    else {
+        print STDERR "Value \"$optcount\" invalid for count of latency tests ";
+        print STDERR "option.\nPlease select an integer greater than zero.\n";
+        pod2usage(1);
+    }
+}
+if ( $DBG > 2 ) {
+    print "== Count of Latency Tests Set to $numpingcount ==\n";
+}
+
+################################################################################
+# PING/latency test against selected server
+################################################################################
+if ( $DBG > 1 ) {
+    print "= Checking ping against $servers{$bestserver}{name} Hosted by ";
+    print "$servers{$bestserver}{sponsor}\n";
+    if ( $DBG > 2 ) {
+        print "== SERVER: $bestserver ==\n";
+        foreach my $serveratt (@serveratts) {
+            print "== \t $serveratt: $servers{$bestserver}{$serveratt} ==\n";
+        }
+    }
+}
+my ( $scheme, $auth, $path, $query, $frag ) =
+  uri_split( $servers{$bestserver}{url} );
+my $dirname   = dirname($path);
+my $url       = uri_join( $scheme, $auth, $dirname );
+my $pingcount = 0;
+$latencyresults{$bestserver}{totalelapsed} = 0;
+$latencyresults{$bestserver}{totalpings}   = 0;
+while ( $pingcount < $numpingcount ) {
+
+    ( my $sepoch, my $usecepoch ) = gettimeofday();
+    my $msecepoch  = ( $usecepoch / 1000 );
+    my $msepoch    = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
+    my $latencyuri = $url . "/latency.txt?x=" . $msepoch;
+    if ( $DBG > 2 ) {
+        print "\n== Retrieving $latencyuri latency $pingcount took ";
+    }
+
+    ( my $s0, my $usec0 ) = gettimeofday();
+    my $latencytxt = $browser->get($latencyuri);
+    ( my $s1, my $usec1 ) = gettimeofday();
+    warn "\nCannot get $latencyuri -- ", $latencytxt->status_line
+      unless $latencytxt->is_success;
+    warn "\nDid not receive TXT, got -- ", $latencytxt->content_type
+      unless $latencytxt->content_type eq 'text/plain';
+    my $selapsed        = $s1 - $s0;
+    my $usecelapsed     = $usec1 - $usec0;
+    my $stomselapsed    = ( $selapsed * 1000 );
+    my $usectomselapsed = ( $usecelapsed / 1000 );
+    my $mselapsed       = $stomselapsed + $usectomselapsed;
+    if (   $latencytxt->decoded_content =~ m/^test=test/
+        && $latencytxt->content_type eq 'text/plain'
+        && $latencytxt->is_success )
+    {
+        $latencyresults{$bestserver}{totalelapsed} =
+          $latencyresults{$bestserver}{totalelapsed} + $mselapsed;
+        $latencyresults{$bestserver}{totalpings}++;
+    }
+    if ( $DBG > 1 ) {
+        if ( $DBG > 2 ) {
+            print "$mselapsed milliseconds. done. ==\n";
+        }
+        $latencyresults{$bestserver}{avgelapsed} =
+          $latencyresults{$bestserver}{totalelapsed} /
+          $latencyresults{$bestserver}{totalpings};
+        printf( "Ping: %.${DBG}f ms\r",
+            $latencyresults{$bestserver}{avgelapsed} );
+    }
+
+    $pingcount++;
+}
+$latencyresults{$bestserver}{avgelapsed} =
+  $latencyresults{$bestserver}{totalelapsed} /
+  $latencyresults{$bestserver}{totalpings};
+printf( "Ping: %.${DBG}f ms\n", $latencyresults{$bestserver}{avgelapsed} );
+
+if ( $DBG > 2 ) {
+    print "== $latencyresults{$bestserver}{totalpings} runs took ";
+    printf( "%.${DBG}f milliseconds. ==\n",
+        $latencyresults{$bestserver}{totalelapsed} );
+}
+
+if ( $DBG > 1 ) {
+    printf( "done: %.${DBG}f millisecond average. =\n",
+        $latencyresults{$bestserver}{avgelapsed} );
 }
 
 ################################################################################
