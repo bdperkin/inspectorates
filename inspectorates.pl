@@ -718,6 +718,74 @@ if ( $DBG > 1 ) {
 }
 
 ################################################################################
+# DOWNLOAD test against selected server
+################################################################################
+if ( $DBG > 1 ) {
+    print "= Checking download against $servers{$bestserver}{name} Hosted by ";
+    print "$servers{$bestserver}{sponsor}\n";
+}
+
+my @jpghwpixels = (
+    "350",  "500",  "750",  "1000", "1500", "2000",
+    "2500", "3000", "3500", "4000"
+);
+my $totaldltime = 0;
+my $totaldlsize = 0;
+my $avgdlspeed  = 0;
+
+foreach my $jpghwpixel (@jpghwpixels) {
+    my $y = 1;
+    while ( $y < 3 ) {
+        print "∨";    ## ∧ (logical and) and ∨ (logical or) characters
+        ( my $sepoch, my $usecepoch ) = gettimeofday();
+        my $msecepoch = ( $usecepoch / 1000 );
+        my $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
+        my $dlspeeduri =
+            $url
+          . "/random${jpghwpixel}x${jpghwpixel}.jpg?x="
+          . $msepoch . "&y="
+          . $y;
+        if ( $DBG > 2 ) {
+            print "\n== Retrieving $dlspeeduri dlspeed $y took ";
+        }
+
+        ( my $s0, my $usec0 ) = gettimeofday();
+        my $dlspeedjpg = $browser->get($dlspeeduri);
+        ( my $s1, my $usec1 ) = gettimeofday();
+        warn "\nCannot get $dlspeeduri -- ", $dlspeedjpg->status_line
+          unless $dlspeedjpg->is_success;
+        warn "\nDid not receive JPG, got -- ", $dlspeedjpg->content_type
+          unless $dlspeedjpg->content_type eq 'image/jpeg';
+        my $selapsed        = $s1 - $s0;
+        my $usecelapsed     = $usec1 - $usec0;
+        my $stomselapsed    = ( $selapsed * 1000 );
+        my $usectomselapsed = ( $usecelapsed / 1000 );
+        my $mselapsed       = $stomselapsed + $usectomselapsed;
+        if (   $dlspeedjpg->content_type eq 'image/jpeg'
+            && $dlspeedjpg->is_success )
+        {
+            $totaldltime = $totaldltime + ( $mselapsed / 1000 );
+            $totaldlsize =
+              $totaldlsize + ( length( $dlspeedjpg->content ) * 8 / 1000000 );
+            $avgdlspeed = $totaldlsize / $totaldltime;
+        }
+        if ( $DBG > 1 ) {
+            if ( $DBG > 2 ) {
+                print "$mselapsed milliseconds. done. ==\n";
+            }
+            printf( "Download Speed: %.${DBG}f Mbps\r", $avgdlspeed );
+        }
+        $y++;
+    }
+    print "\r";
+}
+
+printf( "Download Speed: %.${DBG}f Mbps\n", $avgdlspeed );
+if ( $DBG > 1 ) {
+    printf( "done: %.${DBG}f Megabits per second. =\n", $avgdlspeed );
+}
+
+################################################################################
 # All done
 ################################################################################
 exit 0;
