@@ -5,7 +5,7 @@ use strict;
 use Time::HiRes qw(gettimeofday);
 use URI::Split qw(uri_split uri_join);
 use warnings;
-use LWP::UserAgent;
+use HTTP::Tiny;
 
 my $uri = "";
 if ( @ARGV < 1 || @ARGV > 1 ) {
@@ -36,22 +36,19 @@ my $time = 0;
 # Create the URL
 my $url = $scheme . "://" . $auth . $path;
 
-# Create a request
-my $req = LWP::UserAgent->new;
-
 ( my $s0, my $usec0 ) = gettimeofday();
 
 # Pass request to the user agent and get a response back
-my $res = $req->get($url);
+my $res = HTTP::Tiny->new->get($url);
 ( my $s1, my $usec1 ) = gettimeofday();
 
 # Check the outcome of the response
-if ( $res->is_success ) {
+if ( $res->{success} ) {
     print "SUCCESS!\n";
-    $size = length( $res->content );
+    $size = length( $res->{content} );
 }
 else {
-    print $res->status_line, "\n";
+    print $res->{status}, " ", $res->{reason}, "\n";
 }
 
 my $selapsed        = $s1 - $s0;

@@ -33,9 +33,6 @@ else {
 my $size = 0;
 my $time = 0;
 
-my $ua = LWP::UserAgent->new;
-$ua->agent("MyApp/0.1 ");
-
 # Create the URL
 my $url = $scheme . "://" . $auth . $path;
 
