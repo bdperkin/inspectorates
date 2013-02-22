@@ -42,11 +42,11 @@ my $req = HTTP::Lite->new;
 ( my $s0, my $usec0 ) = gettimeofday();
 
 # Pass request to the user agent and get a response back
-my $res = $req->request( $url );
+my $res = $req->request($url);
 ( my $s1, my $usec1 ) = gettimeofday();
 
 # Check the outcome of the response
-if ( $res ) {
+if ($res) {
     print "SUCCESS!\n";
     $size = length( $req->body() );
 }

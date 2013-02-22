@@ -33,24 +33,24 @@ else {
 my $size = 0;
 my $time = 0;
 
-my $s = Net::HTTP->new(Host => $auth) || die $@;
+my $s = Net::HTTP->new( Host => $auth ) || die $@;
 
 ( my $s0, my $usec0 ) = gettimeofday();
 
 # Pass request to the user agent and get a response back
-$s->write_request(GET => $path, 'User-Agent' => "MyApp/0.1 ");
-my($code, $mess, %h) = $s->read_response_headers;
+$s->write_request( GET => $path, 'User-Agent' => "MyApp/0.1 " );
+my ( $code, $mess, %h ) = $s->read_response_headers;
 while (1) {
     my $buf;
-    my $n = $s->read_entity_body($buf, 1024);
+    my $n = $s->read_entity_body( $buf, 1024 );
     die "read failed: $!" unless defined $n;
     last unless $n;
-    $size = $size + length( $buf );
+    $size = $size + length($buf);
 }
 ( my $s1, my $usec1 ) = gettimeofday();
 
 # Check the outcome of the response
-if ( $size ) {
+if ($size) {
     print "SUCCESS!\n";
 }
 else {

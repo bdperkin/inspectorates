@@ -39,11 +39,11 @@ my $url = $scheme . "://" . $auth . $path;
 # Create a request
 my $req = WWW::Curl::Easy->new;
 
-$req->setopt(CURLOPT_HEADER,0);
-$req->setopt(CURLOPT_URL, $url);
+$req->setopt( CURLOPT_HEADER, 0 );
+$req->setopt( CURLOPT_URL,    $url );
 
 my $res;
-$req->setopt(CURLOPT_WRITEDATA,\$res);
+$req->setopt( CURLOPT_WRITEDATA, \$res );
 
 ( my $s0, my $usec0 ) = gettimeofday();
 
@@ -54,10 +54,12 @@ my $retcode = $req->perform;
 # Check the outcome of the response
 if ( $retcode == 0 ) {
     print "SUCCESS!\n";
-    $size = length( $res );
+    $size = length($res);
 }
 else {
-    print "An error happened: $retcode ".$req->strerror($retcode)." ".$req->errbuf."\n"
+    print "An error happened: $retcode "
+      . $req->strerror($retcode) . " "
+      . $req->errbuf . "\n";
 }
 
 my $selapsed        = $s1 - $s0;
