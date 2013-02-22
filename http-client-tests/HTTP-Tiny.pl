@@ -36,10 +36,13 @@ my $time = 0;
 # Create the URL
 my $url = $scheme . "://" . $auth . $path;
 
+# Create a request
+my $req = HTTP::Tiny->new;
+
 ( my $s0, my $usec0 ) = gettimeofday();
 
 # Pass request to the user agent and get a response back
-my $res = HTTP::Tiny->new->get($url);
+my $res = $req->get($url);
 ( my $s1, my $usec1 ) = gettimeofday();
 
 # Check the outcome of the response
