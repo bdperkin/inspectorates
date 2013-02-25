@@ -181,8 +181,9 @@ if ( $DBG > 0 ) {
     print "Loading...\n";
 }
 my $browser = WWW::Curl::Easy->new;
-$browser->setopt( CURLOPT_HEADER,    0 );
-$browser->setopt( CURLOPT_USERAGENT, "$name/$version" );
+$browser->setopt( CURLOPT_HEADER,     0 );
+$browser->setopt( CURLOPT_NOPROGRESS, 1 );
+$browser->setopt( CURLOPT_USERAGENT,  "$name/$version" );
 my $retcode;
 
 ################################################################################
@@ -749,24 +750,30 @@ foreach my $jpghwpixel (@jpghwpixels) {
             print "\n== Retrieving $dlspeeduri dlspeed $y took ";
         }
 
+        $browser->setopt( CURLOPT_URL, $dlspeeduri );
+        my $dlspeedjpg;
+        $browser->setopt( CURLOPT_WRITEDATA, \$dlspeedjpg );
         ( my $s0, my $usec0 ) = gettimeofday();
-        my $dlspeedjpg = $browser->get($dlspeeduri);
+        $retcode = $browser->perform;
         ( my $s1, my $usec1 ) = gettimeofday();
-        warn "\nCannot get $dlspeeduri -- ", $dlspeedjpg->status_line
-          unless $dlspeedjpg->is_success;
-        warn "\nDid not receive JPG, got -- ", $dlspeedjpg->content_type
-          unless $dlspeedjpg->content_type eq 'image/jpeg';
+        warn "\nCannot get $dlspeeduri -- $retcode "
+          . $browser->strerror($retcode) . " "
+          . $browser->errbuf . "\n"
+          unless ( $retcode == 0 );
+        warn "\nDid not receive JPG, got -- ",
+          $browser->getinfo(CURLINFO_CONTENT_TYPE)
+          unless $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'image/jpeg';
         my $selapsed        = $s1 - $s0;
         my $usecelapsed     = $usec1 - $usec0;
         my $stomselapsed    = ( $selapsed * 1000 );
         my $usectomselapsed = ( $usecelapsed / 1000 );
         my $mselapsed       = $stomselapsed + $usectomselapsed;
-        if (   $dlspeedjpg->content_type eq 'image/jpeg'
-            && $dlspeedjpg->is_success )
+
+        if ( $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'image/jpeg'
+            && ( $retcode == 0 ) )
         {
             $totaldltime = $totaldltime + ( $mselapsed / 1000 );
-            $totaldlsize =
-              $totaldlsize + ( length( $dlspeedjpg->content ) * 8 / 1000000 );
+            $totaldlsize = $totaldlsize + ( length($dlspeedjpg) * 8 / 1000000 );
             $avgdlspeed = $totaldlsize / $totaldltime;
         }
         if ( $DBG > 1 ) {
