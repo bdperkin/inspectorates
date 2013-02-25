@@ -28,8 +28,6 @@ use File::Basename;                    # File::Basename - Parse file paths into
                                        # directory, filename and suffix.
 use Getopt::Long;                      # Getopt::Long - Extended processing of
                                        # command line options
-use LWP 5.64;                          # LWP - The World-Wide Web library for
-                                       # Perl
 use Math::Trig;                        # Math::Trig - trigonometric functions
 use Pod::Usage;                        # Pod::Usage, pod2usage() - print a
                                        # usage message from embedded pod
@@ -38,6 +36,8 @@ use Time::HiRes qw(gettimeofday);      # Time::HiRes - High resolution alarm,
                                        # sleep, gettimeofday, interval timers
 use URI::Split qw(uri_split uri_join); # URI::Split - Parse and compose URI
                                        # strings
+use WWW::Curl::Easy;                   # WWW::Curl - Perl extension interface
+                                       # for libcurl
 use XML::XPath;                        # XML::XPath - a set of modules for
                                        # parsing and evaluating XPath statements
 
@@ -153,9 +153,25 @@ if ($optdebug) {
     $|   = 1;
 }
 if ( $DBG > 2 ) {
-    print "== Debugging Level Set to $DBG ==\n";
-    print "== $name $version ($release) ==\n";
-    print "== This is libwww-perl-$LWP::VERSION ==\n";
+    printf( "== Debugging Level Set to %-17s ==\n", $DBG );
+    printf( "== %-12s %-12s (%-12s) ==\n",          $name, $version, $release );
+    printf( "==         PROCESS_ID: %-20s ==\n",    $$ );
+    printf( "==       PROGRAM_NAME: %-20s ==\n",    $0 );
+    printf( "==      REAL_GROUP_ID: %-20s ==\n",    $( );
+    printf( "== EFFECTIVE_GROUP_ID: %-20s ==\n",    $) );
+    printf( "==       REAL_USER_ID: %-20s ==\n",    $< );
+    printf( "==  EFFECTIVE_USER_ID: %-20s ==\n",    $> );
+    printf( "==             OSNAME: %-20s ==\n",    $^O );
+    printf( "==           BASETIME: %-20s ==\n",    $^T );
+    printf( "==       PERL_VERSION: %-20s ==\n",    $^V );
+    printf( "==    EXECUTABLE_NAME: %-20s ==\n",    $^X );
+    printf( "==     File::Basename: %-20s ==\n",    $File::Basename::VERSION );
+    printf( "==       Getopt::Long: %-20s ==\n",    $Getopt::Long::VERSION );
+    printf( "==         Math::Trig: %-20s ==\n",    $Math::Trig::VERSION );
+    printf( "==         Pod::Usage: %-20s ==\n",    $Pod::Usage::VERSION );
+    printf( "==        Time::HiRes: %-20s ==\n",    $Time::HiRes::VERSION );
+    printf( "==    WWW::Curl::Easy: %-20s ==\n",    $WWW::Curl::Easy::VERSION );
+    printf( "==         XML::XPath: %-20s ==\n",    $XML::XPath::VERSION );
 }
 
 ################################################################################
@@ -164,7 +180,10 @@ if ( $DBG > 2 ) {
 if ( $DBG > 0 ) {
     print "Loading...\n";
 }
-my $browser = LWP::UserAgent->new;
+my $browser = WWW::Curl::Easy->new;
+$browser->setopt( CURLOPT_HEADER,    0 );
+$browser->setopt( CURLOPT_USERAGENT, "$name/$version" );
+my $retcode;
 
 ################################################################################
 # Retrieve speedtest.net configuration
@@ -176,11 +195,16 @@ if ( $DBG > 1 ) {
     }
 }
 
-my $configxml = $browser->get($cnfguri);
-die "\nCannot get $cnfguri -- ", $configxml->status_line
-  unless $configxml->is_success;
-die "\nDid not receive XML, got -- ", $configxml->content_type
-  unless $configxml->content_type eq 'text/xml';
+$browser->setopt( CURLOPT_URL, $cnfguri );
+my $configxml;
+$browser->setopt( CURLOPT_WRITEDATA, \$configxml );
+$retcode = $browser->perform;
+die "\nCannot get $cnfguri -- $retcode "
+  . $browser->strerror($retcode) . " "
+  . $browser->errbuf . "\n"
+  unless ( $retcode == 0 );
+die "\nDid not receive XML, got -- ", $browser->getinfo(CURLINFO_CONTENT_TYPE)
+  unless $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'text/xml';
 if ( $DBG > 1 ) {
     print "done. =\n";
 }
@@ -195,7 +219,7 @@ if ( $DBG > 1 ) {
     }
 }
 
-my $configxp = XML::XPath->new( $configxml->content );
+my $configxp = XML::XPath->new($configxml);
 
 # client settings hash
 my %client;
@@ -274,11 +298,16 @@ if ( $DBG > 1 ) {
     }
 }
 
-my $serversxml = $browser->get($srvruri);
-die "\nCannot get $srvruri -- ", $serversxml->status_line
-  unless $serversxml->is_success;
-die "\nDid not receive XML, got -- ", $serversxml->content_type
-  unless $serversxml->content_type eq 'text/xml';
+$browser->setopt( CURLOPT_URL, $srvruri );
+my $serversxml;
+$browser->setopt( CURLOPT_WRITEDATA, \$serversxml );
+$retcode = $browser->perform;
+die "\nCannot get $srvruri -- $retcode "
+  . $browser->strerror($retcode) . " "
+  . $browser->errbuf . "\n"
+  unless ( $retcode == 0 );
+die "\nDid not receive XML, got -- ", $browser->getinfo(CURLINFO_CONTENT_TYPE)
+  unless $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'text/xml';
 if ( $DBG > 1 ) {
     print "done. =\n";
 }
@@ -293,7 +322,7 @@ if ( $DBG > 1 ) {
     }
 }
 
-my $serversxp   = XML::XPath->new( $serversxml->content );
+my $serversxp   = XML::XPath->new($serversxml);
 my $servernodes = $serversxp->find('/settings/servers/server');
 
 # server attributes
@@ -509,21 +538,28 @@ foreach my $server (@closestservers) {
             print "== Retrieving $latencyuri latency $pingcount took ";
         }
 
+        $browser->setopt( CURLOPT_URL, $latencyuri );
+        my $latencytxt;
+        $browser->setopt( CURLOPT_WRITEDATA, \$latencytxt );
         ( my $s0, my $usec0 ) = gettimeofday();
-        my $latencytxt = $browser->get($latencyuri);
+        $retcode = $browser->perform;
         ( my $s1, my $usec1 ) = gettimeofday();
-        warn "\nCannot get $latencyuri -- ", $latencytxt->status_line
-          unless $latencytxt->is_success;
-        warn "\nDid not receive TXT, got -- ", $latencytxt->content_type
-          unless $latencytxt->content_type eq 'text/plain';
+        warn "\nCannot get $latencyuri -- $retcode "
+          . $browser->strerror($retcode) . " "
+          . $browser->errbuf . "\n"
+          unless ( $retcode == 0 );
+        warn "\nDid not receive TXT, got -- ",
+          $browser->getinfo(CURLINFO_CONTENT_TYPE)
+          unless $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/plain/;
         my $selapsed        = $s1 - $s0;
         my $usecelapsed     = $usec1 - $usec0;
         my $stomselapsed    = ( $selapsed * 1000 );
         my $usectomselapsed = ( $usecelapsed / 1000 );
         my $mselapsed       = $stomselapsed + $usectomselapsed;
-        if (   $latencytxt->decoded_content =~ m/^test=test/
-            && $latencytxt->content_type eq 'text/plain'
-            && $latencytxt->is_success )
+
+        if (   $latencytxt =~ m/^test=test/
+            && $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/plain/
+            && ( $retcode == 0 ) )
         {
             $latencyresults{$server}{totalelapsed} =
               $latencyresults{$server}{totalelapsed} + $mselapsed;
@@ -626,21 +662,28 @@ while ( $pingcount < $numpingcount ) {
         print "\n== Retrieving $latencyuri latency $pingcount took ";
     }
 
+    $browser->setopt( CURLOPT_URL, $latencyuri );
+    my $latencytxt;
+    $browser->setopt( CURLOPT_WRITEDATA, \$latencytxt );
     ( my $s0, my $usec0 ) = gettimeofday();
-    my $latencytxt = $browser->get($latencyuri);
+    $retcode = $browser->perform;
     ( my $s1, my $usec1 ) = gettimeofday();
-    warn "\nCannot get $latencyuri -- ", $latencytxt->status_line
-      unless $latencytxt->is_success;
-    warn "\nDid not receive TXT, got -- ", $latencytxt->content_type
-      unless $latencytxt->content_type eq 'text/plain';
+    warn "\nCannot get $latencyuri -- $retcode "
+      . $browser->strerror($retcode) . " "
+      . $browser->errbuf . "\n"
+      unless ( $retcode == 0 );
+    warn "\nDid not receive TXT, got -- ",
+      $browser->getinfo(CURLINFO_CONTENT_TYPE)
+      unless $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/plain/;
     my $selapsed        = $s1 - $s0;
     my $usecelapsed     = $usec1 - $usec0;
     my $stomselapsed    = ( $selapsed * 1000 );
     my $usectomselapsed = ( $usecelapsed / 1000 );
     my $mselapsed       = $stomselapsed + $usectomselapsed;
-    if (   $latencytxt->decoded_content =~ m/^test=test/
-        && $latencytxt->content_type eq 'text/plain'
-        && $latencytxt->is_success )
+
+    if (   $latencytxt =~ m/^test=test/
+        && $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/plain/
+        && ( $retcode == 0 ) )
     {
         $latencyresults{$bestserver}{totalelapsed} =
           $latencyresults{$bestserver}{totalelapsed} + $mselapsed;
