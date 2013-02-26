@@ -181,14 +181,20 @@ if ( $DBG > 0 ) {
     print "Loading...\n";
 }
 my $browser = WWW::Curl::Easy->new;
-$browser->setopt( CURLOPT_HEADER,     0 );
-$browser->setopt( CURLOPT_NOPROGRESS, 1 );
-$browser->setopt( CURLOPT_USERAGENT,  "$name/$version" );
+$browser->setopt( CURLOPT_HEADER,        0 );
+$browser->setopt( CURLOPT_NOPROGRESS,    1 );
+$browser->setopt( CURLOPT_TCP_KEEPALIVE, 1 );
+$browser->setopt( CURLOPT_TCP_NODELAY,   1 );
+$browser->setopt( CURLOPT_USERAGENT,     "$name/$version" );
 my $retcode;
 
 ################################################################################
 # Retrieve speedtest.net configuration
 ################################################################################
+( my $sepoch, my $usecepoch ) = gettimeofday();
+my $msecepoch = ( $usecepoch / 1000 );
+my $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
+$cnfguri = $cnfguri . "?x=" . $msepoch;
 if ( $DBG > 1 ) {
     print "= Retrieving $domain configuration...";
     if ( $DBG > 2 ) {
@@ -224,40 +230,50 @@ my $configxp = XML::XPath->new($configxml);
 
 # client settings hash
 my %client;
-$client{ip}        = $configxp->find('/settings/client/@ip');
-$client{lat}       = $configxp->find('/settings/client/@lat')->string_value;
-$client{lon}       = $configxp->find('/settings/client/@lon')->string_value;
-$client{isp}       = $configxp->find('/settings/client/@isp');
-$client{isprating} = $configxp->find('/settings/client/@isprating');
-$client{rating}    = $configxp->find('/settings/client/@rating');
-$client{ispdlavg}  = $configxp->find('/settings/client/@ispdlavg');
-$client{ispulavg}  = $configxp->find('/settings/client/@ispulavg');
-$client{loggedin}  = $configxp->find('/settings/client/@loggedin');
+$client{ip}  = $configxp->find('/settings/client/@ip')->string_value;
+$client{lat} = $configxp->find('/settings/client/@lat')->string_value;
+$client{lon} = $configxp->find('/settings/client/@lon')->string_value;
+$client{isp} = $configxp->find('/settings/client/@isp')->string_value;
+$client{isprating} =
+  $configxp->find('/settings/client/@isprating')->string_value;
+$client{rating}   = $configxp->find('/settings/client/@rating')->string_value;
+$client{ispdlavg} = $configxp->find('/settings/client/@ispdlavg')->string_value;
+$client{ispulavg} = $configxp->find('/settings/client/@ispulavg')->string_value;
+$client{loggedin} = $configxp->find('/settings/client/@loggedin')->string_value;
 
 # times settings hash
 my %times;
-$times{dl1} = $configxp->find('/settings/times/@dl1');
-$times{dl2} = $configxp->find('/settings/times/@dl2');
-$times{dl3} = $configxp->find('/settings/times/@dl3');
-$times{ul1} = $configxp->find('/settings/times/@ul1');
-$times{ul2} = $configxp->find('/settings/times/@ul2');
-$times{ul3} = $configxp->find('/settings/times/@ul3');
+$times{dl1} = $configxp->find('/settings/times/@dl1')->string_value;
+$times{dl2} = $configxp->find('/settings/times/@dl2')->string_value;
+$times{dl3} = $configxp->find('/settings/times/@dl3')->string_value;
+$times{ul1} = $configxp->find('/settings/times/@ul1')->string_value;
+$times{ul2} = $configxp->find('/settings/times/@ul2')->string_value;
+$times{ul3} = $configxp->find('/settings/times/@ul3')->string_value;
 
 # download settings hash
 my %download;
-$download{testlength}  = $configxp->find('/settings/download/@testlength');
-$download{initialtest} = $configxp->find('/settings/download/@initialtest');
-$download{mintestsize} = $configxp->find('/settings/download/@mintestsize');
+$download{testlength} =
+  $configxp->find('/settings/download/@testlength')->string_value;
+$download{initialtest} =
+  $configxp->find('/settings/download/@initialtest')->string_value;
+$download{mintestsize} =
+  $configxp->find('/settings/download/@mintestsize')->string_value;
 
 # upload settings hash
 my %upload;
-$upload{testlength}    = $configxp->find('/settings/upload/@testlength');
-$upload{ratio}         = $configxp->find('/settings/upload/@ratio');
-$upload{initialtest}   = $configxp->find('/settings/upload/@initialtest');
-$upload{mintestsize}   = $configxp->find('/settings/upload/@mintestsize');
-$upload{threads}       = $configxp->find('/settings/upload/@threads');
-$upload{maxchunksize}  = $configxp->find('/settings/upload/@maxchunksize');
-$upload{maxchunkcount} = $configxp->find('/settings/upload/@maxchunkcount');
+$upload{testlength} =
+  $configxp->find('/settings/upload/@testlength')->string_value;
+$upload{ratio} = $configxp->find('/settings/upload/@ratio')->string_value;
+$upload{initialtest} =
+  $configxp->find('/settings/upload/@initialtest')->string_value;
+$upload{mintestsize} =
+  $configxp->find('/settings/upload/@mintestsize')->string_value;
+$upload{threads} = $configxp->find('/settings/upload/@threads')->string_value;
+$upload{maxchunksize} =
+  $configxp->find('/settings/upload/@maxchunksize')->string_value;
+$upload{maxchunkcount} =
+  $configxp->find('/settings/upload/@maxchunkcount')->string_value;
+
 if ( $DBG > 2 ) {
 
     print "=================== CLIENT ====================\n";
@@ -292,6 +308,10 @@ if ( $DBG > 0 ) {
 ################################################################################
 # Retrieve speedtest.net servers list
 ################################################################################
+( $sepoch, $usecepoch ) = gettimeofday();
+$msecepoch = ( $usecepoch / 1000 );
+$msepoch   = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
+$srvruri   = $srvruri . "?x=" . $msepoch;
 if ( $DBG > 1 ) {
     print "= Retrieving $domain servers list...";
     if ( $DBG > 2 ) {
@@ -531,9 +551,9 @@ foreach my $server (@closestservers) {
             }
         }
 
-        ( my $sepoch, my $usecepoch ) = gettimeofday();
-        my $msecepoch  = ( $usecepoch / 1000 );
-        my $msepoch    = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
+        ( $sepoch, $usecepoch ) = gettimeofday();
+        $msecepoch = ( $usecepoch / 1000 );
+        $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
         my $latencyuri = $url . "/latency.txt?x=" . $msepoch;
         if ( $DBG > 2 ) {
             print "== Retrieving $latencyuri latency $pingcount took ";
@@ -648,16 +668,21 @@ if ( $DBG > 1 ) {
 }
 my ( $scheme, $auth, $path, $query, $frag ) =
   uri_split( $servers{$bestserver}{url} );
-my $dirname   = dirname($path);
-my $url       = uri_join( $scheme, $auth, $dirname );
+my $dirname = dirname($path);
+my $url = uri_join( $scheme, $auth, $dirname );
+my ( $scheme2, $auth2, $path2, $query2, $frag2 ) =
+  uri_split( $servers{$bestserver}{url2} );
+my $dirname2  = dirname($path2);
+my $url2      = uri_join( $scheme2, $auth2, $dirname2 );
 my $pingcount = 0;
 $latencyresults{$bestserver}{totalelapsed} = 0;
 $latencyresults{$bestserver}{totalpings}   = 0;
+
 while ( $pingcount < $numpingcount ) {
 
-    ( my $sepoch, my $usecepoch ) = gettimeofday();
-    my $msecepoch  = ( $usecepoch / 1000 );
-    my $msepoch    = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
+    ( $sepoch, $usecepoch ) = gettimeofday();
+    $msecepoch = ( $usecepoch / 1000 );
+    $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
     my $latencyuri = $url . "/latency.txt?x=" . $msepoch;
     if ( $DBG > 2 ) {
         print "\n== Retrieving $latencyuri latency $pingcount took ";
@@ -728,63 +753,93 @@ if ( $DBG > 1 ) {
 
 my @jpghwpixels = (
     "350",  "500",  "750",  "1000", "1500", "2000",
-    "2500", "3000", "3500", "4000"
+    "2500", "3000", "3500", "4000", "-1"
 );
 my $totaldltime = 0;
 my $totaldlsize = 0;
 my $avgdlspeed  = 0;
+my $lastjpghwpixel;
 
 foreach my $jpghwpixel (@jpghwpixels) {
-    my $y = 1;
-    while ( $y < 3 ) {
-        print "∨";    ## ∧ (logical and) and ∨ (logical or) characters
-        ( my $sepoch, my $usecepoch ) = gettimeofday();
-        my $msecepoch = ( $usecepoch / 1000 );
-        my $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
-        my $dlspeeduri =
-            $url
-          . "/random${jpghwpixel}x${jpghwpixel}.jpg?x="
-          . $msepoch . "&y="
-          . $y;
-        if ( $DBG > 2 ) {
-            print "\n== Retrieving $dlspeeduri dlspeed $y took ";
+    if (   ( $jpghwpixel == 350 && $avgdlspeed < 1.225 && $avgdlspeed >= 0 )
+        || ( $jpghwpixel == 500 && $avgdlspeed < 2.5   && $avgdlspeed >= 1.225 )
+        || ( $jpghwpixel == 750 && $avgdlspeed < 5.626 && $avgdlspeed >= 2.5 )
+        || ( $jpghwpixel == 1000 && $avgdlspeed < 10   && $avgdlspeed >= 5.626 )
+        || ( $jpghwpixel == 1500 && $avgdlspeed < 22.5 && $avgdlspeed >= 10 )
+        || ( $jpghwpixel == 2000 && $avgdlspeed < 40   && $avgdlspeed >= 22.5 )
+        || ( $jpghwpixel == 2500 && $avgdlspeed < 62.5 && $avgdlspeed >= 40 )
+        || ( $jpghwpixel == 3000 && $avgdlspeed < 90   && $avgdlspeed >= 62.5 )
+        || ( $jpghwpixel == 3500 && $avgdlspeed < 122.5 && $avgdlspeed >= 90 )
+        || ( $jpghwpixel == 4000 && $avgdlspeed >= 122.5 )
+        || ( $jpghwpixel == -1 ) )
+    {
+        my $dlurl  = $url;
+        my $ycount = 3;
+        my $y      = 1;
+        if ( $jpghwpixel == -1 ) {
+            $jpghwpixel = $lastjpghwpixel;
+            $dlurl      = $url2;
+            $ycount     = 5;
+            $y          = 3;
         }
-
-        $browser->setopt( CURLOPT_URL, $dlspeeduri );
-        my $dlspeedjpg;
-        $browser->setopt( CURLOPT_WRITEDATA, \$dlspeedjpg );
-        ( my $s0, my $usec0 ) = gettimeofday();
-        $retcode = $browser->perform;
-        ( my $s1, my $usec1 ) = gettimeofday();
-        warn "\nCannot get $dlspeeduri -- $retcode "
-          . $browser->strerror($retcode) . " "
-          . $browser->errbuf . "\n"
-          unless ( $retcode == 0 );
-        warn "\nDid not receive JPG, got -- ",
-          $browser->getinfo(CURLINFO_CONTENT_TYPE)
-          unless $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'image/jpeg';
-        my $selapsed        = $s1 - $s0;
-        my $usecelapsed     = $usec1 - $usec0;
-        my $stomselapsed    = ( $selapsed * 1000 );
-        my $usectomselapsed = ( $usecelapsed / 1000 );
-        my $mselapsed       = $stomselapsed + $usectomselapsed;
-
-        if ( $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'image/jpeg'
-            && ( $retcode == 0 ) )
-        {
-            $totaldltime = $totaldltime + ( $mselapsed / 1000 );
-            $totaldlsize = $totaldlsize + ( length($dlspeedjpg) * 8 / 1000000 );
-            $avgdlspeed = $totaldlsize / $totaldltime;
+        else {
+            $lastjpghwpixel = $jpghwpixel;
+            $dlurl          = $url;
+            $ycount         = 3;
+            $y              = 1;
         }
-        if ( $DBG > 1 ) {
+        while ( $y < $ycount ) {
+            print "∨";    ## ∧ (logical and) and ∨ (logical or) characters
+            ( $sepoch, $usecepoch ) = gettimeofday();
+            $msecepoch = ( $usecepoch / 1000 );
+            $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
+            my $dlspeeduri =
+                $dlurl
+              . "/random${jpghwpixel}x${jpghwpixel}.jpg?x="
+              . $msepoch . "&y="
+              . $y;
             if ( $DBG > 2 ) {
-                print "$mselapsed milliseconds. done. ==\n";
+                print "\n== Retrieving $dlspeeduri dlspeed $y took ";
             }
-            printf( "Download Speed: %.${DBG}f Mbps\r", $avgdlspeed );
+
+            $browser->setopt( CURLOPT_URL, $dlspeeduri );
+            my $dlspeedjpg;
+            $browser->setopt( CURLOPT_WRITEDATA, \$dlspeedjpg );
+            ( my $s0, my $usec0 ) = gettimeofday();
+            $retcode = $browser->perform;
+            ( my $s1, my $usec1 ) = gettimeofday();
+            warn "\nCannot get $dlspeeduri -- $retcode "
+              . $browser->strerror($retcode) . " "
+              . $browser->errbuf . "\n"
+              unless ( $retcode == 0 );
+            warn "\nDid not receive JPG, got -- ",
+              $browser->getinfo(CURLINFO_CONTENT_TYPE)
+              unless $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'image/jpeg';
+            my $selapsed        = $s1 - $s0;
+            my $usecelapsed     = $usec1 - $usec0;
+            my $stomselapsed    = ( $selapsed * 1000 );
+            my $usectomselapsed = ( $usecelapsed / 1000 );
+            my $mselapsed       = $stomselapsed + $usectomselapsed;
+
+            if ( $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'image/jpeg'
+                && ( $retcode == 0 ) )
+            {
+                $totaldltime = $totaldltime + ( $mselapsed / 1000 );
+                $totaldlsize =
+                  $totaldlsize + ( length($dlspeedjpg) * 8 / 1000000 );
+                $avgdlspeed = $totaldlsize / $totaldltime;
+            }
+            undef $dlspeedjpg;
+            if ( $DBG > 1 ) {
+                if ( $DBG > 2 ) {
+                    print "$mselapsed milliseconds. done. ==\n";
+                }
+                printf( "Download Speed: %.${DBG}f Mbps\r", $avgdlspeed );
+            }
+            $y++;
         }
-        $y++;
+        print "\r";
     }
-    print "\r";
 }
 
 printf( "Download Speed: %.${DBG}f Mbps\n", $avgdlspeed );
