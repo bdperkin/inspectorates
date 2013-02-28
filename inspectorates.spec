@@ -18,12 +18,15 @@ BuildRequires:	rman
 BuildRequires:	w3m
 Requires:	coreutils
 Requires:	perl
+Requires:	perl-Data-Random
+Requires:	perl-GD
 %if 0%{?fedora} >= 17
 Requires:	perl-Pod-Perldoc
 %endif
 %if 0%{?rhel} == 6
 Requires:	perl-Time-HiRes
 %endif
+Requires:	perl-WWW-Curl
 Requires:	util-linux
 
 %define NameUpper INSPECTORATES

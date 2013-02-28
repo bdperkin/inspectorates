@@ -24,11 +24,15 @@
 ################################################################################
 use strict;                            # Restrict unsafe constructs
 use warnings;                          # Control optional warnings
-use File::Basename;                    # File::Basename - Parse file paths into
+use Data::Random qw(rand_image);       # Data::Random - Perl module to generate
+                                       # random data
+use File::Basename qw(dirname);        # File::Basename - Parse file paths into
                                        # directory, filename and suffix.
 use Getopt::Long;                      # Getopt::Long - Extended processing of
                                        # command line options
-use Math::Trig;                        # Math::Trig - trigonometric functions
+use Math::Trig qw(deg2rad);            # Math::Trig - trigonometric functions
+use MIME::Base64 qw(encode_base64);    # MIME::Base64 - Encoding and decoding of
+                                       # base64 strings
 use Pod::Usage;                        # Pod::Usage, pod2usage() - print a
                                        # usage message from embedded pod
                                        # documentation
@@ -184,6 +188,8 @@ my $browser = WWW::Curl::Easy->new;
 $browser->setopt( CURLOPT_HEADER,        0 );
 $browser->setopt( CURLOPT_NOPROGRESS,    1 );
 $browser->setopt( CURLOPT_TCP_KEEPALIVE, 1 );
+$browser->setopt( CURLOPT_TCP_KEEPIDLE,  1 );
+$browser->setopt( CURLOPT_TCP_KEEPINTVL, 1 );
 $browser->setopt( CURLOPT_TCP_NODELAY,   1 );
 $browser->setopt( CURLOPT_USERAGENT,     "$name/$version" );
 my $retcode;
@@ -845,6 +851,152 @@ foreach my $jpghwpixel (@jpghwpixels) {
 printf( "Download Speed: %.${DBG}f Mbps\n", $avgdlspeed );
 if ( $DBG > 1 ) {
     printf( "done: %.${DBG}f Megabits per second. =\n", $avgdlspeed );
+}
+
+################################################################################
+# UPLOAD test against selected server
+################################################################################
+if ( $DBG > 1 ) {
+    print "= Checking upload against $servers{$bestserver}{name} Hosted by ";
+    print "$servers{$bestserver}{sponsor}\n";
+}
+
+my @pnghwpixels = (
+    "350",  "500",  "750",  "1000", "1500", "2000",
+    "2500", "3000", "3500", "4000", "-1"
+);
+my $totalultime = 0;
+my $totalulsize = 0;
+my $avgulspeed  = 0;
+my $lastpnghwpixel;
+
+foreach my $pnghwpixel (@pnghwpixels) {
+    if (   ( $pnghwpixel == 350 && $avgulspeed < 0.1225 && $avgulspeed >= 0 )
+        || ( $pnghwpixel == 500 && $avgulspeed < 0.25 && $avgulspeed >= 0.1225 )
+        || ( $pnghwpixel == 750 && $avgulspeed < 0.5626 && $avgulspeed >= 0.25 )
+        || ( $pnghwpixel == 1000 && $avgulspeed < 1.0 && $avgulspeed >= 0.5626 )
+        || ( $pnghwpixel == 1500 && $avgulspeed < 2.25  && $avgulspeed >= 1.0 )
+        || ( $pnghwpixel == 2000 && $avgulspeed < 4.0   && $avgulspeed >= 2.25 )
+        || ( $pnghwpixel == 2500 && $avgulspeed < 6.25  && $avgulspeed >= 4.0 )
+        || ( $pnghwpixel == 3000 && $avgulspeed < 9.0   && $avgulspeed >= 6.25 )
+        || ( $pnghwpixel == 3500 && $avgulspeed < 12.25 && $avgulspeed >= 9.0 )
+        || ( $pnghwpixel == 4000 && $avgulspeed >= 12.25 )
+        || ( $pnghwpixel == -1 ) )
+    {
+        my $ulurl  = $servers{$bestserver}{url};
+        my $ycount = 3;
+        my $y      = 1;
+        if ( $pnghwpixel == -1 ) {
+            $pnghwpixel = $lastpnghwpixel;
+            $ulurl      = $servers{$bestserver}{url2};
+            $ycount     = 5;
+            $y          = 3;
+        }
+        else {
+            $lastpnghwpixel = $pnghwpixel;
+            $ulurl          = $servers{$bestserver}{url};
+            $ycount         = 3;
+            $y              = 1;
+        }
+        my $ulrandimage =
+          rand_image( width => $pnghwpixel, height => $pnghwpixel );
+        my $ulspeedpng     = encode_base64($ulrandimage);
+        my $ulspeedpngsize = length($ulspeedpng);
+        while ( $y < $ycount ) {
+            print "∧";    ## ∧ (logical and) and ∨ (logical or) characters
+            ( $sepoch, $usecepoch ) = gettimeofday();
+            $msecepoch = ( $usecepoch / 1000 );
+            $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
+            my $ulspeeduri = $ulurl . "?x=" . $msepoch . "&y=" . $y;
+            if ( $DBG > 2 ) {
+                print "\n== Sending $ulspeeduri ulspeed $y took ";
+            }
+
+            $browser->setopt( CURLOPT_URL,        $ulspeeduri );
+            $browser->setopt( CURLOPT_POST,       1 );
+            $browser->setopt( CURLOPT_POSTFIELDS, $ulspeedpng );
+            $browser->setopt( CURLOPT_REFERER,    $flshuri );
+            my $ulspeedout;
+            $browser->setopt( CURLOPT_WRITEDATA, \$ulspeedout );
+            ( my $s0, my $usec0 ) = gettimeofday();
+            $retcode = $browser->perform;
+            ( my $s1, my $usec1 ) = gettimeofday();
+            warn "\nCannot get $ulspeeduri -- $retcode "
+              . $browser->strerror($retcode) . " "
+              . $browser->errbuf . "\n"
+              unless ( $retcode == 0 );
+            warn "\nDid not receive HTML, got -- ",
+              $browser->getinfo(CURLINFO_CONTENT_TYPE)
+              unless $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/text\/html/;
+            warn "\nDid not receive valid 'size=' content, got == ",
+              $ulspeedout
+              unless $ulspeedout =~ m/^size=\d+$/;
+            chomp $ulspeedout;
+            my ( $x, $stnsize ) = split( /=/, $ulspeedout );
+            my $postsizeissue = 0;
+
+            if (   $ulspeedpngsize != $browser->getinfo(CURLINFO_SIZE_UPLOAD)
+                || $ulspeedpngsize !=
+                $browser->getinfo(CURLINFO_CONTENT_LENGTH_UPLOAD) )
+            {
+                if ( $DBG > 1 ) {
+                    warn
+"\n= Something wrong in size. Expected $ulspeedpngsize. Got CURLINFO_SIZE_UPLOAD="
+                      . $browser->getinfo(CURLINFO_SIZE_UPLOAD)
+                      . " and CURLINFO_CONTENT_LENGTH_UPLOAD="
+                      . $browser->getinfo(CURLINFO_CONTENT_LENGTH_UPLOAD)
+                      . ". =\n";
+                }
+                $postsizeissue = 1;
+            }
+            if (
+                ( $stnsize - $browser->getinfo(CURLINFO_SIZE_UPLOAD) ) != 524
+                || ( $stnsize -
+                    $browser->getinfo(CURLINFO_CONTENT_LENGTH_UPLOAD) ) != 524
+              )
+            {
+                if ( $DBG > 1 ) {
+                    warn "\n= Something wrong in size. Expected "
+                      . ( $ulspeedpngsize - 524 )
+                      . ". Got CURLINFO_SIZE_UPLOAD="
+                      . ( $stnsize - $browser->getinfo(CURLINFO_SIZE_UPLOAD) )
+                      . " and CURLINFO_CONTENT_LENGTH_UPLOAD="
+                      . ( $stnsize -
+                          $browser->getinfo(CURLINFO_CONTENT_LENGTH_UPLOAD) )
+                      . ". =\n";
+                }
+                $postsizeissue = 1;
+            }
+            my $selapsed        = $s1 - $s0;
+            my $usecelapsed     = $usec1 - $usec0;
+            my $stomselapsed    = ( $selapsed * 1000 );
+            my $usectomselapsed = ( $usecelapsed / 1000 );
+            my $mselapsed       = $stomselapsed + $usectomselapsed;
+
+            if (   $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/text\/html/
+                && $ulspeedout =~ m/^size=\d+$/
+                && $retcode == 0
+                && $postsizeissue == 0 )
+            {
+                $totalultime = $totalultime + ( $mselapsed / 1000 );
+                $totalulsize = $totalulsize + ( $stnsize * 8 / 1000000 );
+                $avgulspeed = $totalulsize / $totalultime;
+            }
+            if ( $DBG > 1 ) {
+                if ( $DBG > 2 ) {
+                    print "$mselapsed milliseconds. done. ==\n";
+                }
+                printf( "Upload Speed: %.${DBG}f Mbps\r", $avgulspeed );
+            }
+            $y++;
+        }
+        print "\r";
+    }
+}
+
+printf( "Upload Speed: %.${DBG}f Mbps\n", $avgulspeed );
+if ( $DBG > 1 ) {
+    printf( "done: %.${DBG}f Megabits per second. =\n", $avgulspeed );
 }
 
 ################################################################################
