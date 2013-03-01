@@ -86,13 +86,15 @@ Getopt::Long::Configure(qw(bundling no_getopt_compat));
 ################################################################################
 # Initialize variables
 ################################################################################
-my $DBG          = 1;
-my $numservers   = 5;
-my $totalservers = 0;
-my $numpingtest  = 3;
-my $numpingcount = 10;
+my $DBG            = 1;
+my $numservers     = 5;
+my $totalservers   = 0;
+my $numpingtest    = 3;
+my $numpingcount   = 10;
+my $curloptverbose = 0;
 
 my $optcount;
+my $optcurlops;
 my $optdebug;
 my $opthelp;
 my $optman;
@@ -109,6 +111,8 @@ my $optversion;
 GetOptions(
     "c=i"       => \$optcount,
     "count=i"   => \$optcount,
+    "C"         => \$optcurlops,
+    "curlops"   => \$optcurlops,
     "d"         => \$optdebug,
     "debug"     => \$optdebug,
     "h"         => \$opthelp,
@@ -185,13 +189,36 @@ if ( $DBG > 0 ) {
     print "Loading...\n";
 }
 my $browser = WWW::Curl::Easy->new;
-$browser->setopt( CURLOPT_HEADER,        0 );
-$browser->setopt( CURLOPT_NOPROGRESS,    1 );
-$browser->setopt( CURLOPT_TCP_KEEPALIVE, 1 );
-$browser->setopt( CURLOPT_TCP_KEEPIDLE,  1 );
-$browser->setopt( CURLOPT_TCP_KEEPINTVL, 1 );
-$browser->setopt( CURLOPT_TCP_NODELAY,   1 );
-$browser->setopt( CURLOPT_USERAGENT,     "$name/$version" );
+if ($optcurlops) {
+    $curloptverbose = 1;
+}
+$browser->setopt( CURLOPT_VERBOSE, $curloptverbose );
+my $curlversion = $browser->version(CURLVERSION_NOW);
+chomp $curlversion;
+my @curlversions = split( /\s/, $curlversion );
+my %libversions;
+foreach my $curlver (@curlversions) {
+    my ( $lib, $ver ) = split( /\//, $curlver );
+    my ( $major, $minor, $patch ) = split( /\./, $ver );
+    $libversions{$lib}              = $ver;
+    $libversions{ $lib . '-major' } = $major;
+    $libversions{ $lib . '-minor' } = $minor;
+    $libversions{ $lib . '-patch' } = $patch;
+}
+if ( $DBG > 2 ) {
+    print "================ CURL VERSIONS ================\n";
+    foreach my $name ( keys %libversions ) {
+        my $info = $libversions{$name};
+        printf( "==   libversions:: %13s: %-10s ==\n", $name, $info )
+          if defined $info;
+    }
+    print "===============================================\n";
+}
+
+$browser->setopt( CURLOPT_HEADER,      0 );
+$browser->setopt( CURLOPT_NOPROGRESS,  1 );
+$browser->setopt( CURLOPT_TCP_NODELAY, 1 );
+$browser->setopt( CURLOPT_USERAGENT,   "$name/$version" );
 my $retcode;
 
 ################################################################################
