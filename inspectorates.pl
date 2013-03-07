@@ -381,7 +381,7 @@ my $servernodes = $serversxp->find('/settings/servers/server');
 
 # server attributes
 my @serveratts =
-  ( 'url', 'lat', 'lon', 'name', 'country', 'cc', 'sponsor', 'id', 'url2' );
+  ( 'url', 'lat', 'lon', 'name', 'country', 'cc', 'sponsor', 'id' );
 
 # server list hash
 my %servers;
@@ -701,12 +701,8 @@ if ( $DBG > 1 ) {
 }
 my ( $scheme, $auth, $path, $query, $frag ) =
   uri_split( $servers{$bestserver}{url} );
-my $dirname = dirname($path);
-my $url = uri_join( $scheme, $auth, $dirname );
-my ( $scheme2, $auth2, $path2, $query2, $frag2 ) =
-  uri_split( $servers{$bestserver}{url2} );
-my $dirname2  = dirname($path2);
-my $url2      = uri_join( $scheme2, $auth2, $dirname2 );
+my $dirname   = dirname($path);
+my $url       = uri_join( $scheme, $auth, $dirname );
 my $pingcount = 0;
 $latencyresults{$bestserver}{totalelapsed} = 0;
 $latencyresults{$bestserver}{totalpings}   = 0;
@@ -786,7 +782,7 @@ if ( $DBG > 1 ) {
 
 my @jpghwpixels = (
     "350",  "500",  "750",  "1000", "1500", "2000",
-    "2500", "3000", "3500", "4000", "-1"
+    "2500", "3000", "3500", "4000"
 );
 my $totaldltime = 0;
 my $totaldlsize = 0;
@@ -803,24 +799,12 @@ foreach my $jpghwpixel (@jpghwpixels) {
         || ( $jpghwpixel == 2500 && $avgdlspeed < 62.5 && $avgdlspeed >= 40 )
         || ( $jpghwpixel == 3000 && $avgdlspeed < 90   && $avgdlspeed >= 62.5 )
         || ( $jpghwpixel == 3500 && $avgdlspeed < 122.5 && $avgdlspeed >= 90 )
-        || ( $jpghwpixel == 4000 && $avgdlspeed >= 122.5 )
-        || ( $jpghwpixel == -1 ) )
+        || ( $jpghwpixel == 4000 && $avgdlspeed >= 122.5 ) )
     {
         my $dlurl  = $url;
         my $ycount = 3;
         my $y      = 1;
-        if ( $jpghwpixel == -1 ) {
-            $jpghwpixel = $lastjpghwpixel;
-            $dlurl      = $url2;
-            $ycount     = 5;
-            $y          = 3;
-        }
-        else {
-            $lastjpghwpixel = $jpghwpixel;
-            $dlurl          = $url;
-            $ycount         = 3;
-            $y              = 1;
-        }
+        $lastjpghwpixel = $jpghwpixel;
         while ( $y < $ycount ) {
             print "∨";    ## ∧ (logical and) and ∨ (logical or) characters
             ( $sepoch, $usecepoch ) = gettimeofday();
@@ -890,7 +874,7 @@ if ( $DBG > 1 ) {
 
 my @pnghwpixels = (
     "350",  "500",  "750",  "1000", "1500", "2000",
-    "2500", "3000", "3500", "4000", "-1"
+    "2500", "3000", "3500", "4000"
 );
 my $totalultime = 0;
 my $totalulsize = 0;
@@ -907,24 +891,12 @@ foreach my $pnghwpixel (@pnghwpixels) {
         || ( $pnghwpixel == 2500 && $avgulspeed < 6.25  && $avgulspeed >= 4.0 )
         || ( $pnghwpixel == 3000 && $avgulspeed < 9.0   && $avgulspeed >= 6.25 )
         || ( $pnghwpixel == 3500 && $avgulspeed < 12.25 && $avgulspeed >= 9.0 )
-        || ( $pnghwpixel == 4000 && $avgulspeed >= 12.25 )
-        || ( $pnghwpixel == -1 ) )
+        || ( $pnghwpixel == 4000 && $avgulspeed >= 12.25 ) )
     {
         my $ulurl  = $servers{$bestserver}{url};
         my $ycount = 3;
         my $y      = 1;
-        if ( $pnghwpixel == -1 ) {
-            $pnghwpixel = $lastpnghwpixel;
-            $ulurl      = $servers{$bestserver}{url2};
-            $ycount     = 5;
-            $y          = 3;
-        }
-        else {
-            $lastpnghwpixel = $pnghwpixel;
-            $ulurl          = $servers{$bestserver}{url};
-            $ycount         = 3;
-            $y              = 1;
-        }
+        $lastpnghwpixel = $pnghwpixel;
         my $ulrandimage =
           rand_image( width => $pnghwpixel, height => $pnghwpixel );
         my $ulspeedpng     = encode_base64($ulrandimage);
