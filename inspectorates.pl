@@ -400,12 +400,12 @@ if ( $DBG > 1 ) {
     if ( $DBG > 2 ) {
         print "=================== SERVERS ===================\n";
         foreach my $name ( keys %servers ) {
-            printf( "== servers:: %5.5s: ", $name );
+            printf( "== servers:: %5.5s:", $name );
+            printf("                          ==\n");
             foreach my $serveratt (@serveratts) {
-                printf( " %10.10s:", $serveratt );
-                printf( " %-20.20s", $servers{$name}{$serveratt} );
+                printf( "== \t%10.10s:",  $serveratt );
+                printf( " %-24.24s ==\n", $servers{$name}{$serveratt} );
             }
-            print " ==\n";
         }
         print "===============================================\n";
     }
@@ -477,8 +477,8 @@ if ( $DBG > 1 ) {
     if ( $DBG > 2 ) {
         print "== Number of Test Servers Set to $numservers ==\n";
     }
-    print "= Determining the $numservers closest $domain servers ";
-    print "based on geographic distance...";
+    print "= Determining the $numservers closest $domain servers =\n";
+    print "= based on geographic distance...";
     if ( $DBG > 2 ) {
         print "\n================== DISTANCE ===================\n";
     }
@@ -634,7 +634,8 @@ foreach my $server (@closestservers) {
       $latencyresults{$server}{totalpings};
 
     if ( $DBG > 1 ) {
-        printf( "done: %.${DBG}f ", $latencyresults{$server}{avgelapsed} );
+        printf("done: =\n= \t");
+        printf( "%.${DBG}f ", $latencyresults{$server}{avgelapsed} );
         printf("millisecond average. =\n");
     }
 }
