@@ -402,8 +402,8 @@ if ( $DBG > 1 ) {
         foreach my $name ( keys %servers ) {
             printf( "== servers:: %5.5s: ", $name );
             foreach my $serveratt (@serveratts) {
-                printf( " %10.10s: %-20.20s",
-                    $serveratt, $servers{$name}{$serveratt} );
+                printf( " %10.10s:", $serveratt );
+                printf( " %-20.20s", $servers{$name}{$serveratt} );
             }
             print " ==\n";
         }
@@ -559,11 +559,11 @@ foreach my $server (@closestservers) {
         print "= Checking $servers{$server}{name} Hosted by ";
         print "$servers{$server}{sponsor}";
         if ( $DBG > 2 ) {
-            printf( "\n================ SERVER: %5.5s ================\n",
-                $server );
+            printf("\n================ SERVER:");
+            printf( " %5.5s ================\n", $server );
             foreach my $serveratt (@serveratts) {
-                printf( "== %8.8s: %-31.31s ==\n",
-                    $serveratt, $servers{$server}{$serveratt} );
+                printf( "== %8.8s:",      $serveratt );
+                printf( " %-31.31s ==\n", $servers{$server}{$serveratt} );
             }
             print "===============================================\n";
         }
@@ -613,7 +613,7 @@ foreach my $server (@closestservers) {
 
         if (   $latencytxt =~ m/^test=test/
             && $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/plain/
-            && ( $retcode == 0 ) )
+            && $retcode == 0 )
         {
             $latencyresults{$server}{totalelapsed} =
               $latencyresults{$server}{totalelapsed} + $mselapsed;
@@ -634,8 +634,8 @@ foreach my $server (@closestservers) {
       $latencyresults{$server}{totalpings};
 
     if ( $DBG > 1 ) {
-        printf( "done: %.${DBG}f millisecond average. =\n",
-            $latencyresults{$server}{avgelapsed} );
+        printf( "done: %.${DBG}f ", $latencyresults{$server}{avgelapsed} );
+        printf("millisecond average. =\n");
     }
 }
 my $bestserver = -1;
@@ -690,11 +690,11 @@ if ( $DBG > 1 ) {
     print "= Checking ping against $servers{$bestserver}{name} Hosted by ";
     print "$servers{$bestserver}{sponsor}\n";
     if ( $DBG > 2 ) {
-        printf( "\n================ SERVER: %5.5s ================\n",
-            $bestserver );
+        printf("\n================ SERVER:");
+        printf( " %5.5s ================\n", $bestserver );
         foreach my $serveratt (@serveratts) {
-            printf( "== %8.8s: %-31.31s ==\n",
-                $serveratt, $servers{$bestserver}{$serveratt} );
+            printf( "== %8.8s:",      $serveratt );
+            printf( " %-31.31s ==\n", $servers{$bestserver}{$serveratt} );
         }
         print "===============================================\n";
     }
@@ -738,7 +738,7 @@ while ( $pingcount < $numpingcount ) {
 
     if (   $latencytxt =~ m/^test=test/
         && $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/plain/
-        && ( $retcode == 0 ) )
+        && $retcode == 0 )
     {
         $latencyresults{$bestserver}{totalelapsed} =
           $latencyresults{$bestserver}{totalelapsed} + $mselapsed;
@@ -751,8 +751,8 @@ while ( $pingcount < $numpingcount ) {
         $latencyresults{$bestserver}{avgelapsed} =
           $latencyresults{$bestserver}{totalelapsed} /
           $latencyresults{$bestserver}{totalpings};
-        printf( "Ping: %.${DBG}f ms\r",
-            $latencyresults{$bestserver}{avgelapsed} );
+        printf( "Ping: %.${DBG}f", $latencyresults{$bestserver}{avgelapsed} );
+        printf(" ms\r");
     }
 
     $pingcount++;
@@ -765,11 +765,11 @@ printf( "Ping: %.${DBG}f ms\n", $latencyresults{$bestserver}{avgelapsed} );
 if ( $DBG > 1 ) {
     if ( $DBG > 2 ) {
         print "== $latencyresults{$bestserver}{totalpings} runs took ";
-        printf( "%.${DBG}f milliseconds. ==\n",
-            $latencyresults{$bestserver}{totalelapsed} );
+        printf( "%.${DBG}f", $latencyresults{$bestserver}{totalelapsed} );
+        printf(" milliseconds. ==\n");
     }
-    printf( "done: %.${DBG}f millisecond average. =\n",
-        $latencyresults{$bestserver}{avgelapsed} );
+    printf( "done: %.${DBG}f ", $latencyresults{$bestserver}{avgelapsed} );
+    printf("millisecond average. =\n");
 }
 
 ################################################################################
@@ -780,31 +780,32 @@ if ( $DBG > 1 ) {
     print "$servers{$bestserver}{sponsor}\n";
 }
 
-my @jpghwpixels = (
+my @hwpixels = (
     "350",  "500",  "750",  "1000", "1500", "2000",
     "2500", "3000", "3500", "4000"
 );
-my $totaldltime = 0;
-my $totaldlsize = 0;
-my $avgdlspeed  = 0;
-my $lastjpghwpixel;
+my $totaldltime   = 0;
+my $totaldlsize   = 0;
+my $avgdlspeed    = 0;
+my $mbpsl         = 0;
+my $mbpsh         = 0;
+my $mindltestsize = $download{mintestsize};
+$mindltestsize =~ s/K$/000/g;
 
-foreach my $jpghwpixel (@jpghwpixels) {
-    if (   ( $jpghwpixel == 350 && $avgdlspeed < 1.225 && $avgdlspeed >= 0 )
-        || ( $jpghwpixel == 500 && $avgdlspeed < 2.5   && $avgdlspeed >= 1.225 )
-        || ( $jpghwpixel == 750 && $avgdlspeed < 5.626 && $avgdlspeed >= 2.5 )
-        || ( $jpghwpixel == 1000 && $avgdlspeed < 10   && $avgdlspeed >= 5.626 )
-        || ( $jpghwpixel == 1500 && $avgdlspeed < 22.5 && $avgdlspeed >= 10 )
-        || ( $jpghwpixel == 2000 && $avgdlspeed < 40   && $avgdlspeed >= 22.5 )
-        || ( $jpghwpixel == 2500 && $avgdlspeed < 62.5 && $avgdlspeed >= 40 )
-        || ( $jpghwpixel == 3000 && $avgdlspeed < 90   && $avgdlspeed >= 62.5 )
-        || ( $jpghwpixel == 3500 && $avgdlspeed < 122.5 && $avgdlspeed >= 90 )
-        || ( $jpghwpixel == 4000 && $avgdlspeed >= 122.5 ) )
+foreach my $hwpixel (@hwpixels) {
+    $mbpsl = $mbpsh;
+    my $bytes    = ( $hwpixel**2 * 2 );
+    my $bits     = ( $bytes * 8 );
+    my $kilobits = ( $bits / 1000 );
+    my $megabits = ( $kilobits / 1000 );
+    $mbpsh = ( $megabits / 2 );
+    if (   $mbpsl <= $avgdlspeed
+        && $avgdlspeed < $mbpsh
+        && $mindltestsize < $bits )
     {
         my $dlurl  = $url;
         my $ycount = 3;
         my $y      = 1;
-        $lastjpghwpixel = $jpghwpixel;
         while ( $y < $ycount ) {
             print "∨";    ## ∧ (logical and) and ∨ (logical or) characters
             ( $sepoch, $usecepoch ) = gettimeofday();
@@ -812,7 +813,7 @@ foreach my $jpghwpixel (@jpghwpixels) {
             $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
             my $dlspeeduri =
                 $dlurl
-              . "/random${jpghwpixel}x${jpghwpixel}.jpg?x="
+              . "/random${hwpixel}x${hwpixel}.jpg?x="
               . $msepoch . "&y="
               . $y;
             if ( $DBG > 2 ) {
@@ -838,8 +839,8 @@ foreach my $jpghwpixel (@jpghwpixels) {
             my $usectomselapsed = ( $usecelapsed / 1000 );
             my $mselapsed       = $stomselapsed + $usectomselapsed;
 
-            if ( $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'image/jpeg'
-                && ( $retcode == 0 ) )
+            if (   $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'image/jpeg'
+                && $retcode == 0 )
             {
                 $totaldltime = $totaldltime + ( $mselapsed / 1000 );
                 $totaldlsize =
@@ -872,35 +873,31 @@ if ( $DBG > 1 ) {
     print "$servers{$bestserver}{sponsor}\n";
 }
 
-my @pnghwpixels = (
-    "350",  "500",  "750",  "1000", "1500", "2000",
-    "2500", "3000", "3500", "4000"
-);
 my $totalultime = 0;
 my $totalulsize = 0;
 my $avgulspeed  = 0;
-my $lastpnghwpixel;
+$mbpsl = 0;
+$mbpsh = 0;
+my $minultestsize = $upload{mintestsize};
+$minultestsize =~ s/K$/000/g;
 
-foreach my $pnghwpixel (@pnghwpixels) {
-    if (   ( $pnghwpixel == 350 && $avgulspeed < 0.1225 && $avgulspeed >= 0 )
-        || ( $pnghwpixel == 500 && $avgulspeed < 0.25 && $avgulspeed >= 0.1225 )
-        || ( $pnghwpixel == 750 && $avgulspeed < 0.5626 && $avgulspeed >= 0.25 )
-        || ( $pnghwpixel == 1000 && $avgulspeed < 1.0 && $avgulspeed >= 0.5626 )
-        || ( $pnghwpixel == 1500 && $avgulspeed < 2.25  && $avgulspeed >= 1.0 )
-        || ( $pnghwpixel == 2000 && $avgulspeed < 4.0   && $avgulspeed >= 2.25 )
-        || ( $pnghwpixel == 2500 && $avgulspeed < 6.25  && $avgulspeed >= 4.0 )
-        || ( $pnghwpixel == 3000 && $avgulspeed < 9.0   && $avgulspeed >= 6.25 )
-        || ( $pnghwpixel == 3500 && $avgulspeed < 12.25 && $avgulspeed >= 9.0 )
-        || ( $pnghwpixel == 4000 && $avgulspeed >= 12.25 ) )
+foreach my $hwpixel (@hwpixels) {
+    $mbpsl = $mbpsh;
+    my $bytes    = ( $hwpixel**2 * 2 );
+    my $bits     = ( $bytes * 8 );
+    my $kilobits = ( $bits / 1000 );
+    my $megabits = ( $kilobits / 1000 );
+    $mbpsh = ( ( $megabits / 2 ) / $upload{ratio} );
+    if (   $mbpsl <= $avgulspeed
+        && $avgulspeed < $mbpsh
+        && $minultestsize < $bits )
     {
-        my $ulurl  = $servers{$bestserver}{url};
-        my $ycount = 3;
-        my $y      = 1;
-        $lastpnghwpixel = $pnghwpixel;
-        my $ulrandimage =
-          rand_image( width => $pnghwpixel, height => $pnghwpixel );
-        my $ulspeedpng     = encode_base64($ulrandimage);
-        my $ulspeedpngsize = length($ulspeedpng);
+        my $ulurl       = $servers{$bestserver}{url};
+        my $ycount      = 3;
+        my $y           = 1;
+        my $ulrandimage = rand_image( width => $hwpixel, height => $hwpixel );
+        my $ulrandimagesize = length($ulrandimage);
+
         while ( $y < $ycount ) {
             print "∧";    ## ∧ (logical and) and ∨ (logical or) characters
             ( $sepoch, $usecepoch ) = gettimeofday();
@@ -911,10 +908,11 @@ foreach my $pnghwpixel (@pnghwpixels) {
                 print "\n== Sending $ulspeeduri ulspeed $y took ";
             }
 
-            $browser->setopt( CURLOPT_URL,        $ulspeeduri );
-            $browser->setopt( CURLOPT_POST,       1 );
-            $browser->setopt( CURLOPT_POSTFIELDS, $ulspeedpng );
-            $browser->setopt( CURLOPT_REFERER,    $flshuri );
+            $browser->setopt( CURLOPT_URL,           $ulspeeduri );
+            $browser->setopt( CURLOPT_POST,          1 );
+            $browser->setopt( CURLOPT_POSTFIELDS,    $ulrandimage );
+            $browser->setopt( CURLOPT_POSTFIELDSIZE, $ulrandimagesize );
+            $browser->setopt( CURLOPT_REFERER,       $flshuri );
             my $ulspeedout;
             $browser->setopt( CURLOPT_WRITEDATA, \$ulspeedout );
             ( my $s0, my $usec0 ) = gettimeofday();
@@ -934,13 +932,14 @@ foreach my $pnghwpixel (@pnghwpixels) {
             my ( $x, $stnsize ) = split( /=/, $ulspeedout );
             my $postsizeissue = 0;
 
-            if (   $ulspeedpngsize != $browser->getinfo(CURLINFO_SIZE_UPLOAD)
-                || $ulspeedpngsize !=
+            if (   $ulrandimagesize != $browser->getinfo(CURLINFO_SIZE_UPLOAD)
+                || $ulrandimagesize !=
                 $browser->getinfo(CURLINFO_CONTENT_LENGTH_UPLOAD) )
             {
+
                 if ( $DBG > 1 ) {
-                    warn
-"\n= Something wrong in size. Expected $ulspeedpngsize. Got CURLINFO_SIZE_UPLOAD="
+                    warn "\n= Something wrong in size. Expected "
+                      . "$ulrandimagesize. Got CURLINFO_SIZE_UPLOAD="
                       . $browser->getinfo(CURLINFO_SIZE_UPLOAD)
                       . " and CURLINFO_CONTENT_LENGTH_UPLOAD="
                       . $browser->getinfo(CURLINFO_CONTENT_LENGTH_UPLOAD)
@@ -948,21 +947,17 @@ foreach my $pnghwpixel (@pnghwpixels) {
                 }
                 $postsizeissue = 1;
             }
-            if (
-                ( $stnsize - $browser->getinfo(CURLINFO_SIZE_UPLOAD) ) != 524
-                || ( $stnsize -
-                    $browser->getinfo(CURLINFO_CONTENT_LENGTH_UPLOAD) ) != 524
-              )
+            if (   $stnsize > $browser->getinfo(CURLINFO_SIZE_UPLOAD)
+                || $stnsize >
+                $browser->getinfo(CURLINFO_CONTENT_LENGTH_UPLOAD) )
             {
                 if ( $DBG > 1 ) {
                     warn "\n= Something wrong in size. Expected "
-                      . ( $ulspeedpngsize - 524 )
-                      . ". Got CURLINFO_SIZE_UPLOAD="
-                      . ( $stnsize - $browser->getinfo(CURLINFO_SIZE_UPLOAD) )
+                      . "CURLINFO_SIZE_UPLOAD="
+                      . $browser->getinfo(CURLINFO_SIZE_UPLOAD)
                       . " and CURLINFO_CONTENT_LENGTH_UPLOAD="
-                      . ( $stnsize -
-                          $browser->getinfo(CURLINFO_CONTENT_LENGTH_UPLOAD) )
-                      . ". =\n";
+                      . $browser->getinfo(CURLINFO_CONTENT_LENGTH_UPLOAD)
+                      . ". Got $stnsize. =\n";
                 }
                 $postsizeissue = 1;
             }
@@ -978,9 +973,11 @@ foreach my $pnghwpixel (@pnghwpixels) {
                 && $postsizeissue == 0 )
             {
                 $totalultime = $totalultime + ( $mselapsed / 1000 );
-                $totalulsize = $totalulsize + ( $stnsize * 8 / 1000000 );
+                $totalulsize =
+                  $totalulsize + ( $ulrandimagesize * 8 / 1000000 );
                 $avgulspeed = $totalulsize / $totalultime;
             }
+            undef $ulspeedout;
             if ( $DBG > 1 ) {
                 if ( $DBG > 2 ) {
                     print "$mselapsed milliseconds. done. ==\n";
