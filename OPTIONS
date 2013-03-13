@@ -3,6 +3,9 @@ Command line options are used to specify various startup options for %{NAMELOWER
 *-c* 'count', *--count*='count'::
     Count of latency tests to perform against selected server.
 
+*-C*, *--curlvrbs*::
+    Set CURLOPT_VERBOSE option to make the fetching more verbose/talkative.
+
 *-d*, *--debug*::
     Debug output.
 

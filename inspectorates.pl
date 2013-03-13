@@ -94,7 +94,7 @@ my $numpingcount   = 10;
 my $curloptverbose = 0;
 
 my $optcount;
-my $optcurlops;
+my $optcurlverbose;
 my $optdebug;
 my $opthelp;
 my $optman;
@@ -111,8 +111,8 @@ my $optversion;
 GetOptions(
     "c=i"       => \$optcount,
     "count=i"   => \$optcount,
-    "C"         => \$optcurlops,
-    "curlops"   => \$optcurlops,
+    "C"         => \$optcurlverbose,
+    "curlvrbs"  => \$optcurlverbose,
     "d"         => \$optdebug,
     "debug"     => \$optdebug,
     "h"         => \$opthelp,
@@ -189,7 +189,7 @@ if ( $DBG > 0 ) {
     print "Loading...\n";
 }
 my $browser = WWW::Curl::Easy->new;
-if ($optcurlops) {
+if ($optcurlverbose) {
     $curloptverbose = 1;
 }
 $browser->setopt( CURLOPT_VERBOSE, $curloptverbose );
