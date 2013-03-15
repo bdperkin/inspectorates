@@ -101,6 +101,7 @@ my $optman;
 my $optpings;
 my $optquiet;
 my $optservers;
+my $opturl;
 my $optverbose;
 my $optversion;
 
@@ -125,6 +126,8 @@ GetOptions(
     "quiet"     => \$optquiet,
     "s=i"       => \$optservers,
     "servers=i" => \$optservers,
+    "u=s"       => \$opturl,
+    "url=s"     => \$opturl,
     "v"         => \$optverbose,
     "verbose"   => \$optverbose,
     "V"         => \$optversion,
@@ -283,6 +286,13 @@ $times{ul1} = $configxp->find('/settings/times/@ul1')->string_value;
 $times{ul2} = $configxp->find('/settings/times/@ul2')->string_value;
 $times{ul3} = $configxp->find('/settings/times/@ul3')->string_value;
 
+# latency settings hash
+my %latency;
+$latency{testlength} =
+  $configxp->find('/settings/latency/@testlength')->string_value;
+$latency{waittime} =
+  $configxp->find('/settings/latency/@waittime')->string_value;
+
 # download settings hash
 my %download;
 $download{testlength} =
@@ -319,6 +329,11 @@ if ( $DBG > 2 ) {
         my $info = $times{$name};
         printf( "==    times:: %13s: %-15s ==\n", $name, $info );
     }
+    print "=================== LATENCY ===================\n";
+    foreach my $name ( keys %latency ) {
+        my $info = $latency{$name};
+        printf( "==  latency:: %13s: %-15s ==\n", $name, $info );
+    }
     print "================== DOWNLOAD ===================\n";
     foreach my $name ( keys %download ) {
         my $info = $download{$name};
@@ -338,6 +353,225 @@ if ( $DBG > 0 ) {
     print "Client IP Address: $client{ip}\n";
     print "Client Internet Service Provider: $client{isp}\n";
 }
+
+################################################################################
+# Process specific Ookla Speedtest® connection testing server
+################################################################################
+if ($opturl) {
+    if ( $DBG > 1 ) {
+        print "= Processing URL: $opturl...";
+    }
+    my ( $scheme, $auth, $path, $query, $frag ) = uri_split($opturl);
+    my $dirname = $path;
+    $dirname =~ s/\/crossdomain.(php|xml)$//g;
+    $dirname =~ s/\/expressInstall.swf$//g;
+    $dirname =~ s/\/functions.js$//g;
+    $dirname =~ s/\/index.html$//g;
+    $dirname =~ s/\/settings.(php|xml)$//g;
+    $dirname =~ s/\/speedtest.swf$//g;
+    $dirname =~ s/\/swfobject.js$//g;
+    $dirname =~ s/\/speedtest\/latency.txt$//g;
+    $dirname =~ s/\/speedtest\/random(.)*.jpg$//g;
+    $dirname =~ s/\/speedtest\/upload.(php|jsp|aspx|asp)$//g;
+    $dirname =~ s/\/$//g;
+    my @fqdn     = split( /\./, $auth );
+    my $fqdnsize = @fqdn;
+    my $namenum  = 0;
+    $protocol = $scheme;
+    $host     = "";
+
+    while ( $namenum < $fqdnsize ) {
+        if ( $namenum < ( $fqdnsize - 2 ) ) {
+            $host = $host . "." . $fqdn[$namenum];
+        }
+        $namenum++;
+    }
+
+    $host =~ s/^\.//g;
+    $domain  = $fqdn[ $fqdnsize - 2 ] . "." . $fqdn[ $fqdnsize - 1 ];
+    $wsnuri  = "$protocol://$host.$domain" . "$dirname";
+    $flshuri = "$wsnuri/speedtest.swf";
+    if ( $DBG > 1 ) {
+        print "done. =\n";
+    }
+
+################################################################################
+    # Retrieve speedtest.net settings
+################################################################################
+    ( $sepoch, $usecepoch ) = gettimeofday();
+    $msecepoch = ( $usecepoch / 1000 );
+    $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
+    my $validsettings = 0;
+    my $settingsxml;
+    my @langs = ( "php", "jsp", "aspx", "asp", "xml" );
+    foreach my $lang (@langs) {
+
+        if ( $validsettings == 0 ) {
+            my $sttngsuri = $wsnuri . "/settings." . $lang . "?x=" . $msepoch;
+            if ( $DBG > 1 ) {
+                print "= Retrieving $domain configuration...";
+                if ( $DBG > 2 ) {
+                    print "\n== GET $sttngsuri ==\n";
+                }
+            }
+
+            $browser->setopt( CURLOPT_URL,       $sttngsuri );
+            $browser->setopt( CURLOPT_WRITEDATA, \$settingsxml );
+            $retcode = $browser->perform;
+            die "\nCannot get $sttngsuri -- $retcode "
+              . $browser->strerror($retcode) . " "
+              . $browser->errbuf . "\n"
+              unless ( $retcode == 0 );
+            if ( $browser->getinfo(CURLINFO_CONTENT_TYPE) =~
+                m/^(application|text)\/xml/ )
+            {
+                $validsettings = 1;
+            }
+            else {
+                undef $settingsxml;
+            }
+            if ( $DBG > 1 ) {
+                if ( $DBG > 2 ) {
+                    print "== ";
+                    if ($validsettings) {
+                        print "GOT SETTINGS";
+                    }
+                    else {
+                        print "NO SETTINGS FOUND";
+                    }
+                    print " ==\n";
+                }
+                print "done. =\n";
+            }
+        }
+    }
+    if ( $validsettings == 0 ) {
+        die "Cannot retrieve $domain settings!\n";
+    }
+
+################################################################################
+    # Read speedtest.net settings
+################################################################################
+    if ( $DBG > 1 ) {
+        print "= Reading $domain settings...";
+        if ( $DBG > 2 ) {
+            print "\n";
+        }
+    }
+
+    my $settingsxp = XML::XPath->new($settingsxml);
+
+    # settings hash
+    my %settings;
+    $settings{customer} = $settingsxp->find('/settings/customer')->string_value;
+    $settings{customerregion} =
+      $settingsxp->find('/settings/customer/@region')->string_value;
+    $settings{ipenabled} =
+      $settingsxp->find('/settings/ip/@enabled')->string_value;
+    $settings{ipip} = $settingsxp->find('/settings/ip/@ip')->string_value;
+    $settings{licensekey} =
+      $settingsxp->find('/settings/licensekey')->string_value;
+    $settings{reportingapireporting} =
+      $settingsxp->find('/settings/reporting/@apireporting')->string_value;
+    $settings{reportingapiurl} =
+      $settingsxp->find('/settings/reporting/@apiurl')->string_value;
+    $settings{reportinghitdefaultapi} =
+      $settingsxp->find('/settings/reporting/@hitdefaultapi')->string_value;
+    $settings{uploadthreading} =
+      $settingsxp->find('/settings/upload-threading')->string_value;
+
+    # settingsclient hash
+    my %settingsclient;
+    $settingsclient{ip} =
+      $settingsxp->find('/settings/client/@ip')->string_value;
+
+    # settingslatency hash
+    my %settingslatency;
+    $settingslatency{testlength} =
+      $settingsxp->find('/settings/latency/@testlength')->string_value;
+    $settingslatency{waittime} =
+      $settingsxp->find('/settings/latency/@waittime')->string_value;
+
+    # settingsdownload hash
+    my %settingsdownload;
+    $settingsdownload{testlength} =
+      $settingsxp->find('/settings/download/@testlength')->string_value;
+    $settingsdownload{initialtest} =
+      $settingsxp->find('/settings/download/@initialtest')->string_value;
+    $settingsdownload{mintestsize} =
+      $settingsxp->find('/settings/download/@mintestsize')->string_value;
+    $settingsdownload{threads} =
+      $settingsxp->find('/settings/download/@threads')->string_value;
+    $settingsdownload{maximagesize} =
+      $settingsxp->find('/settings/download/@maximagesize')->string_value;
+    $settingsdownload{disabled} =
+      $settingsxp->find('/settings/download/@disabled')->string_value;
+
+    # settingsupload hash
+    my %settingsupload;
+    $settingsupload{testlength} =
+      $settingsxp->find('/settings/upload/@testlength')->string_value;
+    $settingsupload{ratio} =
+      $settingsxp->find('/settings/upload/@ratio')->string_value;
+    $settingsupload{initialtest} =
+      $settingsxp->find('/settings/upload/@initialtest')->string_value;
+    $settingsupload{mintestsize} =
+      $settingsxp->find('/settings/upload/@mintestsize')->string_value;
+    $settingsupload{threads} =
+      $settingsxp->find('/settings/upload/@threads')->string_value;
+    $settingsupload{maxchunksize} =
+      $settingsxp->find('/settings/upload/@maxchunksize')->string_value;
+    $settingsupload{maxchunkcount} =
+      $settingsxp->find('/settings/upload/@maxchunkcount')->string_value;
+    $settingsupload{disabled} =
+      $settingsxp->find('/settings/upload/@disabled')->string_value;
+
+    if ( $DBG > 1 ) {
+        if ( $DBG > 2 ) {
+
+            print "================== SETTINGS ===================\n";
+            foreach my $name ( keys %settings ) {
+                my $info = $settings{$name};
+                printf( "==         settings:: %13s: %-7.7s ==\n",
+                    $name, $info )
+                  if ( $info !~ m/^$/ );
+            }
+            print "=================== CLIENT ====================\n";
+            foreach my $name ( keys %settingsclient ) {
+                my $info = $settingsclient{$name};
+                printf( "==   settingsclient:: %13s: %-7.7s ==\n",
+                    $name, $info )
+                  if ( $info !~ m/^$/ );
+            }
+            print "=================== LATENCY ===================\n";
+            foreach my $name ( keys %settingslatency ) {
+                my $info = $settingslatency{$name};
+                printf( "==  settingslatency:: %13s: %-7.7s ==\n",
+                    $name, $info )
+                  if ( $info !~ m/^$/ );
+            }
+            print "================== DOWNLOAD ===================\n";
+            foreach my $name ( keys %settingsdownload ) {
+                my $info = $settingsdownload{$name};
+                printf( "== settingsdownload:: %13s: %-7.7s ==\n",
+                    $name, $info )
+                  if ( $info !~ m/^$/ );
+            }
+            print "=================== UPLOAD ====================\n";
+            foreach my $name ( keys %settingsupload ) {
+                my $info = $settingsupload{$name};
+                printf( "==   settingsupload:: %13s: %-7.7s ==\n",
+                    $name, $info )
+                  if ( $info !~ m/^$/ );
+            }
+            print "===============================================\n";
+        }
+        print "done. =\n";
+    }
+
+    exit;
+}
+
 ################################################################################
 # Retrieve speedtest.net servers list
 ################################################################################
@@ -925,7 +1159,7 @@ foreach my $hwpixel (@hwpixels) {
               unless ( $retcode == 0 );
             warn "\nDid not receive HTML, got -- ",
               $browser->getinfo(CURLINFO_CONTENT_TYPE)
-              unless $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/text\/html/;
+              unless $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/html/;
             warn "\nDid not receive valid 'size=' content, got == ",
               $ulspeedout
               unless $ulspeedout =~ m/^size=\d+$/;
@@ -968,7 +1202,7 @@ foreach my $hwpixel (@hwpixels) {
             my $usectomselapsed = ( $usecelapsed / 1000 );
             my $mselapsed       = $stomselapsed + $usectomselapsed;
 
-            if (   $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/text\/html/
+            if (   $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/html/
                 && $ulspeedout =~ m/^size=\d+$/
                 && $retcode == 0
                 && $postsizeissue == 0 )

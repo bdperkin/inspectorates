@@ -24,6 +24,9 @@ Command line options are used to specify various startup options for %{NAMELOWER
 *-s* 'servers', *--servers*='servers'::
     Number of closest servers for ping test and test pool.
 
+*-u* 'url', *--url*='url'::
+    Specify a specific Ookla Speedtest® connection testing server.
+
 *-v*, *--verbose*::
     Verbose output.
 
