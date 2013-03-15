@@ -24,6 +24,8 @@
 ################################################################################
 use strict;                            # Restrict unsafe constructs
 use warnings;                          # Control optional warnings
+use Data::Dumper::Names;               # Data::Dumper::Names - Dump variables
+                                       # with names (no source filter)
 use Data::Random qw(rand_image);       # Data::Random - Perl module to generate
                                        # random data
 use File::Basename qw(dirname);        # File::Basename - Parse file paths into
@@ -31,8 +33,6 @@ use File::Basename qw(dirname);        # File::Basename - Parse file paths into
 use Getopt::Long;                      # Getopt::Long - Extended processing of
                                        # command line options
 use Math::Trig qw(deg2rad);            # Math::Trig - trigonometric functions
-use MIME::Base64 qw(encode_base64);    # MIME::Base64 - Encoding and decoding of
-                                       # base64 strings
 use Pod::Usage;                        # Pod::Usage, pod2usage() - print a
                                        # usage message from embedded pod
                                        # documentation
@@ -86,13 +86,29 @@ Getopt::Long::Configure(qw(bundling no_getopt_compat));
 ################################################################################
 # Initialize variables
 ################################################################################
-my $DBG            = 1;
+my $DBG            = 1;  # Set debug output level:
+                         #   0 -- quiet
+                         #   1 -- normal
+                         #   2 -- verbose
+                         #   3 -- debug
+my $dbgtablewidth  = 47;
 my $numservers     = 5;
 my $totalservers   = 0;
 my $numpingtest    = 3;
-my $numpingcount   = 10;
-my $curloptverbose = 0;
+my $numpingcount   = 10; # Number of samples to use for calculating HTTP latency
+                         # (default = 10), 0 will disable the latency test
+my $curloptverbose = 0;  # Set the parameter to 1 to get the library to display
+                         # a lot of verbose information about its operations.
+                         # Very useful for libcurl and/or protocol debugging and
+                         # understanding. The verbose information will be sent
+                         # to stderr, or the stream set with CURLOPT_STDERR. The
+                         # default value for this parameter is 0.
 
+################################################################################
+# Parse command line options.  This function adheres to the POSIX syntax for CLI
+# options, with GNU extensions.
+################################################################################
+# Initialize GetOptions variables
 my $optcount;
 my $optcurlverbose;
 my $optdebug;
@@ -105,10 +121,6 @@ my $opturl;
 my $optverbose;
 my $optversion;
 
-################################################################################
-# Parse command line options.  This function adheres to the POSIX syntax for CLI
-# options, with GNU extensions.
-################################################################################
 GetOptions(
     "c=i"       => \$optcount,
     "count=i"   => \$optcount,
@@ -164,25 +176,29 @@ if ($optdebug) {
     $|   = 1;
 }
 if ( $DBG > 2 ) {
-    printf( "== Debugging Level Set to %-17s ==\n", $DBG );
-    printf( "== %-12s %-12s (%-12s) ==\n",          $name, $version, $release );
-    printf( "==         PROCESS_ID: %-20s ==\n",    $$ );
-    printf( "==       PROGRAM_NAME: %-20s ==\n",    $0 );
-    printf( "==      REAL_GROUP_ID: %-20s ==\n",    $( );
-    printf( "== EFFECTIVE_GROUP_ID: %-20s ==\n",    $) );
-    printf( "==       REAL_USER_ID: %-20s ==\n",    $< );
-    printf( "==  EFFECTIVE_USER_ID: %-20s ==\n",    $> );
-    printf( "==             OSNAME: %-20s ==\n",    $^O );
-    printf( "==           BASETIME: %-20s ==\n",    $^T );
-    printf( "==       PERL_VERSION: %-20s ==\n",    $^V );
-    printf( "==    EXECUTABLE_NAME: %-20s ==\n",    $^X );
-    printf( "==     File::Basename: %-20s ==\n",    $File::Basename::VERSION );
-    printf( "==       Getopt::Long: %-20s ==\n",    $Getopt::Long::VERSION );
-    printf( "==         Math::Trig: %-20s ==\n",    $Math::Trig::VERSION );
-    printf( "==         Pod::Usage: %-20s ==\n",    $Pod::Usage::VERSION );
-    printf( "==        Time::HiRes: %-20s ==\n",    $Time::HiRes::VERSION );
-    printf( "==    WWW::Curl::Easy: %-20s ==\n",    $WWW::Curl::Easy::VERSION );
-    printf( "==         XML::XPath: %-20s ==\n",    $XML::XPath::VERSION );
+    printf( "== Debugging Level Set to %-18s ==\n", $DBG );
+    printf( "== %-12s %-12s (%-13s) ==\n",          $name, $version, $release );
+    printf( "==          PROCESS_ID: %-20s ==\n",   $$ );
+    printf( "==        PROGRAM_NAME: %-20s ==\n",   $0 );
+    printf( "==       REAL_GROUP_ID: %-20s ==\n",   $( );
+    printf( "==  EFFECTIVE_GROUP_ID: %-20s ==\n",   $) );
+    printf( "==        REAL_USER_ID: %-20s ==\n",   $< );
+    printf( "==   EFFECTIVE_USER_ID: %-20s ==\n",   $> );
+    printf( "==              OSNAME: %-20s ==\n",   $^O );
+    printf( "==            BASETIME: %-20s ==\n",   $^T );
+    printf( "==        PERL_VERSION: %-20s ==\n",   $^V );
+    printf( "==     EXECUTABLE_NAME: %-20s ==\n",   $^X );
+    printf( "== Data::Dumper::Names: %-20s ==\n",
+        $Data::Dumper::Names::VERSION );
+    printf( "==        Data::Random: %-20s ==\n", $Data::Random::VERSION );
+    printf( "==      File::Basename: %-20s ==\n", $File::Basename::VERSION );
+    printf( "==        Getopt::Long: %-20s ==\n", $Getopt::Long::VERSION );
+    printf( "==          Math::Trig: %-20s ==\n", $Math::Trig::VERSION );
+    printf( "==          Pod::Usage: %-20s ==\n", $Pod::Usage::VERSION );
+    printf( "==         Time::HiRes: %-20s ==\n", $Time::HiRes::VERSION );
+    printf( "==     WWW::Curl::Easy: %-20s ==\n", $WWW::Curl::Easy::VERSION );
+    printf( "==          XML::XPath: %-20s ==\n", $XML::XPath::VERSION );
+    printf("===============================================\n");
 }
 
 ################################################################################
@@ -318,33 +334,36 @@ $upload{maxchunkcount} =
   $configxp->find('/settings/upload/@maxchunkcount')->string_value;
 
 if ( $DBG > 2 ) {
+    my @confighashes = ( \%client, \%times, \%latency, \%download, \%upload );
+    my $eqcount = 0;
+    foreach my $confighash (@confighashes) {
+        my ($hashname) = split( /\n/, Dumper( \%$confighash ) );
+        $hashname =~ s/^%//g;
+        $hashname =~ s/ = \($//g;
+        my $title = $hashname;
+        $title =~ tr/a-z/A-Z/;
+        my $eqsgns = ( ( $dbgtablewidth - length($title) - 2 ) / 2 );
+        $eqcount = 0;
+        my $eqhr;
 
-    print "=================== CLIENT ====================\n";
-    foreach my $name ( keys %client ) {
-        my $info = $client{$name};
-        printf( "==   client:: %13s: %-15s ==\n", $name, $info );
+        while ( $eqcount < $eqsgns ) {
+            $eqhr = $eqhr . "=";
+            $eqcount++;
+        }
+        my $hdr = sprintf( "%s %s %s", $eqhr, $title, $eqhr );
+        printf( "%${dbgtablewidth}.${dbgtablewidth}s\n", $hdr );
+        foreach my $name ( keys %$confighash ) {
+            my $info = $confighash->{$name};
+            printf( "== %8.8s:: %13.13s: %-15.15s ==\n",
+                $hashname, $name, $info );
+        }
     }
-    print "==================== TIMES ====================\n";
-    foreach my $name ( keys %times ) {
-        my $info = $times{$name};
-        printf( "==    times:: %13s: %-15s ==\n", $name, $info );
+    $eqcount = 0;
+    while ( $eqcount < $dbgtablewidth ) {
+        printf("=");
+        $eqcount++;
     }
-    print "=================== LATENCY ===================\n";
-    foreach my $name ( keys %latency ) {
-        my $info = $latency{$name};
-        printf( "==  latency:: %13s: %-15s ==\n", $name, $info );
-    }
-    print "================== DOWNLOAD ===================\n";
-    foreach my $name ( keys %download ) {
-        my $info = $download{$name};
-        printf( "== download:: %13s: %-15s ==\n", $name, $info );
-    }
-    print "=================== UPLOAD ====================\n";
-    foreach my $name ( keys %upload ) {
-        my $info = $upload{$name};
-        printf( "==   upload:: %13s: %-15s ==\n", $name, $info );
-    }
-    print "===============================================\n";
+    printf("\n");
 }
 if ( $DBG > 0 ) {
     if ( $DBG > 1 ) {
@@ -453,10 +472,7 @@ if ($opturl) {
     # Read speedtest.net settings
 ################################################################################
     if ( $DBG > 1 ) {
-        print "= Reading $domain settings...";
-        if ( $DBG > 2 ) {
-            print "\n";
-        }
+        print "= Reading $domain settings...\n";
     }
 
     my $settingsxp = XML::XPath->new($settingsxml);
@@ -526,49 +542,84 @@ if ($opturl) {
     $settingsupload{disabled} =
       $settingsxp->find('/settings/upload/@disabled')->string_value;
 
+    my @confighashes = (
+        \%settings,         \%settingsclient, \%settingslatency,
+        \%settingsdownload, \%settingsupload
+    );
+
+    my %hashmap = (
+        settings         => \%client,
+        settingsclient   => \%client,
+        settingslatency  => \%latency,
+        settingsdownload => \%download,
+        settingsupload   => \%upload
+    );
+
+    my $eqcount = 0;
+    foreach my $confighash (@confighashes) {
+        my ($hashname) = split( /\n/, Dumper( \%$confighash ) );
+        $hashname =~ s/^%//g;
+        $hashname =~ s/ = \($//g;
+        my $orighash = $hashname;
+        $orighash =~ s/settings//g;
+        my $title = $hashname;
+        $title =~ tr/a-z/A-Z/;
+        my $eqsgns = ( ( $dbgtablewidth - length($title) - 2 ) / 2 );
+        $eqcount = 0;
+        my $eqhr;
+
+        while ( $eqcount < $eqsgns ) {
+            $eqhr = $eqhr . "=";
+            $eqcount++;
+        }
+        if ( $DBG > 1 ) {
+            if ( $DBG > 2 ) {
+                my $hdr = sprintf( "%s %s %s", $eqhr, $title, $eqhr );
+                printf( "%${dbgtablewidth}.${dbgtablewidth}s\n", $hdr );
+            }
+        }
+        foreach my $name ( keys %$confighash ) {
+            my $info = $confighash->{$name};
+            if ( $info !~ m/^$/ ) {
+                if ( $DBG > 1 ) {
+                    if ( $DBG > 2 ) {
+                        printf( "== %8.8s:: %13.13s: %-15.15s ==\n",
+                            $hashname, $name, $info );
+                    }
+                }
+                if ( defined $hashmap{$hashname}{$name} ) {
+                    if ( $DBG > 1 ) {
+                        if ( $DBG > 2 ) {
+                            printf( "== %24.24s: %5.5s ==> %-5.5s ==\n",
+                                $name, $hashmap{$hashname}{$name}, $info );
+                        }
+                        if ( $hashmap{$hashname}{$name} !~ $info ) {
+                            my $shorthashname = $hashname;
+                            $shorthashname =~ s/settings//;
+                            printf(
+                                "=           Override %s: %6.6s to %-6.6s =\n",
+                                $shorthashname, $hashmap{$hashname}{$name},
+                                $info );
+                        }
+                    }
+                    if ( $hashmap{$hashname}{$name} !~ $info ) {
+                        $hashmap{$hashname}{$name} = $info;
+                    }
+                }
+            }
+        }
+    }
     if ( $DBG > 1 ) {
         if ( $DBG > 2 ) {
-
-            print "================== SETTINGS ===================\n";
-            foreach my $name ( keys %settings ) {
-                my $info = $settings{$name};
-                printf( "==         settings:: %13s: %-7.7s ==\n",
-                    $name, $info )
-                  if ( $info !~ m/^$/ );
+            $eqcount = 0;
+            while ( $eqcount < $dbgtablewidth ) {
+                printf("=");
+                $eqcount++;
             }
-            print "=================== CLIENT ====================\n";
-            foreach my $name ( keys %settingsclient ) {
-                my $info = $settingsclient{$name};
-                printf( "==   settingsclient:: %13s: %-7.7s ==\n",
-                    $name, $info )
-                  if ( $info !~ m/^$/ );
-            }
-            print "=================== LATENCY ===================\n";
-            foreach my $name ( keys %settingslatency ) {
-                my $info = $settingslatency{$name};
-                printf( "==  settingslatency:: %13s: %-7.7s ==\n",
-                    $name, $info )
-                  if ( $info !~ m/^$/ );
-            }
-            print "================== DOWNLOAD ===================\n";
-            foreach my $name ( keys %settingsdownload ) {
-                my $info = $settingsdownload{$name};
-                printf( "== settingsdownload:: %13s: %-7.7s ==\n",
-                    $name, $info )
-                  if ( $info !~ m/^$/ );
-            }
-            print "=================== UPLOAD ====================\n";
-            foreach my $name ( keys %settingsupload ) {
-                my $info = $settingsupload{$name};
-                printf( "==   settingsupload:: %13s: %-7.7s ==\n",
-                    $name, $info )
-                  if ( $info !~ m/^$/ );
-            }
-            print "===============================================\n";
+            print "\n";
         }
         print "done. =\n";
     }
-
     exit;
 }
 
@@ -903,14 +954,18 @@ if ( $DBG > 0 ) {
 ################################################################################
 # Set number of latency tests against selected server
 ################################################################################
-# Error if input is less than one.
+# Set samples for calculating HTTP latency to remote settings/configuration.
+$numpingcount = $latency{testlength};
+
+# Error if input is less than zero.
 if ($optcount) {
-    if ( $optcount > 0 ) {
+    if ( $optcount >= 0 ) {
         $numpingcount = $optcount;
     }
     else {
-        print STDERR "Value \"$optcount\" invalid for count of latency tests ";
-        print STDERR "option.\nPlease select an integer greater than zero.\n";
+        print STDERR "Value \"$optcount\" invalid for number of samples to ";
+        print STDERR "use for calculating HTTP latency (default = ";
+        print STDERR "$numpingcount), 0 will disable the latency test.\n";
         pod2usage(1);
     }
 }
