@@ -22,28 +22,29 @@
 ################################################################################
 # Import some semantics into the current package from the named modules
 ################################################################################
-use strict;                            # Restrict unsafe constructs
-use warnings;                          # Control optional warnings
-use Data::Dumper::Names;               # Data::Dumper::Names - Dump variables
-                                       # with names (no source filter)
-use Data::Random qw(rand_image);       # Data::Random - Perl module to generate
-                                       # random data
-use File::Basename qw(dirname);        # File::Basename - Parse file paths into
-                                       # directory, filename and suffix.
-use Getopt::Long;                      # Getopt::Long - Extended processing of
-                                       # command line options
-use Math::Trig qw(deg2rad);            # Math::Trig - trigonometric functions
-use Pod::Usage;                        # Pod::Usage, pod2usage() - print a
-                                       # usage message from embedded pod
-                                       # documentation
-use Time::HiRes qw(gettimeofday);      # Time::HiRes - High resolution alarm,
-                                       # sleep, gettimeofday, interval timers
-use URI::Split qw(uri_split uri_join); # URI::Split - Parse and compose URI
-                                       # strings
-use WWW::Curl::Easy;                   # WWW::Curl - Perl extension interface
-                                       # for libcurl
-use XML::XPath;                        # XML::XPath - a set of modules for
-                                       # parsing and evaluating XPath statements
+use strict;                               # Restrict unsafe constructs
+use warnings;                             # Control optional warnings
+use Data::Dumper::Names;                  # Data::Dumper::Names - Dump variables
+                                          # with names (no source filter)
+use Data::Random qw(rand_image);          # Data::Random - Perl module to
+                                          # generate random data
+use File::Basename qw(dirname);           # File::Basename - Parse file paths
+                                          # into directory, filename and suffix.
+use Getopt::Long;                         # Getopt::Long - Extended processing
+                                          # of command line options
+use Math::Trig qw(deg2rad);               # Math::Trig - trigonometric functions
+use Pod::Usage;                           # Pod::Usage, pod2usage() - print a
+                                          # usage message from embedded pod
+                                          # documentation
+use Time::HiRes qw(gettimeofday usleep);  # Time::HiRes - High resolution alarm,
+                                          # sleep, gettimeofday, interval timers
+use URI::Split qw(uri_split uri_join);    # URI::Split - Parse and compose URI
+                                          # strings
+use WWW::Curl::Easy;                      # WWW::Curl - Perl extension interface
+                                          # for libcurl
+use XML::XPath;                           # XML::XPath - a set of modules for
+                                          # parsing and evaluating XPath
+                                          # statements
 
 ################################################################################
 # Declare constants
@@ -908,6 +909,7 @@ foreach my $server (@closestservers) {
             print "$mselapsed milliseconds. done. ==\n";
         }
 
+        usleep( $latency{waittime} * 1000 );
         $pingcount++;
     }
     if ( $DBG > 2 ) {
@@ -1045,6 +1047,7 @@ while ( $pingcount < $numpingcount ) {
         printf(" ms\r");
     }
 
+    usleep( $latency{waittime} * 1000 );
     $pingcount++;
 }
 $latencyresults{$bestserver}{avgelapsed} =
