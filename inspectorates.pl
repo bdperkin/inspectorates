@@ -377,6 +377,11 @@ if ( $DBG > 0 ) {
 ################################################################################
 # Process specific Ookla Speedtest® connection testing server
 ################################################################################
+# server attributes
+my @settingsserveratts =
+  ( 'url', 'lat', 'lon', 'name', 'country', 'cc', 'sponsor', 'id' );
+my %settings;
+my %settingsservers;
 if ($opturl) {
     if ( $DBG > 1 ) {
         print "= Processing URL: $opturl...";
@@ -479,7 +484,6 @@ if ($opturl) {
     my $settingsxp = XML::XPath->new($settingsxml);
 
     # settings hash
-    my %settings;
     $settings{customer} = $settingsxp->find('/settings/customer')->string_value;
     $settings{customerregion} =
       $settingsxp->find('/settings/customer/@region')->string_value;
@@ -543,6 +547,19 @@ if ($opturl) {
     $settingsupload{disabled} =
       $settingsxp->find('/settings/upload/@disabled')->string_value;
 
+    # settingsservers hash
+    my $settingsservernodes = $settingsxp->find('/settings/servers/server');
+
+    # server list hash
+    foreach my $settingsserverid ( $settingsservernodes->get_nodelist ) {
+        my $settingsid = $settingsserverid->find('@id')->string_value;
+        foreach my $settingsserveratt (@settingsserveratts) {
+            my $settingsatt = "@" . "$settingsserveratt";
+            $settingsservers{$settingsid}{$settingsserveratt} =
+              $settingsserverid->find($settingsatt)->string_value;
+        }
+    }
+
     my @confighashes = (
         \%settings,         \%settingsclient, \%settingslatency,
         \%settingsdownload, \%settingsupload
@@ -598,9 +615,9 @@ if ($opturl) {
                             my $shorthashname = $hashname;
                             $shorthashname =~ s/settings//;
                             printf(
-                                "=           Override %s: %6.6s to %-6.6s =\n",
-                                $shorthashname, $hashmap{$hashname}{$name},
-                                $info );
+                                "= Override %7.7s %-8.8s: %6.6s to %-6.6s =\n",
+                                $shorthashname, $name,
+                                $hashmap{$hashname}{$name}, $info );
                         }
                     }
                     if ( $hashmap{$hashname}{$name} !~ $info ) {
@@ -621,7 +638,6 @@ if ($opturl) {
         }
         print "done. =\n";
     }
-    exit;
 }
 
 ################################################################################
@@ -631,23 +647,117 @@ if ($opturl) {
 $msecepoch = ( $usecepoch / 1000 );
 $msepoch   = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
 $srvruri   = $srvruri . "?x=" . $msepoch;
-if ( $DBG > 1 ) {
-    print "= Retrieving $domain servers list...";
-    if ( $DBG > 2 ) {
-        print "\n== GET $srvruri ==\n";
-    }
-}
 
 $browser->setopt( CURLOPT_URL, $srvruri );
 my $serversxml;
-$browser->setopt( CURLOPT_WRITEDATA, \$serversxml );
-$retcode = $browser->perform;
-die "\nCannot get $srvruri -- $retcode "
-  . $browser->strerror($retcode) . " "
-  . $browser->errbuf . "\n"
-  unless ( $retcode == 0 );
-die "\nDid not receive XML, got -- ", $browser->getinfo(CURLINFO_CONTENT_TYPE)
-  unless $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'text/xml';
+if ($opturl) {
+    if ( $DBG > 1 ) {
+        print "= Generating servers configuration...";
+        if ( $DBG > 2 ) {
+            print "\n=============== SETTINGSSERVERS ===============\n";
+        }
+    }
+    $serversxml = $serversxml . "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    $serversxml = $serversxml . "<settings>\n";
+    $serversxml = $serversxml . "<servers>";
+    foreach my $settingsname ( keys %settingsservers ) {
+        $serversxml = $serversxml . "<server ";
+        if ( $DBG > 2 ) {
+            printf( "== settingsservers:: %5.5s:", $settingsname );
+            printf("                  ==\n");
+        }
+        my $settingsgenid = 1;
+        foreach my $settingsserveratt (@settingsserveratts) {
+            if (   $settingsserveratt eq "url"
+                && $settingsservers{$settingsname}{$settingsserveratt} eq "" )
+            {
+                $settingsservers{$settingsname}{$settingsserveratt} =
+                  $wsnuri . "/speedtest/upload.php";
+            }
+            if (   $settingsserveratt eq "lat"
+                && $settingsservers{$settingsname}{$settingsserveratt} eq "" )
+            {
+                $settingsservers{$settingsname}{$settingsserveratt} =
+                  $client{lat};
+            }
+            if (   $settingsserveratt eq "lon"
+                && $settingsservers{$settingsname}{$settingsserveratt} eq "" )
+            {
+                $settingsservers{$settingsname}{$settingsserveratt} =
+                  $client{lon};
+            }
+            if (   $settingsserveratt eq "name"
+                && $settingsservers{$settingsname}{$settingsserveratt} eq "" )
+            {
+                $settingsservers{$settingsname}{$settingsserveratt} =
+                  $settings{customerregion};
+            }
+            if (   $settingsserveratt eq "country"
+                && $settingsservers{$settingsname}{$settingsserveratt} eq "" )
+            {
+                $settingsservers{$settingsname}{$settingsserveratt} = "";
+            }
+            if (   $settingsserveratt eq "cc"
+                && $settingsservers{$settingsname}{$settingsserveratt} eq "" )
+            {
+                $settingsservers{$settingsname}{$settingsserveratt} = "";
+            }
+            if (   $settingsserveratt eq "sponsor"
+                && $settingsservers{$settingsname}{$settingsserveratt} eq "" )
+            {
+                $settingsservers{$settingsname}{$settingsserveratt} =
+                  $settings{customer};
+            }
+            if (   $settingsserveratt eq "id"
+                && $settingsservers{$settingsname}{$settingsserveratt} eq "" )
+            {
+                $settingsservers{$settingsname}{$settingsserveratt} =
+                  $settingsgenid;
+                $settingsgenid++;
+            }
+            if (   $settingsserveratt eq "id"
+                && $settingsservers{$settingsname}{$settingsserveratt} <=
+                $settingsgenid++ )
+            {
+                $settingsgenid =
+                  ( $settingsservers{$settingsname}{$settingsserveratt} + 1 );
+            }
+
+            $serversxml = $serversxml
+              . "$settingsserveratt=\"$settingsservers{$settingsname}{$settingsserveratt}\" ";
+            if ( $DBG > 2 ) {
+                printf( "== \t%11.11s:", $settingsserveratt );
+                printf( " %-23.23s ==\n",
+                    $settingsservers{$settingsname}{$settingsserveratt} );
+            }
+        }
+        $serversxml = $serversxml . " />\n";
+    }
+
+    $serversxml = $serversxml . "</servers>\n";
+    $serversxml = $serversxml . "</settings>\n";
+    if ( $DBG > 2 ) {
+        print "===============================================\n";
+    }
+
+}
+else {
+    if ( $DBG > 1 ) {
+        print "= Retrieving $domain servers list...";
+        if ( $DBG > 2 ) {
+            print "\n== GET $srvruri ==\n";
+        }
+    }
+    $browser->setopt( CURLOPT_WRITEDATA, \$serversxml );
+    $retcode = $browser->perform;
+    die "\nCannot get $srvruri -- $retcode "
+      . $browser->strerror($retcode) . " "
+      . $browser->errbuf . "\n"
+      unless ( $retcode == 0 );
+    die "\nDid not receive XML, got -- ",
+      $browser->getinfo(CURLINFO_CONTENT_TYPE)
+      unless $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'text/xml';
+}
 if ( $DBG > 1 ) {
     print "done. =\n";
 }
@@ -747,6 +857,10 @@ if ( $DBG > 1 ) {
 ################################################################################
 # Set number of test servers
 ################################################################################
+if ($opturl) {
+    $numservers = $totalservers;
+}
+
 # Error if input is less than one or greater than the total number of servers.
 if ($optservers) {
     if ( $optservers > 0 && $optservers <= $totalservers ) {
@@ -1084,6 +1198,7 @@ my $mbpsl         = 0;
 my $mbpsh         = 0;
 my $mindltestsize = $download{mintestsize};
 $mindltestsize =~ s/K$/000/g;
+$mindltestsize =~ s/M$/000000/g;
 
 foreach my $hwpixel (@hwpixels) {
     $mbpsl = $mbpsh;
@@ -1173,6 +1288,7 @@ $mbpsl = 0;
 $mbpsh = 0;
 my $minultestsize = $upload{mintestsize};
 $minultestsize =~ s/K$/000/g;
+$minultestsize =~ s/M$/000000/g;
 
 foreach my $hwpixel (@hwpixels) {
     $mbpsl = $mbpsh;
