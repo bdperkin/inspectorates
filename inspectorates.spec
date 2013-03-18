@@ -16,6 +16,19 @@ BuildRequires:	libxslt
 BuildRequires:	pandoc
 BuildRequires:	rman
 BuildRequires:	w3m
+Requires:	/usr/bin/perl
+Requires:	perl(Data::Dumper::Names)
+Requires:	perl(Data::Random)
+Requires:	perl(File::Basename)
+Requires:	perl(Getopt::Long)
+Requires:	perl(Math::Trig)
+Requires:	perl(Pod::Usage)
+Requires:	perl(Time::HiRes)
+Requires:	perl(URI::Split)
+Requires:	perl(WWW::Curl::Easy)
+Requires:	perl(XML::XPath)
+Requires:	perl(strict)
+Requires:	perl(warnings)
 
 %define NameUpper INSPECTORATES
 %define NameMixed Inspectorates
