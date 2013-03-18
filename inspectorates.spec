@@ -24,6 +24,7 @@ Requires:	perl-GD
 Requires:	perl-PDL
 %if 0%{?fedora} >= 18
 Requires:	perl-Pod-Parser
+%endif
 %if 0%{?fedora} >= 17
 Requires:	perl-Pod-Perldoc
 %endif
