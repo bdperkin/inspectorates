@@ -17,6 +17,7 @@ BuildRequires:	pandoc
 BuildRequires:	rman
 BuildRequires:	w3m
 Requires:	/usr/bin/perl
+Requires:	/usr/bin/perldoc
 Requires:	perl(Data::Dumper::Names)
 Requires:	perl(Data::Random)
 Requires:	perl(File::Basename)
