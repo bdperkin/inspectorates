@@ -16,25 +16,6 @@ BuildRequires:	libxslt
 BuildRequires:	pandoc
 BuildRequires:	rman
 BuildRequires:	w3m
-Requires:	coreutils
-Requires:	perl
-Requires:	perl-Data-Dumper-Names
-Requires:	perl-Data-Random
-Requires:	perl-GD
-Requires:	perl-PDL
-%if 0%{?fedora} >= 18
-Requires:	perl-Pod-Parser
-%endif
-%if 0%{?fedora} >= 17
-Requires:	perl-Pod-Perldoc
-%endif
-%if 0%{?rhel} == 6
-Requires:	perl-Time-HiRes
-%endif
-Requires:	perl-URI
-Requires:	perl-WWW-Curl
-Requires:	perl-XML-XPath
-Requires:	util-linux
 
 %define NameUpper INSPECTORATES
 %define NameMixed Inspectorates
