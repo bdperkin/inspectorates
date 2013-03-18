@@ -21,6 +21,7 @@ Requires:	/usr/bin/perldoc
 Requires:	perl(Data::Dumper::Names)
 Requires:	perl(Data::Random)
 Requires:	perl(File::Basename)
+Requires:	perl(GD)
 Requires:	perl(Getopt::Long)
 Requires:	perl(Math::Trig)
 Requires:	perl(Pod::Usage)
