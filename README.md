@@ -8,8 +8,10 @@ Synopsis
 --------
 
 *inspectorates* [ *-q* | *--quiet* ] [ *-v* | *--verbose* ]
-[ *-d* | *--debug* ] [ *-s* *servers* | *--servers* = *servers* ] [ *-p*
-*pings* | *--pings* = *pings* ] [ *-c* *count* | *--count* = *count* ]
+[ *-d* | *--debug* ] [ *-C* | *--curlvrbs* ] [ *-u*
+*url* | *--url* = *url* ] [ *-s* *servers* | *--servers* = *servers* ]
+[ *-p* *pings* | *--pings* = *pings* ] [ *-c*
+*count* | *--count* = *count* ]
 
 *inspectorates* { *--version* | *-V* }
 
@@ -31,6 +33,10 @@ OPTIONS
  *-c* *count*, *--count* = *count* 
 :   Count of latency tests to perform against selected server.
 
+ *-C*, *--curlvrbs* 
+:   Set CURLOPT\_VERBOSE option to make the fetching more
+    verbose/talkative.
+
  *-d*, *--debug* 
 :   Debug output.
 
@@ -48,6 +54,9 @@ OPTIONS
 
  *-s* *servers*, *--servers* = *servers* 
 :   Number of closest servers for ping test and test pool.
+
+ *-u* *url*, *--url* = *url* 
+:   Specify a specific Ookla Speedtest® connection testing server.
 
  *-v*, *--verbose* 
 :   Verbose output.
