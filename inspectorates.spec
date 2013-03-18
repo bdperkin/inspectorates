@@ -22,6 +22,7 @@ Requires:	perl-Data-Dumper-Names
 Requires:	perl-Data-Random
 Requires:	perl-GD
 Requires:	perl-PDL
+%if 0%{?fedora} >= 18
 Requires:	perl-Pod-Parser
 %if 0%{?fedora} >= 17
 Requires:	perl-Pod-Perldoc
