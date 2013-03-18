@@ -30,6 +30,8 @@ use Data::Random qw(rand_image);          # Data::Random - Perl module to
                                           # generate random data
 use File::Basename qw(dirname);           # File::Basename - Parse file paths
                                           # into directory, filename and suffix.
+use GD;                                   # GD.pm - Interface to Gd Graphics
+                                          # Library
 use Getopt::Long;                         # Getopt::Long - Extended processing
                                           # of command line options
 use Math::Trig qw(deg2rad);               # Math::Trig - trigonometric functions
