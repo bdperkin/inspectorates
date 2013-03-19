@@ -78,6 +78,7 @@ cat README.md.pandoc | %{__grep} -v ^% | %{__sed} -e 's/\*\*/\*/g' | %{__sed} -e
 %{_bindir}/%{name}
 %doc %{DocFiles}
 %doc %{DocFormats}
+%doc pod
 %doc %{_mandir}/man8/%{name}.8.gz
 
 
