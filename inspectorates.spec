@@ -14,7 +14,6 @@ BuildRequires:	docbook-style-xsl
 BuildRequires:	/usr/bin/groff
 BuildRequires:	libxslt
 BuildRequires:	pandoc
-BuildRequires:	/usr/local/bin/podtidy
 BuildRequires:	rman
 BuildRequires:	w3m
 Requires:	/usr/bin/perl
