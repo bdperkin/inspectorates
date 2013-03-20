@@ -57,11 +57,7 @@ Perl script to test Internet connection bandwidth to locations around the world.
 %{__sed} -i -e s/%{RELEASE}/%{release}/g %{SubFiles}
 %{__sed} -i -e s/%{YEAR}/%{Year}/g %{SubFiles}
 for f in %{DocFormats}; do %{__mkdir_p} $f; a2x -D $f -d manpage -f $f %{name}.8.asciidoc; done
-%{__mkdir_p} pod
-groff -e -mandoc -Tascii manpage/%{name}.8 > pod/%{name}.8.groff
-%{__cat} pod/%{name}.8.groff | rman -f POD > pod/%{name}.pod
-%{__cat} pod/%{name}.pod | podtidy > pod/%{name}.pod.tdy
-%{__cat} pod/%{name}.pod.tdy >> %{name}
+groff -e -mandoc -Tascii manpage/%{name}.8 | rman -f POD >> %{name}
 for i in $(%{__grep} '^=head1 ' %{name} | %{__awk} '{print $2,$3,$4}'); do echo -n "$i => "; j=$(echo $i | %{__sed} -e 's/B<//g' | %{__sed} -e 's/>//g' | tr [:lower:] [:upper:]); echo $j; %{__sed} -i -e "s/$i$/$j/g" %{name}; done
 pandoc -f html -t markdown -s -o README.md.pandoc xhtml/%{name}.8.html
 cat README.md.pandoc | %{__grep} -v ^% | %{__sed} -e 's/\*\*/\*/g' | %{__sed} -e 's/^\ \*/\n\ \*/g' | %{__sed} -e 's/\[\*/\[\ \*/g' | %{__sed} -e 's/\*\]/\*\ \]/g' | %{__sed} -e 's/{\*/{\ \*/g' | %{__sed} -e 's/\*}/\*\ }/g' | %{__sed} -e 's/|\*/|\ \*/g' | %{__sed} -e 's/\*|/\*\ |/g' | %{__sed} -e 's/=\*/=\ \*/g' | %{__sed} -e 's/\*=/\*\ =/g' > README.md 
@@ -78,7 +74,6 @@ cat README.md.pandoc | %{__grep} -v ^% | %{__sed} -e 's/\*\*/\*/g' | %{__sed} -e
 %{_bindir}/%{name}
 %doc %{DocFiles}
 %doc %{DocFormats}
-%doc pod
 %doc %{_mandir}/man8/%{name}.8.gz
 
 
