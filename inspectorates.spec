@@ -32,8 +32,9 @@ Requires:	perl(XML::XPath)
 Requires:	perl(strict)
 Requires:	perl(warnings)
 
-%define NameUpper INSPECTORATES
-%define NameMixed Inspectorates
+%define NameUpper %{expand:%%(echo %{name} | tr [:lower:] [:upper:])}
+%define NameMixed %{expand:%%(echo %{name} | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g')}
+%define NameLower %{expand:%%(echo %{name} | tr [:upper:] [:lower:])}
 %define Year %{expand:%%(date "+%Y")}
 %define DocFiles AUTHORS BUGS COPYING DESCRIPTION LICENSE NAME NOTES OPTIONS OUTPUT README.md RESOURCES SYNOPSIS
 %define SubFiles %{name} %{name}.8.asciidoc %{DocFiles} man.asciidoc
@@ -53,6 +54,7 @@ Perl script to test Internet connection bandwidth to locations around the world.
 %{__sed} -i -e s/%{NAME}/%{name}/g %{SubFiles}
 %{__sed} -i -e s/%{NAMEUPPER}/%{NameUpper}/g %{SubFiles}
 %{__sed} -i -e s/%{NAMEMIXED}/%{NameMixed}/g %{SubFiles}
+%{__sed} -i -e s/%{NAMELOWER}/%{NameLower}/g %{SubFiles}
 %{__sed} -i -e s/%{VERSION}/%{version}/g %{SubFiles}
 %{__sed} -i -e s/%{RELEASE}/%{release}/g %{SubFiles}
 %{__sed} -i -e s/%{YEAR}/%{Year}/g %{SubFiles}
