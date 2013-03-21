@@ -29,6 +29,9 @@ The Global Broadband Speed Test.
 OPTIONS
 -------
 
+Command line options are used to specify various startup options for
+inspectorates:
+
 
  *-c* *count*, *--count* = *count* 
 :   Count of latency tests to perform against selected server.
@@ -66,6 +69,9 @@ OPTIONS
 
 EXIT STATUS
 -----------
+
+The inspectorates return code to the parent process (or caller) when it
+has finished executing may be one of:
 
 
  *0* 
