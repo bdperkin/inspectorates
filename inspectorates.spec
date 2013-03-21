@@ -33,7 +33,7 @@ Requires:	perl(strict)
 Requires:	perl(warnings)
 
 %define NameUpper %{expand:%%(echo %{name} | tr [:lower:] [:upper:])}
-%define NameMixed %{expand:%%(echo %{name} | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g')}
+%define NameMixed %{expand:%%(echo %{name} | sed "s/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g")}
 %define NameLower %{expand:%%(echo %{name} | tr [:upper:] [:lower:])}
 %define Year %{expand:%%(date "+%Y")}
 %define DocFiles AUTHORS BUGS COPYING DESCRIPTION LICENSE NAME NOTES OPTIONS OUTPUT README.md RESOURCES SYNOPSIS
