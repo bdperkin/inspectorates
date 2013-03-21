@@ -60,7 +60,6 @@ Perl script to test Internet connection bandwidth to locations around the world.
 %{__sed} -i -e s/%{YEAR}/%{Year}/g %{SubFiles}
 for f in %{DocFormats}; do %{__mkdir_p} $f; a2x -D $f -d manpage -f $f %{name}.8.asciidoc; done
 groff -e -mandoc -Tascii manpage/%{name}.8 > manpage/%{name}.8.groff
-%define DocFormats %{DocFormats} pod
 %{__mkdir_p} pod
 ./groff2pod.pl manpage/%{name}.8.groff pod/%{name}.8.pod
 podchecker pod/%{name}.8.pod
@@ -81,6 +80,7 @@ cat README.md.pandoc | %{__grep} -v ^% | %{__sed} -e 's/\*\*/\*/g' | %{__sed} -e
 %{_bindir}/%{name}
 %doc %{DocFiles}
 %doc %{DocFormats}
+%doc pod
 %doc %{_mandir}/man8/%{name}.8.gz
 
 
