@@ -3,6 +3,13 @@
 use strict;
 use warnings;
 
+my $DBG = 0;
+
+if ( @ARGV > 2 || @ARGV < 2 ) {
+    print "Usage: $0 [groff document input] [pod document output]\n";
+    exit 1;
+}
+
 my $infile  = $ARGV[0];
 my $outfile = $ARGV[1];
 
@@ -23,15 +30,21 @@ while (<GROFFFILE>) {
     chomp $line;
     $line =~ s/®/(R)/g;
     $lines++;
-    printf( "%5d: ", $lines );
+    if ($DBG) {
+        printf( "%5d: ", $lines );
+    }
     if ( $line =~ m/^\e/ ) {
         $dropblank = 0;
     }
     if ( $line =~ m/^\w+/ ) {
-        print "SKIP: $line\n";
+        if ($DBG) {
+            print "SKIP: $line\n";
+        }
     }
     elsif ( $line =~ m/^$/ && $dropblank == 1 ) {
-        print "SKIP: $line\n";
+        if ($DBG) {
+            print "SKIP: $line\n";
+        }
     }
     else {
         if ( $line =~ m/^\e\[1m/ && $line =~ m/\e\[0m$/ ) {
@@ -64,15 +77,19 @@ while (<GROFFFILE>) {
         $line =~ s/\e\[0m/>/g;
         $line =~ s/\e\[22m/>/g;
         $line =~ s/\e\[24m/>/g;
-        if ( $line =~ m/\e/ ) {
+        if ( $line =~ m/\e/ && $DBG ) {
             print "TODO: ";
         }
-        print "$line\n";
+        if ($DBG) {
+            print "$line\n";
+        }
         print PODFILE "$line\n";
     }
 }
 
-print "\n";
+if ($DBG) {
+    print "\n";
+}
 
 close(PODFILE);
 
