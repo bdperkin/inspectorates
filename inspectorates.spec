@@ -50,7 +50,6 @@ Perl script to test Internet connection bandwidth to locations around the world.
 %{__rm} -rf $RPM_BUILD_ROOT
 
 %build
-echo %{name} | %{__sed} -e "s/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g"
 %{__cp} %{name}.pl %{name}
 %{__sed} -i -e s/%{NAME}/%{name}/g %{SubFiles}
 %{__sed} -i -e s/%{NAMEUPPER}/%{NameUpper}/g %{SubFiles}
