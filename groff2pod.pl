@@ -48,8 +48,8 @@ while (<GROFFFILE>) {
     }
     else {
         if ( $line =~ m/^\e\[1m/ && $line =~ m/\e\[0m$/ ) {
-            $line =~ s/^\e\[1m/=head1 B</g;
-            $line =~ s/\e\[0m$/>\n/g;
+            $line =~ s/^\e\[1m/=head1 /g;
+            $line =~ s/\e\[0m$/\n/g;
             if ( $li == 1 ) {
                 $line =~ s/^/=back\n\n\n/;
                 $li = 0;
@@ -86,6 +86,8 @@ while (<GROFFFILE>) {
         print PODFILE "$line\n";
     }
 }
+
+print PODFILE "=cut\n";
 
 if ($DBG) {
     print "\n";
