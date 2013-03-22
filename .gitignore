@@ -16,5 +16,6 @@ nytprof.out
 pm_to_blib
 *~
 *.pl.tdy
+*.pl.bak
 *.pyc
 scratch/
