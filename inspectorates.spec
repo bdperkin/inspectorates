@@ -1,5 +1,5 @@
 Name:		inspectorates
-Version:	0.0.8
+Version:	0.0.9
 Release:	1%{?dist}
 Summary:	Internet connection bandwidth test tool
 
@@ -86,6 +86,82 @@ cat README.md.pandoc | %{__grep} -v ^% | %{__sed} -e 's/\*\*/\*/g' | %{__sed} -e
 
 
 %changelog
+* Thu Mar 21 2013 Brandon Perkins <bperkins@redhat.com> 0.0.9-1
+- Perl Tidy the final executable, add additional standard doc files, clean-up
+  %%doc dirs. (bperkins@redhat.com)
+- Fix headers so pod2usage will work again. (bperkins@redhat.com)
+- make spec happy (bperkins@redhat.com)
+- Homespun man2pod. (bperkins@redhat.com)
+- groff2pod in attempt to drop troublesome rman (bperkins@redhat.com)
+- remove debugging (bperkins@redhat.com)
+- Updated README markdown file. (bperkins@redhat.com)
+- spec and pod fixes (bperkins@redhat.com)
+- Ignore scratch directory. (bperkins@redhat.com)
+- Revert pod modifications. (bperkins@redhat.com)
+- Updated README markdown file. (bperkins@redhat.com)
+- Finish custom server/url code. (bperkins@redhat.com)
+- Respect server latency waittime. (bperkins@redhat.com)
+- Add Data::Dumper::Names module to get hash names. Remove unused MIME::Base64
+  module. Document the debug variable. Make debugging output more dynamic so
+  dev needs to do less text formatting. Document what numpingcount is to make
+  it clearer how server or command-line args are used. Document what
+  curloptverbose is and what it's settings are. Make it so custom server URL
+  configuration passed overrides global speedtest settings.
+  (bperkins@redhat.com)
+- Initial pass at custom URL. (bperkins@redhat.com)
+- Document CURLOPT_VERBOSE option. (bperkins@redhat.com)
+- More text formatting clean-up. (bperkins@redhat.com)
+- Significant improvement in upload tests and some text formatting.
+  (bperkins@redhat.com)
+- Remove url2 as it has been dropped from the server xml. (bperkins@redhat.com)
+- Add option to turn on CURLOPT_VERBOSE Remove CURLOPT_TCP_KEEPALIVE,
+  CURLOPT_TCP_KEEPIDLE, and CURLOPT_TCP_KEEPINTVL Print cURL versions (libcurl,
+  zlib, libssh2, libidn, NSS, etc.) in debug mode (bperkins@redhat.com)
+- Slim the module imports Enable cURL TCP Keep Idle and Interval First pass at
+  upload code. Added perl modules: Data-Random, GD, and WWW-Curl to spec
+  requires. (bperkins@redhat.com)
+- Add TCP_KEEPALIVE and TCP_NODELAY options to the browser. Make ms since epoch
+  a global variable and define it at conf retrieval time. Go ahead and force
+  ever XPath retrieved value into a string value. Define the server 2 URL for
+  the selected server. Add two download tests of largest download size against
+  the server 2 URL. Smarter about which download sizes to get based on running
+  speed average. (bperkins@redhat.com)
+- Changed HTTP Client Module from LWP::UserAgent to WWW::Curl::Easy after
+  reviewing results from http-client-tests.  Curl is really the only choice,
+  fuzzy results could be obtained from HTTP-Tiny, HTTP-Lite, Net-HTTP, and LWP-
+  UserAgent would be the fall-backs if cURL is NOT available.
+  (bperkins@redhat.com)
+- http-client-tests so the best HTTP client can be chosen (bperkins@redhat.com)
+- First pass at download code. (bperkins@redhat.com)
+- Changed HTTP Client Module from LWP::UserAgent to WWW::Curl::Easy after
+  reviewing results from http-client-tests.  Curl is really the only choice,
+  fuzzy results could be obtained from HTTP-Tiny, HTTP-Lite, Net-HTTP, and LWP-
+  UserAgent would be the fall-backs if cURL is NOT available.
+  (bperkins@redhat.com)
+- Break out the request from the response to be consistent with other tests.
+  (bperkins@redhat.com)
+- tidy (bperkins@redhat.com)
+- Remove URI-Fetch as it does not support POST. (bperkins@redhat.com)
+- Remove LWP-Simple as it does not support POST. (bperkins@redhat.com)
+- Remove Mojo-UserAgent as it seems it can't get a large enough buffer for the
+  tests. (bperkins@redhat.com)
+- Remove template. (bperkins@redhat.com)
+- Add URI::Fetch - Smart URI fetching/caching. (bperkins@redhat.com)
+- Add Mojo::UserAgent - Non-blocking I/O HTTP and WebSocket user agent.
+  (bperkins@redhat.com)
+- Add WWW::Curl - Perl extension interface for libcurl. (bperkins@redhat.com)
+- Add HTTP::Lite - Lightweight HTTP implementation. (bperkins@redhat.com)
+- Add HTTP::Tiny - A small, simple, correct HTTP/1.1 client.
+  (bperkins@redhat.com)
+- Add Net::HTTP - Low-level HTTP connection (client). (bperkins@redhat.com)
+- Add LWP::Simple - simple procedural interface to LWP. (bperkins@redhat.com)
+- Add LWP::UserAgent - Web user agent class. (bperkins@redhat.com)
+- Add LWP - The World-Wide Web library for Perl test and enhance template.
+  (bperkins@redhat.com)
+- http-client-tests so the best HTTP client can be chosen (bperkins@redhat.com)
+- Improve dubugging output to be cleaner and more readable.
+  (bperkins@redhat.com)
+
 * Tue Feb 19 2013 Brandon Perkins <bperkins@redhat.com> 0.0.8-1
 - Implemented Ping/Latency functionality. (bperkins@redhat.com)
 - Only Require perl-Time-HiRes on RHEL 6. (bperkins@redhat.com)
