@@ -8,7 +8,7 @@ Synopsis
 --------
 
 *inspectorates* [ *-q* | *--quiet* ] [ *-v* | *--verbose* ]
-[ *-d* | *--debug* ] [ *-C* | *--curlvrbs* ] [ *-u*
+[ *-d* | *--debug* ] [ *-C* | *--curlvrbs* ] [ *-l* | *--list* ] [ *-u*
 *url* | *--url* = *url* ] [ *-s* *servers* | *--servers* = *servers* ]
 [ *-p* *pings* | *--pings* = *pings* ] [ *-c*
 *count* | *--count* = *count* ]
@@ -45,6 +45,9 @@ inspectorates:
 
  *-h*, *--help* 
 :   Print or show help information and exit.
+
+ *-l*, *--list* 
+:   Print a list of candidate servers.
 
  *-m*, *--man* 
 :   Print the entire manual page and exit.
