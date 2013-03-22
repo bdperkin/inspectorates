@@ -12,6 +12,9 @@ Command line options are used to specify various startup options for %{NAMELOWER
 *-h*, *--help*::
     Print or show help information and exit.
 
+*-l*, *--list*::
+    Print a list of candidate servers.
+
 *-m*, *--man*::
     Print the entire manual page and exit.
 

@@ -116,6 +116,7 @@ my $optcount;
 my $optcurlverbose;
 my $optdebug;
 my $opthelp;
+my $optlist;
 my $optman;
 my $optpings;
 my $optquiet;
@@ -133,6 +134,8 @@ GetOptions(
     "debug"     => \$optdebug,
     "h"         => \$opthelp,
     "help"      => \$opthelp,
+    "l"         => \$optlist,
+    "list"      => \$optlist,
     "m"         => \$optman,
     "man"       => \$optman,
     "p=i"       => \$optpings,
@@ -916,6 +919,89 @@ if ( $DBG > 1 ) {
         print "===============================================\n";
     }
     print "done. =\n";
+}
+
+################################################################################
+# Print a list of candidate servers
+################################################################################
+if ($optlist) {
+    my @serverattslist =
+      ( "id", "name", "country", "cc", "sponsor", "distance" );
+    my %maxwidth;
+    my $rows = 0;
+    foreach my $serveratt (@serverattslist) {
+        $maxwidth{$serveratt} = length($serveratt);
+        foreach my $server (@closestservers) {
+            if ( $serveratt eq "distance" ) {
+                my $prettydistance = sprintf(
+                    "%.${DBG}f km (%.${DBG}f mi)",
+                    $servers{$server}{distance},
+                    ( $servers{$server}{distance} * 0.621371 )
+                );
+                if ( length($prettydistance) > $maxwidth{$serveratt} ) {
+                    $maxwidth{$serveratt} = length($prettydistance);
+                }
+            }
+            elsif (
+                length( $servers{$server}{$serveratt} ) >
+                $maxwidth{$serveratt} )
+            {
+                $maxwidth{$serveratt} = length( $servers{$server}{$serveratt} );
+            }
+        }
+    }
+    my $hr = "+";
+    foreach my $serveratt (@serverattslist) {
+        my $hyphen = 0;
+        while ( $hyphen <= $maxwidth{$serveratt} ) {
+            $hr = "$hr" . "-";
+            $hyphen++;
+        }
+        $hr = "$hr" . "-+";
+    }
+    $hr = "$hr" . "\n";
+
+    printf("$hr");
+    printf("|");
+    foreach my $serveratt (@serverattslist) {
+        my $colwidth = $maxwidth{$serveratt};
+        printf( " %-${colwidth}.${colwidth}s |", $serveratt );
+    }
+    printf("\n");
+    printf("$hr");
+
+    foreach my $server (@closestservers) {
+        printf("|");
+        foreach my $serveratt (@serverattslist) {
+            my $colwidth = $maxwidth{$serveratt};
+            my $lj       = "";
+            if ( $servers{$server}{$serveratt} =~ m/^\D/ ) {
+                $lj = "-";
+            }
+            if ( $serveratt eq "distance" ) {
+                my $prettydistance = sprintf(
+                    "%.${DBG}f km (%.${DBG}f mi)",
+                    $servers{$server}{distance},
+                    ( $servers{$server}{distance} * 0.621371 )
+                );
+                printf( " %${lj}${colwidth}.${colwidth}s |", $prettydistance );
+            }
+            else {
+                printf( " %${lj}${colwidth}.${colwidth}s |",
+                    $servers{$server}{$serveratt} );
+            }
+        }
+        printf("\n");
+        $rows++;
+    }
+    printf("$hr");
+    my $plural = "s";
+    if ( $rows == 1 ) {
+        $plural = "";
+    }
+    printf( "%d row$plural in set\n\n", $rows );
+
+    exit 0;
 }
 
 ################################################################################
