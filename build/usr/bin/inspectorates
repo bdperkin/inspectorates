@@ -58,13 +58,13 @@ binmode STDOUT, ":utf8";    # Output UTF-8 using the :utf8 output layer.
 $ENV{PATH}  = "/usr/bin:/bin";    # Keep taint happy
 $ENV{PAGER} = "more";             # Keep pod2usage output happy
 
-my $name    = "inspectorates";            # Name string
-my $version = "0.0.9";                    # Version number
-my $release = "1.git.17.33b1256.fc18";    # Release string
+my $name    = "inspectorates";    # Name string
+my $version = "0.0.10";           # Version number
+my $release = "1.fc18";           # Release string
 
-my $protocol = "http";                    # Use unencrypted HTTP protocol
-my $domain   = "speedtest.net";           # Speedtest.net domain
-my $host     = "www";                     # World-Wide Web host
+my $protocol = "http";            # Use unencrypted HTTP protocol
+my $domain   = "speedtest.net";   # Speedtest.net domain
+my $host     = "www";             # World-Wide Web host
 
 ################################################################################
 # Generate composite constants

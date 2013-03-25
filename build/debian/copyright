@@ -1,20 +1,20 @@
 This package was debianized by the alien program by converting
-a binary .rpm package on Mon, 25 Mar 2013 16:06:50 -0400
+a binary .rpm package on Mon, 25 Mar 2013 16:13:13 -0400
 
 Copyright: GPLv2
 
 Information from the binary package:
 Name        : inspectorates
-Version     : 0.0.9
-Release     : 1.git.17.33b1256.fc18
+Version     : 0.0.10
+Release     : 1.fc18
 Architecture: noarch
 Install Date: (not installed)
 Group       : Applications/Internet
-Size        : 141321
+Size        : 141273
 License     : GPLv2
 Signature   : (none)
-Source RPM  : inspectorates-0.0.9-1.git.17.33b1256.fc18.src.rpm
-Build Date  : Mon Mar 25 16:06:47 2013
+Source RPM  : inspectorates-0.0.10-1.fc18.src.rpm
+Build Date  : Mon Mar 25 16:13:10 2013
 Build Host  : localhost
 Relocations : (not relocatable)
 URL         : https://github.com/bdperkin/inspectorates
