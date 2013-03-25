@@ -1,0 +1,104 @@
+INSPECTORATES(8)           Inspectorates User Manual          INSPECTORATES(8)
+
+
+
+[1mNAME[0m
+       inspectorates - Internet connection bandwidth test tool
+
+[1mSYNOPSIS[0m
+       [1minspectorates [22m[[1m-q[22m|[1m--quiet[22m] [[1m-v[22m|[1m--verbose[22m] [[1m-d[22m|[1m--debug[22m] [[1m-C[22m|[1m--curlvrbs[22m]
+       [[1m-l[22m|[1m--list[22m] [[1m-u [4m[22murl[24m|[1m--url[22m=[4murl[24m] [[1m-s [4m[22mservers[24m|[1m--servers[22m=[4mservers[24m] [[1m-p[0m
+       [4mpings[24m|[1m--pings[22m=[4mpings[24m] [[1m-c [4m[22mcount[24m|[1m--count[22m=[4mcount[24m]
+
+       [1minspectorates [22m{[1m--version[22m|[1m-V[22m}
+
+       [1minspectorates [22m{[1m--help[22m|[1m-h[22m}
+
+       [1minspectorates [22m{[1m--man[22m|[1m-m[22m}
+
+[1mDESCRIPTION[0m
+       The inspectorates(8) command is a Perl script to test Internet
+       connection bandwidth to locations around the world. Uses Speedtest.net
+       - The Global Broadband Speed Test.
+
+[1mOPTIONS[0m
+       Command line options are used to specify various startup options for
+       inspectorates:
+
+       [1m-c [4m[22mcount[24m, [1m--count[22m=[4mcount[0m
+           Count of latency tests to perform against selected server.
+
+       [1m-C[22m, [1m--curlvrbs[0m
+           Set CURLOPT_VERBOSE option to make the fetching more
+           verbose/talkative.
+
+       [1m-d[22m, [1m--debug[0m
+           Debug output.
+
+       [1m-h[22m, [1m--help[0m
+           Print or show help information and exit.
+
+       [1m-l[22m, [1m--list[0m
+           Print a list of candidate servers.
+
+       [1m-m[22m, [1m--man[0m
+           Print the entire manual page and exit.
+
+       [1m-p [4m[22mpings[24m, [1m--pings[22m=[4mpings[0m
+           Number of ping tests to perform against candidate servers.
+
+       [1m-q[22m, [1m--quiet[0m
+           Quiet output.
+
+       [1m-s [4m[22mservers[24m, [1m--servers[22m=[4mservers[0m
+           Number of closest servers for ping test and test pool.
+
+       [1m-u [4m[22murl[24m, [1m--url[22m=[4murl[0m
+           Specify a specific Ookla Speedtest(R) connection testing server.
+
+       [1m-v[22m, [1m--verbose[0m
+           Verbose output.
+
+       [1m-V[22m, [1m--version[0m
+           Print or show the program version and release number and exit.
+
+[1mEXIT STATUS[0m
+       The inspectorates return code to the parent process (or caller) when it
+       has finished executing may be one of:
+
+       [1m0[0m
+           Success.
+
+       [1m1[0m
+           Failure (syntax or usage error; configuration error; unexpected
+           error).
+
+[1mBUGS[0m
+       Report any issues at: https://github.com/bdperkin/inspectorates/issues
+
+[1mAUTHORS[0m
+       Brandon Perkins <bperkins@redhat.com>
+
+[1mRESOURCES[0m
+       GitHub: https://github.com/bdperkin/inspectorates
+
+[1mCOPYING[0m
+       Copyright (C) 2013-2013 Brandon Perkins <bperkins@redhat.com>
+
+       This program is free software; you can redistribute it and/or modify it
+       under the terms of the GNU General Public License as published by the
+       Free Software Foundation; either version 2 of the License, or (at your
+       option) any later version.
+
+       This program is distributed in the hope that it will be useful, but
+       WITHOUT ANY WARRANTY; without even the implied warranty of
+       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+       General Public License for more details.
+
+       You should have received a copy of the GNU General Public License along
+       with this program; if not, write to the Free Software Foundation, Inc.,
+       51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+
+
+inspectorates                     03/25/2013                  INSPECTORATES(8)

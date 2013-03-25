@@ -1,0 +1,37 @@
+Command line options are used to specify various startup options for inspectorates:
+
+*-c* 'count', *--count*='count'::
+    Count of latency tests to perform against selected server.
+
+*-C*, *--curlvrbs*::
+    Set CURLOPT_VERBOSE option to make the fetching more verbose/talkative.
+
+*-d*, *--debug*::
+    Debug output.
+
+*-h*, *--help*::
+    Print or show help information and exit.
+
+*-l*, *--list*::
+    Print a list of candidate servers.
+
+*-m*, *--man*::
+    Print the entire manual page and exit.
+
+*-p* 'pings', *--pings*='pings'::
+    Number of ping tests to perform against candidate servers.
+
+*-q*, *--quiet*::
+    Quiet output.
+
+*-s* 'servers', *--servers*='servers'::
+    Number of closest servers for ping test and test pool.
+
+*-u* 'url', *--url*='url'::
+    Specify a specific Ookla Speedtest® connection testing server.
+
+*-v*, *--verbose*::
+    Verbose output.
+
+*-V*, *--version*::
+    Print or show the program version and release number and exit.

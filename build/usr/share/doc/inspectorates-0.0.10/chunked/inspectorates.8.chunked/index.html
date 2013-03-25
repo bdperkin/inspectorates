@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>inspectorates</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.77.1" /><link rel="home" href="index.html" title="inspectorates" /></head><body><div class="navheader"><hr /></div><div xml:lang="en" class="refentry" lang="en"><a id="idp239744"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>inspectorates — Internet connection bandwidth test tool</p></div><div class="refsynopsisdiv"><a id="_synopsis"></a><h2>Synopsis</h2><p><span class="strong"><strong>inspectorates</strong></span> [<span class="strong"><strong>-q</strong></span>|<span class="strong"><strong>--quiet</strong></span>] [<span class="strong"><strong>-v</strong></span>|<span class="strong"><strong>--verbose</strong></span>] [<span class="strong"><strong>-d</strong></span>|<span class="strong"><strong>--debug</strong></span>] [<span class="strong"><strong>-C</strong></span>|<span class="strong"><strong>--curlvrbs</strong></span>] [<span class="strong"><strong>-l</strong></span>|<span class="strong"><strong>--list</strong></span>] [<span class="strong"><strong>-u</strong></span> <span class="emphasis"><em>url</em></span>|<span class="strong"><strong>--url</strong></span>=<span class="emphasis"><em>url</em></span>] [<span class="strong"><strong>-s</strong></span> <span class="emphasis"><em>servers</em></span>|<span class="strong"><strong>--servers</strong></span>=<span class="emphasis"><em>servers</em></span>] [<span class="strong"><strong>-p</strong></span> <span class="emphasis"><em>pings</em></span>|<span class="strong"><strong>--pings</strong></span>=<span class="emphasis"><em>pings</em></span>] [<span class="strong"><strong>-c</strong></span> <span class="emphasis"><em>count</em></span>|<span class="strong"><strong>--count</strong></span>=<span class="emphasis"><em>count</em></span>]</p><p><span class="strong"><strong>inspectorates</strong></span> {<span class="strong"><strong>--version</strong></span>|<span class="strong"><strong>-V</strong></span>}</p><p><span class="strong"><strong>inspectorates</strong></span> {<span class="strong"><strong>--help</strong></span>|<span class="strong"><strong>-h</strong></span>}</p><p><span class="strong"><strong>inspectorates</strong></span> {<span class="strong"><strong>--man</strong></span>|<span class="strong"><strong>-m</strong></span>}</p></div><div class="refsect1"><a id="_description"></a><h2>DESCRIPTION</h2><p>The inspectorates(8) command is a Perl script to test Internet connection
+bandwidth to locations around the world. Uses Speedtest.net - The Global
+Broadband Speed Test.</p></div><div class="refsect1"><a id="_options"></a><h2>OPTIONS</h2><p>Command line options are used to specify various startup options for inspectorates:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>-c</strong></span> <span class="emphasis"><em>count</em></span>, <span class="strong"><strong>--count</strong></span>=<span class="emphasis"><em>count</em></span>
+</span></dt><dd>
+    Count of latency tests to perform against selected server.
+</dd><dt><span class="term">
+<span class="strong"><strong>-C</strong></span>, <span class="strong"><strong>--curlvrbs</strong></span>
+</span></dt><dd>
+    Set CURLOPT_VERBOSE option to make the fetching more verbose/talkative.
+</dd><dt><span class="term">
+<span class="strong"><strong>-d</strong></span>, <span class="strong"><strong>--debug</strong></span>
+</span></dt><dd>
+    Debug output.
+</dd><dt><span class="term">
+<span class="strong"><strong>-h</strong></span>, <span class="strong"><strong>--help</strong></span>
+</span></dt><dd>
+    Print or show help information and exit.
+</dd><dt><span class="term">
+<span class="strong"><strong>-l</strong></span>, <span class="strong"><strong>--list</strong></span>
+</span></dt><dd>
+    Print a list of candidate servers.
+</dd><dt><span class="term">
+<span class="strong"><strong>-m</strong></span>, <span class="strong"><strong>--man</strong></span>
+</span></dt><dd>
+    Print the entire manual page and exit.
+</dd><dt><span class="term">
+<span class="strong"><strong>-p</strong></span> <span class="emphasis"><em>pings</em></span>, <span class="strong"><strong>--pings</strong></span>=<span class="emphasis"><em>pings</em></span>
+</span></dt><dd>
+    Number of ping tests to perform against candidate servers.
+</dd><dt><span class="term">
+<span class="strong"><strong>-q</strong></span>, <span class="strong"><strong>--quiet</strong></span>
+</span></dt><dd>
+    Quiet output.
+</dd><dt><span class="term">
+<span class="strong"><strong>-s</strong></span> <span class="emphasis"><em>servers</em></span>, <span class="strong"><strong>--servers</strong></span>=<span class="emphasis"><em>servers</em></span>
+</span></dt><dd>
+    Number of closest servers for ping test and test pool.
+</dd><dt><span class="term">
+<span class="strong"><strong>-u</strong></span> <span class="emphasis"><em>url</em></span>, <span class="strong"><strong>--url</strong></span>=<span class="emphasis"><em>url</em></span>
+</span></dt><dd>
+    Specify a specific Ookla Speedtest® connection testing server.
+</dd><dt><span class="term">
+<span class="strong"><strong>-v</strong></span>, <span class="strong"><strong>--verbose</strong></span>
+</span></dt><dd>
+    Verbose output.
+</dd><dt><span class="term">
+<span class="strong"><strong>-V</strong></span>, <span class="strong"><strong>--version</strong></span>
+</span></dt><dd>
+    Print or show the program version and release number and exit.
+</dd></dl></div></div><div class="refsect1"><a id="X1"></a><h2>EXIT STATUS</h2><p>The inspectorates return code to the parent process (or caller) when it has finished executing may be one of:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>0</strong></span>
+</span></dt><dd>
+    Success.
+</dd><dt><span class="term">
+<span class="strong"><strong>1</strong></span>
+</span></dt><dd>
+    Failure (syntax or usage error; configuration error; unexpected error).
+</dd></dl></div></div><div class="refsect1"><a id="_bugs"></a><h2>BUGS</h2><p>Report any issues at: <a class="ulink" href="https://github.com/bdperkin/inspectorates/issues" target="_top">https://github.com/bdperkin/inspectorates/issues</a></p></div><div class="refsect1"><a id="_authors"></a><h2>AUTHORS</h2><p>Brandon Perkins &lt;<a class="ulink" href="mailto:bperkins@redhat.com" target="_top">bperkins@redhat.com</a>&gt;</p></div><div class="refsect1"><a id="_resources"></a><h2>RESOURCES</h2><p>GitHub: <a class="ulink" href="https://github.com/bdperkin/inspectorates" target="_top">https://github.com/bdperkin/inspectorates</a></p></div><div class="refsect1"><a id="_copying"></a><h2>COPYING</h2><p>Copyright (C) 2013-2013  Brandon Perkins &lt;<a class="ulink" href="mailto:bperkins@redhat.com" target="_top">bperkins@redhat.com</a>&gt;</p><p>This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.</p><p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.</p><p>You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</p></div></div><div class="navfooter"><hr /></div></body></html>
