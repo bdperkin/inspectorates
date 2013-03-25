@@ -1,3 +1,6 @@
 [submodule "alien"]
 	path = alien
 	url = git://git.kitenet.net/alien
+[submodule "debhelper"]
+	path = debhelper
+	url = git://git.debian.org/git/debhelper/debhelper.git
