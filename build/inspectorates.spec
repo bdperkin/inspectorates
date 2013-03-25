@@ -1,6 +1,6 @@
 Name: inspectorates
 Version: 0.0.9
-Release: 1.git.11.53a41b4.fc18
+Release: 1.git.13.7f6e775.fc18
 Summary: Internet connection bandwidth test tool
 License: GPLv2
 Distribution: Red Hat
