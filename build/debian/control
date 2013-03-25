@@ -1,0 +1,12 @@
+Source: inspectorates
+Section: alien
+Priority: extra
+Maintainer: Brandon Perkins <bperkins@redhat.com>
+
+Package: inspectorates
+Architecture: all
+Depends: ${shlibs:Depends}
+Description: Internet connection bandwidth test tool
+ Perl script to test Internet connection bandwidth to locations around the world. Uses Speedtest.net - The Global Broadband Speed Test.
+ .
+ (Converted from a rpm package by alien version unknown.)

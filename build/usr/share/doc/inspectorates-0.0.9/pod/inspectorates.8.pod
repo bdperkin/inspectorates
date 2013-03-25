@@ -1,0 +1,191 @@
+=head1 NAME
+
+inspectorates - Internet connection bandwidth test tool
+
+=head1 SYNOPSIS
+
+B<inspectorates >[B<-q>|B<--quiet>] [B<-v>|B<--verbose>] [B<-d>|B<--debug>] [B<-C>|B<--curlvrbs>]
+[B<-l>|B<--list>] [B<-u >I<url>|B<--url>=I<url>] [B<-s >I<servers>|B<--servers>=I<servers>] [B<-p>
+I<pings>|B<--pings>=I<pings>] [B<-c >I<count>|B<--count>=I<count>]
+
+B<inspectorates >{B<--version>|B<-V>}
+
+B<inspectorates >{B<--help>|B<-h>}
+
+B<inspectorates >{B<--man>|B<-m>}
+
+=head1 DESCRIPTION
+
+The inspectorates(8) command is a Perl script to test Internet
+connection bandwidth to locations around the world. Uses Speedtest.net
+- The Global Broadband Speed Test.
+
+=head1 OPTIONS
+
+Command line options are used to specify various startup options for
+inspectorates:
+
+
+=over 5
+
+
+=item B<-c >I<count>, B<--count>=I<count>
+
+
+
+
+Count of latency tests to perform against selected server.
+
+
+=item B<-C>, B<--curlvrbs>
+
+
+
+
+Set CURLOPT_VERBOSE option to make the fetching more
+verbose/talkative.
+
+
+=item B<-d>, B<--debug>
+
+
+
+
+Debug output.
+
+
+=item B<-h>, B<--help>
+
+
+
+
+Print or show help information and exit.
+
+
+=item B<-l>, B<--list>
+
+
+
+
+Print a list of candidate servers.
+
+
+=item B<-m>, B<--man>
+
+
+
+
+Print the entire manual page and exit.
+
+
+=item B<-p >I<pings>, B<--pings>=I<pings>
+
+
+
+
+Number of ping tests to perform against candidate servers.
+
+
+=item B<-q>, B<--quiet>
+
+
+
+
+Quiet output.
+
+
+=item B<-s >I<servers>, B<--servers>=I<servers>
+
+
+
+
+Number of closest servers for ping test and test pool.
+
+
+=item B<-u >I<url>, B<--url>=I<url>
+
+
+
+
+Specify a specific Ookla Speedtest(R) connection testing server.
+
+
+=item B<-v>, B<--verbose>
+
+
+
+
+Verbose output.
+
+
+=item B<-V>, B<--version>
+
+
+
+
+Print or show the program version and release number and exit.
+
+=back
+
+
+=head1 EXIT STATUS
+
+The inspectorates return code to the parent process (or caller) when it
+has finished executing may be one of:
+
+
+=over 5
+
+
+=item B<0>
+
+
+
+
+Success.
+
+
+=item B<1>
+
+
+
+
+Failure (syntax or usage error; configuration error; unexpected
+error).
+
+=back
+
+
+=head1 BUGS
+
+Report any issues at: https://github.com/bdperkin/inspectorates/issues
+
+=head1 AUTHORS
+
+Brandon Perkins <bperkins@redhat.com>
+
+=head1 RESOURCES
+
+GitHub: https://github.com/bdperkin/inspectorates
+
+=head1 COPYING
+
+Copyright (C) 2013-2013 Brandon Perkins <bperkins@redhat.com>
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+
+
+=cut

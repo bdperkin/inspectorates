@@ -1,0 +1,8 @@
+*inspectorates* [*-q*|*--quiet*] [*-v*|*--verbose*] [*-d*|*--debug*] [*-C*|*--curlvrbs*] [*-l*|*--list*] [*-u* 'url'|*--url*='url'] [*-s* 'servers'|*--servers*='servers'] [*-p* 'pings'|*--pings*='pings'] [*-c* 'count'|*--count*='count']
+
+*inspectorates* {*--version*|*-V*}
+
+*inspectorates* {*--help*|*-h*}
+
+*inspectorates* {*--man*|*-m*}
+

@@ -35,6 +35,7 @@ class CustomBuilder(builder.Builder):
         readme_md_git = common.run_command("rpm2cpio %s | cpio --quiet -idmuv .%s 2>&1" % (self.artifacts[2], readme_md_rpm))
         readme_mv = common.run_command("mv %s %s" % (readme_md_git, readme_md))
         git_commit = common.run_command("git commit --allow-empty -m \"Updated README markdown file.\" README.md")
+        rpm_to_alien = common.run_command("./rpm2alien.pl %s" % self.artifacts[2])
         git_checkout = common.run_command("git checkout %s" % git_current_branch)
         git_merge = common.run_command("git merge %s" % temp_uuid)
         git_del_branch = common.run_command("git branch -d %s" % temp_uuid)

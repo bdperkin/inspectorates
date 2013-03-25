@@ -1,0 +1,137 @@
+'\" t
+.\"     Title: inspectorates
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: DocBook XSL Stylesheets v1.77.1 <http://docbook.sf.net/>
+.\"      Date: 03/25/2013
+.\"    Manual: Inspectorates User Manual
+.\"    Source: inspectorates
+.\"  Language: English
+.\"
+.TH "INSPECTORATES" "8" "03/25/2013" "inspectorates" "Inspectorates User Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+inspectorates \- Internet connection bandwidth test tool
+.SH "SYNOPSIS"
+.sp
+\fBinspectorates\fR [\fB\-q\fR|\fB\-\-quiet\fR] [\fB\-v\fR|\fB\-\-verbose\fR] [\fB\-d\fR|\fB\-\-debug\fR] [\fB\-C\fR|\fB\-\-curlvrbs\fR] [\fB\-l\fR|\fB\-\-list\fR] [\fB\-u\fR \fIurl\fR|\fB\-\-url\fR=\fIurl\fR] [\fB\-s\fR \fIservers\fR|\fB\-\-servers\fR=\fIservers\fR] [\fB\-p\fR \fIpings\fR|\fB\-\-pings\fR=\fIpings\fR] [\fB\-c\fR \fIcount\fR|\fB\-\-count\fR=\fIcount\fR]
+.sp
+\fBinspectorates\fR {\fB\-\-version\fR|\fB\-V\fR}
+.sp
+\fBinspectorates\fR {\fB\-\-help\fR|\fB\-h\fR}
+.sp
+\fBinspectorates\fR {\fB\-\-man\fR|\fB\-m\fR}
+.SH "DESCRIPTION"
+.sp
+The inspectorates(8) command is a Perl script to test Internet connection bandwidth to locations around the world\&. Uses Speedtest\&.net \- The Global Broadband Speed Test\&.
+.SH "OPTIONS"
+.sp
+Command line options are used to specify various startup options for inspectorates:
+.PP
+\fB\-c\fR \fIcount\fR, \fB\-\-count\fR=\fIcount\fR
+.RS 4
+Count of latency tests to perform against selected server\&.
+.RE
+.PP
+\fB\-C\fR, \fB\-\-curlvrbs\fR
+.RS 4
+Set CURLOPT_VERBOSE option to make the fetching more verbose/talkative\&.
+.RE
+.PP
+\fB\-d\fR, \fB\-\-debug\fR
+.RS 4
+Debug output\&.
+.RE
+.PP
+\fB\-h\fR, \fB\-\-help\fR
+.RS 4
+Print or show help information and exit\&.
+.RE
+.PP
+\fB\-l\fR, \fB\-\-list\fR
+.RS 4
+Print a list of candidate servers\&.
+.RE
+.PP
+\fB\-m\fR, \fB\-\-man\fR
+.RS 4
+Print the entire manual page and exit\&.
+.RE
+.PP
+\fB\-p\fR \fIpings\fR, \fB\-\-pings\fR=\fIpings\fR
+.RS 4
+Number of ping tests to perform against candidate servers\&.
+.RE
+.PP
+\fB\-q\fR, \fB\-\-quiet\fR
+.RS 4
+Quiet output\&.
+.RE
+.PP
+\fB\-s\fR \fIservers\fR, \fB\-\-servers\fR=\fIservers\fR
+.RS 4
+Number of closest servers for ping test and test pool\&.
+.RE
+.PP
+\fB\-u\fR \fIurl\fR, \fB\-\-url\fR=\fIurl\fR
+.RS 4
+Specify a specific Ookla Speedtest\(rg connection testing server\&.
+.RE
+.PP
+\fB\-v\fR, \fB\-\-verbose\fR
+.RS 4
+Verbose output\&.
+.RE
+.PP
+\fB\-V\fR, \fB\-\-version\fR
+.RS 4
+Print or show the program version and release number and exit\&.
+.RE
+.SH "EXIT STATUS"
+.sp
+The inspectorates return code to the parent process (or caller) when it has finished executing may be one of:
+.PP
+\fB0\fR
+.RS 4
+Success\&.
+.RE
+.PP
+\fB1\fR
+.RS 4
+Failure (syntax or usage error; configuration error; unexpected error)\&.
+.RE
+.SH "BUGS"
+.sp
+Report any issues at: https://github\&.com/bdperkin/inspectorates/issues
+.SH "AUTHORS"
+.sp
+Brandon Perkins <bperkins@redhat\&.com>
+.SH "RESOURCES"
+.sp
+GitHub: https://github\&.com/bdperkin/inspectorates
+.SH "COPYING"
+.sp
+Copyright (C) 2013\-2013 Brandon Perkins <bperkins@redhat\&.com>
+.sp
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version\&.
+.sp
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE\&. See the GNU General Public License for more details\&.
+.sp
+You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc\&., 51 Franklin Street, Fifth Floor, Boston, MA 02110\-1301, USA\&.

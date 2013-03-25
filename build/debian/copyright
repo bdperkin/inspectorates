@@ -1,0 +1,24 @@
+This package was debianized by the alien program by converting
+a binary .rpm package on Mon, 25 Mar 2013 15:57:56 -0400
+
+Copyright: GPLv2
+
+Information from the binary package:
+Name        : inspectorates
+Version     : 0.0.9
+Release     : 1.git.11.53a41b4.fc18
+Architecture: noarch
+Install Date: (not installed)
+Group       : Applications/Internet
+Size        : 141322
+License     : GPLv2
+Signature   : (none)
+Source RPM  : inspectorates-0.0.9-1.git.11.53a41b4.fc18.src.rpm
+Build Date  : Mon Mar 25 14:39:23 2013
+Build Host  : localhost
+Relocations : (not relocatable)
+URL         : https://github.com/bdperkin/inspectorates
+Summary     : Internet connection bandwidth test tool
+Description :
+Perl script to test Internet connection bandwidth to locations around the world. Uses Speedtest.net - The Global Broadband Speed Test.
+

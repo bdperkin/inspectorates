@@ -1,0 +1,19 @@
+[OPTIONS]
+Binary TOC=Yes
+Compatibility=1.1 or later
+Compiled file=inspectorates.8.chm
+Contents file=inspectorates.8.hhc
+Default Window=Main
+Default topic=inspectorates.8.htmlhelp/index.html
+Display compile progress=Yes
+Full-text search=Yes
+Language=0x0409 English (UNITED STATES)
+Title=inspectorates
+Enhanced decompilation=No
+
+[WINDOWS]
+Main="inspectorates","inspectorates.8.hhc",,"inspectorates.8.htmlhelp/index.html","inspectorates.8.htmlhelp/index.html",,,,,0x2520,,0x603006,,,,,,,,0
+
+
+[FILES]
+inspectorates.8.htmlhelp/index.html
