@@ -1,5 +1,5 @@
 Name:		inspectorates
-Version:	0.0.9
+Version:	0.0.10
 Release:	1%{?dist}
 Summary:	Internet connection bandwidth test tool
 
@@ -86,6 +86,18 @@ cat README.md.pandoc | %{__grep} -v ^% | %{__sed} -e 's/\*\*/\*/g' | %{__sed} -e
 
 
 %changelog
+* Mon Mar 25 2013 Brandon Perkins <bperkins@redhat.com> 0.0.10-1
+- Commit build artifacts and include basic debian and lsb configurations.
+  (bperkins@redhat.com)
+- Return to current branch, not master. (bperkins@redhat.com)
+- rpm2alien (bperkins@redhat.com)
+- Ignore http-client-tests in tar export. (bperkins@redhat.com)
+- first commit with submodule debhelper (bperkins@redhat.com)
+- first commit with submodule alien (bperkins@redhat.com)
+- Merge branch 'master' of github.com:bdperkin/inspectorates
+  (bperkins@redhat.com)
+- Print a list of candidate servers. (bperkins@redhat.com)
+
 * Thu Mar 21 2013 Brandon Perkins <bperkins@redhat.com> 0.0.9-1
 - Perl Tidy the final executable, add additional standard doc files, clean-up
   %%doc dirs. (bperkins@redhat.com)
