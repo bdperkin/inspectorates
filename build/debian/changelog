@@ -1,4 +1,4 @@
-inspectorates (0.0.9-1.git.13.7f6e775.fc18) experimental; urgency=low
+inspectorates (0.0.9-1.git.15.786af78.fc18) experimental; urgency=low
 
   * Converted from .rpm format to .deb by alien version unknown
   
@@ -77,4 +77,4 @@ inspectorates (0.0.9-1.git.13.7f6e775.fc18) experimental; urgency=low
   - Improve dubugging output to be cleaner and more readable.
     (bperkins@redhat.com)
 
- -- Brandon Perkins <bperkins@redhat.com>  Mon, 25 Mar 2013 15:59:58 -0400
+ -- Brandon Perkins <bperkins@redhat.com>  Mon, 25 Mar 2013 16:03:34 -0400

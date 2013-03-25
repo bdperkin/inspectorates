@@ -1,6 +1,6 @@
 Name: lsb-inspectorates
 Version: 0.0.9
-Release: 1.git.13.7f6e775.fc18
+Release: 1.git.15.786af78.fc18
 Requires: lsb
 Summary: Internet connection bandwidth test tool
 License: GPLv2
