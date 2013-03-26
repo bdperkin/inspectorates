@@ -933,13 +933,22 @@ if ($optlist) {
         $maxwidth{$serveratt} = length($serveratt);
         foreach my $server (@closestservers) {
             if ( $serveratt eq "distance" ) {
-                my $prettydistance = sprintf(
-                    "%.${DBG}f km (%.${DBG}f mi)",
-                    $servers{$server}{distance},
-                    ( $servers{$server}{distance} * 0.621371 )
-                );
-                if ( length($prettydistance) > $maxwidth{$serveratt} ) {
-                    $maxwidth{$serveratt} = length($prettydistance);
+                $maxwidth{distancekm} = 3;
+                $maxwidth{distancemi} = 3;
+                my $prettydistancekm =
+                  sprintf( "%.${DBG}f km", $servers{$server}{distance} );
+                my $prettydistancemi = sprintf( "%.${DBG}f mi",
+                    ( $servers{$server}{distance} * 0.621371 ) );
+                my $prettydistance =
+                  $prettydistancekm . " | " . $prettydistancemi;
+                if ( length($prettydistancekm) > $maxwidth{distancekm} ) {
+                    $maxwidth{distancekm} = length($prettydistancekm);
+                }
+                if ( length($prettydistancemi) > $maxwidth{distancemi} ) {
+                    $maxwidth{distancemi} = length($prettydistancemi);
+                }
+                if ( length($prettydistance) > $maxwidth{distance} ) {
+                    $maxwidth{distance} = length($prettydistance);
                 }
             }
             elsif (
@@ -965,7 +974,14 @@ if ($optlist) {
     printf("|");
     foreach my $serveratt (@serverattslist) {
         my $colwidth = $maxwidth{$serveratt};
-        printf( " %-${colwidth}.${colwidth}s |", $serveratt );
+        my $thwidth  = length($serveratt);
+        my $thpad    = ( ( $colwidth - $thwidth ) / 2 );
+        my $thnbsp   = "";
+        while ( length($thnbsp) < $thpad ) {
+            $thnbsp = $thnbsp . " ";
+        }
+        my $serverattth = $thnbsp . $serveratt;
+        printf( " %-${colwidth}.${colwidth}s |", $serverattth );
     }
     printf("\n");
     printf("$hr");
@@ -979,12 +995,15 @@ if ($optlist) {
                 $lj = "-";
             }
             if ( $serveratt eq "distance" ) {
-                my $prettydistance = sprintf(
-                    "%.${DBG}f km (%.${DBG}f mi)",
-                    $servers{$server}{distance},
-                    ( $servers{$server}{distance} * 0.621371 )
-                );
-                printf( " %${lj}${colwidth}.${colwidth}s |", $prettydistance );
+                my $prettydistancekm =
+                  sprintf( "%.${DBG}f km", $servers{$server}{distance} );
+                my $prettydistancemi = sprintf( "%.${DBG}f mi",
+                    ( $servers{$server}{distance} * 0.621371 ) );
+                my $colwidthkm = $maxwidth{distancekm};
+                my $colwidthmi = $maxwidth{distancemi};
+                printf(
+" %${lj}${colwidthkm}.${colwidthkm}s | %${lj}${colwidthmi}.${colwidthmi}s |",
+                    $prettydistancekm, $prettydistancemi );
             }
             else {
                 printf( " %${lj}${colwidth}.${colwidth}s |",
