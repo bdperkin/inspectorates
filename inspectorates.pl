@@ -115,6 +115,7 @@ my $curloptverbose = 0;  # Set the parameter to 1 to get the library to display
 my $optcount;
 my $optcurlverbose;
 my $optdebug;
+my $optid;
 my $opthelp;
 my $optlist;
 my $optman;
@@ -134,6 +135,8 @@ GetOptions(
     "debug"     => \$optdebug,
     "h"         => \$opthelp,
     "help"      => \$opthelp,
+    "i=i"       => \$optid,
+    "id=i"      => \$optid,
     "l"         => \$optlist,
     "list"      => \$optlist,
     "m"         => \$optman,
@@ -1053,110 +1056,140 @@ sub hashValueDescendingPing {
 }
 
 ################################################################################
-# Select best server based on ping from pool of closest servers
+# Select best server based on command line or ping from pool of closest servers
 ################################################################################
-if ( $DBG > 1 ) {
-    print "= Selecting best server based on ping...\n";
-    if ( $DBG > 2 ) {
+# Set invalid best server for catching errors
+my $bestserver = -1;
+if ($optid) {
+    if ( $DBG > 1 ) {
+        print "= Selecting best server based on command-line option...";
+    }
+    foreach my $serverid ( keys %servers ) {
+        my $id = $servers{$serverid}{id};
+        if ( $id eq $optid ) {
+            $bestserver = $id;
+        }
+    }
+    if ( $DBG > 1 ) {
         print "\n";
     }
 }
-foreach my $server (@closestservers) {
+else {
     if ( $DBG > 1 ) {
-        print "= Checking $servers{$server}{name} Hosted by ";
-        print "$servers{$server}{sponsor}";
+        print "= Selecting best server based on ping...\n";
         if ( $DBG > 2 ) {
-            printf("\n================ SERVER:");
-            printf( " %5.5s ================\n", $server );
-            foreach my $serveratt (@serveratts) {
-                printf( "== %8.8s:",      $serveratt );
-                printf( " %-31.31s ==\n", $servers{$server}{$serveratt} );
-            }
-            print "===============================================\n";
+            print "\n";
         }
     }
-    my ( $scheme, $auth, $path, $query, $frag ) =
-      uri_split( $servers{$server}{url} );
-    my $dirname   = dirname($path);
-    my $url       = uri_join( $scheme, $auth, $dirname );
-    my $pingcount = 0;
-    $latencyresults{$server}{totalelapsed} = 0;
-    $latencyresults{$server}{totalpings}   = 0;
-    while ( $pingcount < $numpingtest ) {
+    foreach my $server (@closestservers) {
+        if ( $DBG > 1 ) {
+            print "= Checking $servers{$server}{name} Hosted by ";
+            print "$servers{$server}{sponsor}";
+            if ( $DBG > 2 ) {
+                printf("\n================ SERVER:");
+                printf( " %5.5s ================\n", $server );
+                foreach my $serveratt (@serveratts) {
+                    printf( "== %8.8s:",      $serveratt );
+                    printf( " %-31.31s ==\n", $servers{$server}{$serveratt} );
+                }
+                print "===============================================\n";
+            }
+        }
+        my ( $scheme, $auth, $path, $query, $frag ) =
+          uri_split( $servers{$server}{url} );
+        my $dirname   = dirname($path);
+        my $url       = uri_join( $scheme, $auth, $dirname );
+        my $pingcount = 0;
+        $latencyresults{$server}{totalelapsed} = 0;
+        $latencyresults{$server}{totalpings}   = 0;
+        while ( $pingcount < $numpingtest ) {
+
+            if ( $DBG > 1 ) {
+                print ".";
+                if ( $DBG > 2 ) {
+                    print "\n";
+                }
+            }
+
+            ( $sepoch, $usecepoch ) = gettimeofday();
+            $msecepoch = ( $usecepoch / 1000 );
+            $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
+            my $latencyuri = $url . "/latency.txt?x=" . $msepoch;
+            if ( $DBG > 2 ) {
+                print "== Retrieving $latencyuri latency $pingcount took ";
+            }
+
+            $browser->setopt( CURLOPT_URL, $latencyuri );
+            my $latencytxt;
+            $browser->setopt( CURLOPT_WRITEDATA, \$latencytxt );
+            ( my $s0, my $usec0 ) = gettimeofday();
+            $retcode = $browser->perform;
+            ( my $s1, my $usec1 ) = gettimeofday();
+            warn "\nCannot get $latencyuri -- $retcode "
+              . $browser->strerror($retcode) . " "
+              . $browser->errbuf . "\n"
+              unless ( $retcode == 0 );
+            warn "\nDid not receive TXT, got -- ",
+              $browser->getinfo(CURLINFO_CONTENT_TYPE)
+              unless $browser->getinfo(CURLINFO_CONTENT_TYPE) =~
+              m/^text\/plain/;
+            my $selapsed        = $s1 - $s0;
+            my $usecelapsed     = $usec1 - $usec0;
+            my $stomselapsed    = ( $selapsed * 1000 );
+            my $usectomselapsed = ( $usecelapsed / 1000 );
+            my $mselapsed       = $stomselapsed + $usectomselapsed;
+
+            if (   $latencytxt =~ m/^test=test/
+                && $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/plain/
+                && $retcode == 0 )
+            {
+                $latencyresults{$server}{totalelapsed} =
+                  $latencyresults{$server}{totalelapsed} + $mselapsed;
+                $latencyresults{$server}{totalpings}++;
+            }
+            if ( $DBG > 2 ) {
+                print "$mselapsed milliseconds. done. ==\n";
+            }
+
+            usleep( $latency{waittime} * 1000 );
+            $pingcount++;
+        }
+        if ( $DBG > 2 ) {
+            print "== $latencyresults{$server}{totalpings} runs took ";
+            print "$latencyresults{$server}{totalelapsed} milliseconds. ==\n";
+        }
+        $latencyresults{$server}{avgelapsed} =
+          $latencyresults{$server}{totalelapsed} /
+          $latencyresults{$server}{totalpings};
 
         if ( $DBG > 1 ) {
-            print ".";
-            if ( $DBG > 2 ) {
-                print "\n";
-            }
+            printf("done: =\n= \t");
+            printf( "%.${DBG}f ", $latencyresults{$server}{avgelapsed} );
+            printf("millisecond average. =\n");
         }
-
-        ( $sepoch, $usecepoch ) = gettimeofday();
-        $msecepoch = ( $usecepoch / 1000 );
-        $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
-        my $latencyuri = $url . "/latency.txt?x=" . $msepoch;
-        if ( $DBG > 2 ) {
-            print "== Retrieving $latencyuri latency $pingcount took ";
-        }
-
-        $browser->setopt( CURLOPT_URL, $latencyuri );
-        my $latencytxt;
-        $browser->setopt( CURLOPT_WRITEDATA, \$latencytxt );
-        ( my $s0, my $usec0 ) = gettimeofday();
-        $retcode = $browser->perform;
-        ( my $s1, my $usec1 ) = gettimeofday();
-        warn "\nCannot get $latencyuri -- $retcode "
-          . $browser->strerror($retcode) . " "
-          . $browser->errbuf . "\n"
-          unless ( $retcode == 0 );
-        warn "\nDid not receive TXT, got -- ",
-          $browser->getinfo(CURLINFO_CONTENT_TYPE)
-          unless $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/plain/;
-        my $selapsed        = $s1 - $s0;
-        my $usecelapsed     = $usec1 - $usec0;
-        my $stomselapsed    = ( $selapsed * 1000 );
-        my $usectomselapsed = ( $usecelapsed / 1000 );
-        my $mselapsed       = $stomselapsed + $usectomselapsed;
-
-        if (   $latencytxt =~ m/^test=test/
-            && $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/plain/
-            && $retcode == 0 )
-        {
-            $latencyresults{$server}{totalelapsed} =
-              $latencyresults{$server}{totalelapsed} + $mselapsed;
-            $latencyresults{$server}{totalpings}++;
-        }
-        if ( $DBG > 2 ) {
-            print "$mselapsed milliseconds. done. ==\n";
-        }
-
-        usleep( $latency{waittime} * 1000 );
-        $pingcount++;
     }
     if ( $DBG > 2 ) {
-        print "== $latencyresults{$server}{totalpings} runs took ";
-        print "$latencyresults{$server}{totalelapsed} milliseconds. ==\n";
+        print "================ PING AVERAGE =================\n";
     }
-    $latencyresults{$server}{avgelapsed} =
-      $latencyresults{$server}{totalelapsed} /
-      $latencyresults{$server}{totalpings};
-
-    if ( $DBG > 1 ) {
-        printf("done: =\n= \t");
-        printf( "%.${DBG}f ", $latencyresults{$server}{avgelapsed} );
-        printf("millisecond average. =\n");
+    foreach my $name ( sort hashValueDescendingPing ( keys(%latencyresults) ) )
+    {
+        my $info = $latencyresults{$name}{avgelapsed};
+        if ( $DBG > 2 ) {
+            printf( "== pingaverage:: %5.5s: %-20.20s ==\n", $name, $info );
+        }
+        $bestserver = $name;
     }
 }
-my $bestserver = -1;
-if ( $DBG > 2 ) {
-    print "================ PING AVERAGE =================\n";
-}
-foreach my $name ( sort hashValueDescendingPing ( keys(%latencyresults) ) ) {
-    my $info = $latencyresults{$name}{avgelapsed};
-    if ( $DBG > 2 ) {
-        printf( "== pingaverage:: %5.5s: %-20.20s ==\n", $name, $info );
+if ( $bestserver == -1 ) {
+    if ($optid) {
+        print STDERR "Value \"$optid\" is an invalid server id ";
+        print STDERR "option.\nPlease select an id from the output of the ";
+        print STDERR "list option.\n";
     }
-    $bestserver = $name;
+    else {
+        print STDERR "Unable to find a useable server. Aborting!\n";
+    }
+    exit 1;
 }
 if ( $DBG > 0 ) {
     if ( $DBG > 2 ) {
@@ -1428,7 +1461,10 @@ foreach my $hwpixel (@hwpixels) {
             $browser->setopt( CURLOPT_POST,          1 );
             $browser->setopt( CURLOPT_POSTFIELDS,    $ulrandimage );
             $browser->setopt( CURLOPT_POSTFIELDSIZE, $ulrandimagesize );
-            $browser->setopt( CURLOPT_REFERER,       $flshuri );
+            my @postheaders = ();
+            $postheaders[0] = "Content-Type: image/png";
+            $browser->setopt( CURLOPT_HTTPHEADER, \@postheaders );
+            $browser->setopt( CURLOPT_REFERER,    $flshuri );
             my $ulspeedout;
             $browser->setopt( CURLOPT_WRITEDATA, \$ulspeedout );
             ( my $s0, my $usec0 ) = gettimeofday();

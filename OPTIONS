@@ -12,6 +12,9 @@ Command line options are used to specify various startup options for %{NAMELOWER
 *-h*, *--help*::
     Print or show help information and exit.
 
+*-i* 'id', *--id*='id'::
+    Specify a specific server by ID number. (see list option)
+
 *-l*, *--list*::
     Print a list of candidate servers.
 
