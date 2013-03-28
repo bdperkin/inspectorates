@@ -24,6 +24,7 @@ Requires:	perl(Data::Random)
 Requires:	perl(File::Basename)
 Requires:	perl(GD)
 Requires:	perl(Getopt::Long)
+Requires:	perl(Locale::Country)
 Requires:	perl(Math::Trig)
 Requires:	perl(Pod::Usage)
 Requires:	perl(Time::HiRes)
@@ -37,7 +38,7 @@ Requires:	perl(warnings)
 %define NameMixed %{expand:%%(echo %{name} | %{__sed} -e "s/\\([a-z]\\)\\([a-zA-Z0-9]*\\)/\\u\\1\\2/g")}
 %define NameLower %{expand:%%(echo %{name} | tr [:upper:] [:lower:])}
 %define Year %{expand:%%(date "+%Y")}
-%define DocFiles ACKNOWLEDGEMENTS AUTHOR AUTHORS AVAILABILITY BUGS CAVEATS COPYING COPYRIGHT DESCRIPTION LICENSE NAME NOTES OPTIONS OUTPUT README.md RESOURCES SYNOPSIS
+%define DocFiles ACKNOWLEDGEMENTS AUTHOR AUTHORS AVAILABILITY BUGS CAVEATS COPYING COPYRIGHT DESCRIPTION FILTERS LICENSE NAME NOTES OPTIONS OUTPUT README.md RESOURCES SYNOPSIS
 %define SubFiles %{name} %{name}.8.asciidoc %{DocFiles} man.asciidoc
 %define DocFormats chunked htmlhelp manpage text xhtml
 

@@ -34,6 +34,8 @@ use GD;                                   # GD.pm - Interface to Gd Graphics
                                           # Library
 use Getopt::Long;                         # Getopt::Long - Extended processing
                                           # of command line options
+use Locale::Country;                      # Locale::Country - standard codes for
+                                          # country identification
 use Math::Trig qw(deg2rad);               # Math::Trig - trigonometric functions
 use Pod::Usage;                           # Pod::Usage, pod2usage() - print a
                                           # usage message from embedded pod
@@ -126,33 +128,67 @@ my $opturl;
 my $optverbose;
 my $optversion;
 
+# Variables with multiple values stored as arrays
+my @incnm;
+my @excnm;
+my @inccntry;
+my @exccntry;
+my @inccc;
+my @exccc;
+my @incspnsr;
+my @excspnsr;
+my @incdskmgt;
+my @excdskmgt;
+my @incdsmigt;
+my @excdsmigt;
+my @incdskmlt;
+my @excdskmlt;
+my @incdsmilt;
+my @excdsmilt;
+
 GetOptions(
-    "c=i"       => \$optcount,
-    "count=i"   => \$optcount,
-    "C"         => \$optcurlverbose,
-    "curlvrbs"  => \$optcurlverbose,
-    "d"         => \$optdebug,
-    "debug"     => \$optdebug,
-    "h"         => \$opthelp,
-    "help"      => \$opthelp,
-    "i=i"       => \$optid,
-    "id=i"      => \$optid,
-    "l"         => \$optlist,
-    "list"      => \$optlist,
-    "m"         => \$optman,
-    "man"       => \$optman,
-    "p=i"       => \$optpings,
-    "pings=i"   => \$optpings,
-    "q"         => \$optquiet,
-    "quiet"     => \$optquiet,
-    "s=i"       => \$optservers,
-    "servers=i" => \$optservers,
-    "u=s"       => \$opturl,
-    "url=s"     => \$opturl,
-    "v"         => \$optverbose,
-    "verbose"   => \$optverbose,
-    "V"         => \$optversion,
-    "version"   => \$optversion
+    "c=i"                      => \$optcount,
+    "count=i"                  => \$optcount,
+    "C"                        => \$optcurlverbose,
+    "curlvrbs"                 => \$optcurlverbose,
+    "d"                        => \$optdebug,
+    "debug"                    => \$optdebug,
+    "exclude-cc=s"             => \@exccc,
+    "exclude-country=s"        => \@exccntry,
+    "exclude-distance-km-gt=f" => \@excdskmgt,
+    "exclude-distance-km-lt=f" => \@excdskmlt,
+    "exclude-distance-mi-gt=f" => \@excdsmigt,
+    "exclude-distance-mi-lt=f" => \@excdsmilt,
+    "exclude-name=s"           => \@excnm,
+    "exclude-sponsor=s"        => \@excspnsr,
+    "h"                        => \$opthelp,
+    "help"                     => \$opthelp,
+    "i=i"                      => \$optid,
+    "id=i"                     => \$optid,
+    "include-cc=s"             => \@inccc,
+    "include-country=s"        => \@inccntry,
+    "include-distance-km-gt=f" => \@incdskmgt,
+    "include-distance-km-lt=f" => \@incdskmlt,
+    "include-distance-mi-gt=f" => \@incdsmigt,
+    "include-distance-mi-lt=f" => \@incdsmilt,
+    "include-name=s"           => \@incnm,
+    "include-sponsor=s"        => \@incspnsr,
+    "l"                        => \$optlist,
+    "list"                     => \$optlist,
+    "m"                        => \$optman,
+    "man"                      => \$optman,
+    "p=i"                      => \$optpings,
+    "pings=i"                  => \$optpings,
+    "q"                        => \$optquiet,
+    "quiet"                    => \$optquiet,
+    "s=i"                      => \$optservers,
+    "servers=i"                => \$optservers,
+    "u=s"                      => \$opturl,
+    "url=s"                    => \$opturl,
+    "v"                        => \$optverbose,
+    "verbose"                  => \$optverbose,
+    "V"                        => \$optversion,
+    "version"                  => \$optversion
 ) or pod2usage(2);
 
 ################################################################################
@@ -908,13 +944,163 @@ sub hashValueDescendingDist {
 ################################################################################
 my @closestservers = ();
 foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
-    my $info = $servers{$name}{distance};
-    if ( @closestservers < $numservers ) {
-        push( @closestservers, $name );
+    my $passfilter = 1;
+    my $failfilter = 0;
+    if (@exccc) {
+        foreach my $cc (@exccc) {
+            my $country = code2country($cc);
+            if ( !$country ) {
+                print STDERR
+                  "\nUnable to find country code \"$cc\". Aborting!\n";
+                exit 1;
+            }
+            if ( $servers{$name}{cc} =~ m/$cc/i ) {
+                if ( $country !~ m/$servers{$name}{country}/i ) {
+                    print STDERR
+"\nCountry code \"$cc\" does not match country \"$servers{$name}{country}\". Excluding!\n";
+                    $failfilter++;
+                }
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
     }
-    if ( $DBG > 2 ) {
-        my $df = sprintf( "%05.11f", $info );
-        printf( "== serverdistance:: %5.5s: %17s ==\n", $name, $df );
+    if (@inccc) {
+        my $incfilter = 0;
+        foreach my $cc (@inccc) {
+            my $country = code2country($cc);
+            if ( !$country ) {
+                print STDERR
+                  "\nUnable to find country code \"$cc\". Aborting!\n";
+                exit 1;
+            }
+            if ( $servers{$name}{cc} =~ m/$cc/i ) {
+                if ( $country !~ m/$servers{$name}{country}/i ) {
+                    print STDERR
+"\nCountry code \"$cc\" does not match country \"$servers{$name}{country}\". Excluding!\n";
+                    $failfilter++;
+                }
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    if (@exccntry) {
+        foreach my $country (@exccntry) {
+            my $cc = country2code($country);
+            if ( !$cc ) {
+                print STDERR
+                  "\nUnable to find country code \"$country\". Aborting!\n";
+                exit 1;
+            }
+            if ( $servers{$name}{country} =~ m/$country/i ) {
+                if ( $cc !~ m/$servers{$name}{cc}/i ) {
+                    print STDERR
+"\nCountry code \"$country\" does not match country \"$servers{$name}{cc}\". Excluding!\n";
+                    $failfilter++;
+                }
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@inccntry) {
+        my $incfilter = 0;
+        foreach my $country (@inccntry) {
+            my $cc = country2code($country);
+            if ( !$cc ) {
+                print STDERR
+                  "\nUnable to find country code \"$country\". Aborting!\n";
+                exit 1;
+            }
+            if ( $servers{$name}{country} =~ m/$country/i ) {
+                if ( $cc !~ m/$servers{$name}{cc}/i ) {
+                    print STDERR
+"\nCountry code \"$country\" does not match country \"$servers{$name}{cc}\". Excluding!\n";
+                    $failfilter++;
+                }
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    if (@excnm) {
+        foreach my $nm (@excnm) {
+            if ( $servers{$name}{name} =~ m/$nm/i ) {
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@incnm) {
+        my $incfilter = 0;
+        foreach my $nm (@incnm) {
+            if ( $servers{$name}{name} =~ m/$nm/i ) {
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    if (@excspnsr) {
+        foreach my $spnsr (@excspnsr) {
+            if ( $servers{$name}{sponsor} =~ m/$spnsr/i ) {
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@incspnsr) {
+        my $incfilter = 0;
+        foreach my $spnsr (@incspnsr) {
+            if ( $servers{$name}{sponsor} =~ m/$spnsr/i ) {
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    my $info = $servers{$name}{distance};
+    if ( @closestservers < $numservers && $passfilter > 0 && $failfilter < 1 ) {
+        push( @closestservers, $name );
+        if ( $DBG > 2 ) {
+            my $df = sprintf( "%05.11f", $info );
+            printf( "== serverdistance:: %5.5s: %17s ==\n", $name, $df );
+        }
     }
 }
 if ( $DBG > 1 ) {

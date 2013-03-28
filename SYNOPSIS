@@ -1,4 +1,4 @@
-*%{NAME}* [*-q*|*--quiet*] [*-v*|*--verbose*] [*-d*|*--debug*] [*-C*|*--curlvrbs*] [*-l*|*--list*] [*-i* 'id'|*--id*='id'] [*-u* 'url'|*--url*='url'] [*-s* 'servers'|*--servers*='servers'] [*-p* 'pings'|*--pings*='pings'] [*-c* 'count'|*--count*='count']
+*%{NAME}* [*-q*|*--quiet*] [*-v*|*--verbose*] [*-d*|*--debug*] [*-C*|*--curlvrbs*] [*-l*|*--list*] [*-i* 'id'|*--id*='id'] [*-u* 'url'|*--url*='url'] [*-s* 'servers'|*--servers*='servers'] [*-p* 'pings'|*--pings*='pings'] [*-c* 'count'|*--count*='count'] [*--filter*='rule']
 
 *%{NAME}* {*--version*|*-V*}
 
