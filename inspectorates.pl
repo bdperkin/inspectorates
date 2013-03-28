@@ -182,29 +182,65 @@ if ($optdebug) {
     $|   = 1;
 }
 if ( $DBG > 2 ) {
-    printf( "== Debugging Level Set to %-18s ==\n", $DBG );
-    printf( "== %-12s %-12s (%-13s) ==\n",          $name, $version, $release );
-    printf( "==          PROCESS_ID: %-20s ==\n",   $$ );
-    printf( "==        PROGRAM_NAME: %-20s ==\n",   $0 );
-    printf( "==       REAL_GROUP_ID: %-20s ==\n",   $( );
-    printf( "==  EFFECTIVE_GROUP_ID: %-20s ==\n",   $) );
-    printf( "==        REAL_USER_ID: %-20s ==\n",   $< );
-    printf( "==   EFFECTIVE_USER_ID: %-20s ==\n",   $> );
-    printf( "==              OSNAME: %-20s ==\n",   $^O );
-    printf( "==            BASETIME: %-20s ==\n",   $^T );
-    printf( "==        PERL_VERSION: %-20s ==\n",   $^V );
-    printf( "==     EXECUTABLE_NAME: %-20s ==\n",   $^X );
-    printf( "== Data::Dumper::Names: %-20s ==\n",
-        $Data::Dumper::Names::VERSION );
-    printf( "==        Data::Random: %-20s ==\n", $Data::Random::VERSION );
-    printf( "==      File::Basename: %-20s ==\n", $File::Basename::VERSION );
-    printf( "==        Getopt::Long: %-20s ==\n", $Getopt::Long::VERSION );
-    printf( "==          Math::Trig: %-20s ==\n", $Math::Trig::VERSION );
-    printf( "==          Pod::Usage: %-20s ==\n", $Pod::Usage::VERSION );
-    printf( "==         Time::HiRes: %-20s ==\n", $Time::HiRes::VERSION );
-    printf( "==     WWW::Curl::Easy: %-20s ==\n", $WWW::Curl::Easy::VERSION );
-    printf( "==          XML::XPath: %-20s ==\n", $XML::XPath::VERSION );
-    printf("===============================================\n");
+    my $title = "general";
+    $title =~ tr/a-z/A-Z/;
+    my $eqsgns  = ( ( $dbgtablewidth - length($title) - 2 ) / 2 );
+    my $eqcount = 0;
+    my $eqhr    = "";
+    while ( $eqcount < $eqsgns ) {
+        $eqhr = $eqhr . "=";
+        $eqcount++;
+    }
+    my $hdr = sprintf( "%s %s %s", $eqhr, $title, $eqhr );
+    printf( "%${dbgtablewidth}.${dbgtablewidth}s\n", $hdr );
+    printf( "== Debugging Level Set to %-18s ==\n",  $DBG );
+    printf( "== %-12s %-12s (%-13s) ==\n",        $name, $version, $release );
+    printf( "==          PROCESS_ID: %-20s ==\n", $$ );
+    printf( "==        PROGRAM_NAME: %-20s ==\n", $0 );
+    printf( "==       REAL_GROUP_ID: %-20s ==\n", $( );
+    printf( "==  EFFECTIVE_GROUP_ID: %-20s ==\n", $) );
+    printf( "==        REAL_USER_ID: %-20s ==\n", $< );
+    printf( "==   EFFECTIVE_USER_ID: %-20s ==\n", $> );
+    printf( "==              OSNAME: %-20s ==\n", $^O );
+    printf( "==            BASETIME: %-20s ==\n", $^T );
+    printf( "==        PERL_VERSION: %-20s ==\n", $^V );
+    printf( "==     EXECUTABLE_NAME: %-20s ==\n", $^X );
+    $title = "Module VERSION";
+    $title =~ tr/a-z/A-Z/;
+    $eqsgns  = ( ( $dbgtablewidth - length($title) - 2 ) / 2 );
+    $eqcount = 0;
+    $eqhr    = "";
+
+    while ( $eqcount < $eqsgns ) {
+        $eqhr = $eqhr . "=";
+        $eqcount++;
+    }
+    $hdr = sprintf( "%s %s %s", $eqhr, $title, $eqhr );
+    printf( "%${dbgtablewidth}.${dbgtablewidth}s\n", $hdr );
+    my $maxmodlength = 0;
+    foreach my $name ( keys %INC ) {
+        my $modlength = length($name);
+        if ( $modlength > $maxmodlength ) {
+            $maxmodlength = $modlength;
+        }
+    }
+    my $modverlength = ( $dbgtablewidth - $maxmodlength - 8 );
+    foreach my $name ( sort ( keys %INC ) ) {
+        $name =~ s/\//::/g;
+        $name =~ s/\.pm$//i;
+        my $modvername = ${name} . "::VERSION";
+        my $modver     = eval("\$$modvername");
+        printf(
+"== %${maxmodlength}.${maxmodlength}s: %-${modverlength}.${modverlength}s ==\n",
+            $name, $modver )
+          if defined $modver;
+    }
+    $eqcount = 0;
+    while ( $eqcount < $dbgtablewidth ) {
+        printf("=");
+        $eqcount++;
+    }
+    print "\n";
 }
 
 ################################################################################
@@ -231,13 +267,39 @@ foreach my $curlver (@curlversions) {
     $libversions{ $lib . '-patch' } = $patch;
 }
 if ( $DBG > 2 ) {
-    print "================ CURL VERSIONS ================\n";
+    my $title = "curl, libcurl, & 3rd party library versions";
+    $title =~ tr/a-z/A-Z/;
+    my $eqsgns  = ( ( $dbgtablewidth - length($title) - 2 ) / 2 );
+    my $eqcount = 0;
+    my $eqhr    = "";
+
+    while ( $eqcount < $eqsgns ) {
+        $eqhr = $eqhr . "=";
+        $eqcount++;
+    }
+    my $hdr = sprintf( "%s %s %s", $eqhr, $title, $eqhr );
+    printf( "%${dbgtablewidth}.${dbgtablewidth}s\n", $hdr );
+    my $maxmodlength = 0;
     foreach my $name ( keys %libversions ) {
+        my $modlength = length($name);
+        if ( $modlength > $maxmodlength ) {
+            $maxmodlength = $modlength;
+        }
+    }
+    my $modverlength = ( $dbgtablewidth - $maxmodlength - 8 );
+    foreach my $name ( sort ( keys %libversions ) ) {
         my $info = $libversions{$name};
-        printf( "==   libversions:: %13s: %-10s ==\n", $name, $info )
+        printf(
+"== %${maxmodlength}.${maxmodlength}s: %-${modverlength}.${modverlength}s ==\n",
+            $name, $info )
           if defined $info;
     }
-    print "===============================================\n";
+    $eqcount = 0;
+    while ( $eqcount < $dbgtablewidth ) {
+        printf("=");
+        $eqcount++;
+    }
+    print "\n";
 }
 
 $browser->setopt( CURLOPT_HEADER,      0 );
@@ -299,6 +361,65 @@ $client{ispdlavg} = $configxp->find('/settings/client/@ispdlavg')->string_value;
 $client{ispulavg} = $configxp->find('/settings/client/@ispulavg')->string_value;
 $client{loggedin} = $configxp->find('/settings/client/@loggedin')->string_value;
 
+my $clientneighbourhoodurl =
+"http://api.geonames.org/extendedFindNearby?lat=$client{lat}&lng=$client{lon}&username=bdperkin";
+if ( $DBG > 1 ) {
+    print "\n= Retrieving geographic neighbourhood data for $client{isp}...";
+    if ( $DBG > 2 ) {
+        print "\n== GET $clientneighbourhoodurl ==\n";
+    }
+}
+$browser->setopt( CURLOPT_URL, $clientneighbourhoodurl );
+my $clientneighbourhoodxml;
+$browser->setopt( CURLOPT_WRITEDATA, \$clientneighbourhoodxml );
+$retcode = $browser->perform;
+die "\nCannot get $clientneighbourhoodurl -- $retcode "
+  . $browser->strerror($retcode) . " "
+  . $browser->errbuf . "\n"
+  unless ( $retcode == 0 );
+if ( $browser->getinfo(CURLINFO_CONTENT_TYPE) !~ m/^(application|text)\/xml/ ) {
+    die "\nDid not receive XML, got -- ",
+      $browser->getinfo(CURLINFO_CONTENT_TYPE);
+}
+if ( $DBG > 1 ) {
+    print "done. =\n";
+}
+my $clientneighbourhoodxp = XML::XPath->new($clientneighbourhoodxml);
+my @geoatts               = (
+    'placename',  'adminCode2', 'adminName2', 'adminCode1',
+    'adminName1', 'countryCode'
+);
+foreach my $geoatt (@geoatts) {
+    my $att = "/geonames/address/" . $geoatt;
+    $client{$geoatt} = $clientneighbourhoodxp->find($att)->string_value;
+}
+my $clientneighbourhood = "";
+if ( $client{countryCode} ) {
+    $clientneighbourhood = $clientneighbourhood . " => $client{countryCode}";
+}
+if ( $client{adminCode1} || $client{adminName1} ) {
+    $clientneighbourhood = $clientneighbourhood . " =>";
+    if ( $client{adminCode1} ) {
+        $clientneighbourhood = $clientneighbourhood . " $client{adminCode1}";
+    }
+    if ( $client{adminName1} ) {
+        $clientneighbourhood = $clientneighbourhood . " ($client{adminName1})";
+    }
+}
+if ( $client{adminCode2} || $client{adminName2} ) {
+    $clientneighbourhood = $clientneighbourhood . " =>";
+    if ( $client{adminCode2} ) {
+        $clientneighbourhood = $clientneighbourhood . " $client{adminCode2}";
+    }
+    if ( $client{adminName2} ) {
+        $clientneighbourhood = $clientneighbourhood . " ($client{adminName2})";
+    }
+}
+if ( $client{placename} ) {
+    $clientneighbourhood = $clientneighbourhood . " => $client{placename}";
+}
+$client{clientneighbourhood} = $clientneighbourhood;
+
 # times settings hash
 my %times;
 $times{dl1} = $configxp->find('/settings/times/@dl1')->string_value;
@@ -358,10 +479,20 @@ if ( $DBG > 2 ) {
         }
         my $hdr = sprintf( "%s %s %s", $eqhr, $title, $eqhr );
         printf( "%${dbgtablewidth}.${dbgtablewidth}s\n", $hdr );
+        my $maxkeylength = 0;
         foreach my $name ( keys %$confighash ) {
-            my $info = $confighash->{$name};
-            printf( "== %8.8s:: %13.13s: %-15.15s ==\n",
-                $hashname, $name, $info );
+            my $keylength = length($name);
+            if ( $keylength > $maxkeylength ) {
+                $maxkeylength = $keylength;
+            }
+        }
+        my $vallength = ( $dbgtablewidth - $maxkeylength - 8 );
+        foreach my $name ( sort ( keys %$confighash ) ) {
+            my $value = $$confighash{$name};
+            printf(
+"== %${maxkeylength}.${maxkeylength}s: %-${vallength}.${vallength}s ==\n",
+                $name, $value )
+              if defined $value;
         }
     }
     $eqcount = 0;
@@ -376,7 +507,8 @@ if ( $DBG > 0 ) {
         print "done. =\n";
     }
     print "Client IP Address: $client{ip}\n";
-    print "Client Internet Service Provider: $client{isp}\n";
+    print
+"Client Internet Service Provider: $client{isp}$client{clientneighbourhood}\n";
 }
 
 ################################################################################
@@ -601,20 +733,51 @@ if ($opturl) {
                 printf( "%${dbgtablewidth}.${dbgtablewidth}s\n", $hdr );
             }
         }
+        my $titlelength  = length($title);
+        my $maxkeylength = 0;
         foreach my $name ( keys %$confighash ) {
+            my $keylength = length($name);
+            if ( $keylength > $maxkeylength ) {
+                $maxkeylength = $keylength;
+            }
+        }
+        my $vallength = ( $dbgtablewidth - $maxkeylength - 8 );
+        foreach my $name ( sort ( keys %$confighash ) ) {
             my $info = $confighash->{$name};
             if ( $info !~ m/^$/ ) {
                 if ( $DBG > 1 ) {
                     if ( $DBG > 2 ) {
-                        printf( "== %8.8s:: %13.13s: %-15.15s ==\n",
-                            $hashname, $name, $info );
+                        printf(
+"== %${maxkeylength}.${maxkeylength}s: %-${vallength}.${vallength}s ==\n",
+                            $name, $info );
                     }
                 }
                 if ( defined $hashmap{$hashname}{$name} ) {
                     if ( $DBG > 1 ) {
                         if ( $DBG > 2 ) {
-                            printf( "== %24.24s: %5.5s ==> %-5.5s ==\n",
-                                $name, $hashmap{$hashname}{$name}, $info );
+                            my $subvallength = sprintf(
+                                "%0.0d",
+                                (
+                                    (
+                                        $dbgtablewidth -
+                                          $titlelength -
+                                          $maxkeylength - 13
+                                    ) / 2
+                                )
+                            );
+                            my $arrow = "==>";
+                            my $totallinewidth =
+                              ( $subvallength * 2 + 13 +
+                                  $maxkeylength +
+                                  $titlelength );
+                            if ( $totallinewidth == $dbgtablewidth ) {
+                                $arrow = "=>";
+                            }
+                            printf(
+"== %${titlelength}.${titlelength}s %-${maxkeylength}.${maxkeylength}s: %${subvallength}.${subvallength}s %s %-${subvallength}.${subvallength}s ==\n",
+                                $hashname, $name, $hashmap{$hashname}{$name},
+                                $arrow, $info
+                            );
                         }
                         if ( $hashmap{$hashname}{$name} !~ $info ) {
                             my $shorthashname = $hashname;
@@ -922,11 +1085,79 @@ if ( $DBG > 1 ) {
 }
 
 ################################################################################
+# Get more geographic data on closest servers
+################################################################################
+foreach my $server (@closestservers) {
+    my $neighbourhoodurl =
+"http://api.geonames.org/extendedFindNearby?lat=$servers{$server}{lat}&lng=$servers{$server}{lon}&username=bdperkin";
+    if ( $DBG > 1 ) {
+        print
+"= Retrieving geographic neighbourhood data for $servers{$server}{name}...";
+        if ( $DBG > 2 ) {
+            print "\n== GET $neighbourhoodurl ==\n";
+        }
+    }
+    $browser->setopt( CURLOPT_URL, $neighbourhoodurl );
+    my $neighbourhoodxml;
+    $browser->setopt( CURLOPT_WRITEDATA, \$neighbourhoodxml );
+    $retcode = $browser->perform;
+    die "\nCannot get $neighbourhoodurl -- $retcode "
+      . $browser->strerror($retcode) . " "
+      . $browser->errbuf . "\n"
+      unless ( $retcode == 0 );
+    if ( $browser->getinfo(CURLINFO_CONTENT_TYPE) !~
+        m/^(application|text)\/xml/ )
+    {
+        die "\nDid not receive XML, got -- ",
+          $browser->getinfo(CURLINFO_CONTENT_TYPE);
+    }
+    if ( $DBG > 1 ) {
+        print "done. =\n";
+    }
+    my $neighbourhoodxp = XML::XPath->new($neighbourhoodxml);
+    foreach my $geoatt (@geoatts) {
+        my $att = "/geonames/address/" . $geoatt;
+        $servers{$server}{$geoatt} = $neighbourhoodxp->find($att)->string_value;
+    }
+    my $neighbourhood = "";
+    if ( $servers{$server}{countryCode} ) {
+        $neighbourhood = $neighbourhood . " => $servers{$server}{countryCode}";
+    }
+    if ( $servers{$server}{adminCode1} || $servers{$server}{adminName1} ) {
+        $neighbourhood = $neighbourhood . " =>";
+        if ( $servers{$server}{adminCode1} ) {
+            $neighbourhood = $neighbourhood . " $servers{$server}{adminCode1}";
+        }
+        if ( $servers{$server}{adminName1} ) {
+            $neighbourhood =
+              $neighbourhood . " ($servers{$server}{adminName1})";
+        }
+    }
+    if ( $servers{$server}{adminCode2} || $servers{$server}{adminName2} ) {
+        $neighbourhood = $neighbourhood . " =>";
+        if ( $servers{$server}{adminCode2} ) {
+            $neighbourhood = $neighbourhood . " $servers{$server}{adminCode2}";
+        }
+        if ( $servers{$server}{adminName2} ) {
+            $neighbourhood =
+              $neighbourhood . " ($servers{$server}{adminName2})";
+        }
+    }
+    if ( $servers{$server}{placename} ) {
+        $neighbourhood = $neighbourhood . " => $servers{$server}{placename}";
+    }
+    $servers{$server}{neighbourhood} = $neighbourhood;
+}
+
+################################################################################
 # Print a list of candidate servers
 ################################################################################
 if ($optlist) {
-    my @serverattslist =
-      ( "id", "name", "country", "cc", "sponsor", "distance" );
+    my @serverattslist = (
+        "id",         "name",       "country",    "cc",
+        "sponsor",    "distance",   "placename",  "adminCode2",
+        "adminName2", "adminCode1", "adminName1", "countryCode"
+    );
     my %maxwidth;
     my $rows = 0;
     foreach my $serveratt (@serverattslist) {
@@ -1045,7 +1276,7 @@ if ( $DBG > 1 ) {
 foreach my $server (@closestservers) {
     if ( $DBG > 1 ) {
         print "= Checking $servers{$server}{name} Hosted by ";
-        print "$servers{$server}{sponsor}";
+        print "$servers{$server}{sponsor}$servers{$server}{neighbourhood}";
         if ( $DBG > 2 ) {
             printf("\n================ SERVER:");
             printf( " %5.5s ================\n", $server );
@@ -1147,7 +1378,8 @@ if ( $DBG > 0 ) {
     my $distancemi =
       sprintf( "%.${DBG}f", ( $servers{$bestserver}{distance} * 0.621371 ) );
     print "Server Selected: $servers{$bestserver}{name} Hosted by ";
-    print "$servers{$bestserver}{sponsor}\n";
+    print
+      "$servers{$bestserver}{sponsor}$servers{$bestserver}{neighbourhood}\n";
     print "Distance Between Client and Server: $distancekm km ";
     print "($distancemi mi)\n";
     if ( $DBG > 1 ) {
@@ -1182,7 +1414,8 @@ if ( $DBG > 2 ) {
 ################################################################################
 if ( $DBG > 1 ) {
     print "= Checking ping against $servers{$bestserver}{name} Hosted by ";
-    print "$servers{$bestserver}{sponsor}\n";
+    print
+      "$servers{$bestserver}{sponsor}$servers{$bestserver}{neighbourhood}\n";
     if ( $DBG > 2 ) {
         printf("\n================ SERVER:");
         printf( " %5.5s ================\n", $bestserver );
@@ -1272,7 +1505,8 @@ if ( $DBG > 1 ) {
 ################################################################################
 if ( $DBG > 1 ) {
     print "= Checking download against $servers{$bestserver}{name} Hosted by ";
-    print "$servers{$bestserver}{sponsor}\n";
+    print
+      "$servers{$bestserver}{sponsor}$servers{$bestserver}{neighbourhood}\n";
 }
 
 my @hwpixels = (
@@ -1366,7 +1600,8 @@ if ( $DBG > 1 ) {
 ################################################################################
 if ( $DBG > 1 ) {
     print "= Checking upload against $servers{$bestserver}{name} Hosted by ";
-    print "$servers{$bestserver}{sponsor}\n";
+    print
+      "$servers{$bestserver}{sponsor}$servers{$bestserver}{neighbourhood}\n";
 }
 
 my $totalultime = 0;
