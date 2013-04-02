@@ -1109,6 +1109,17 @@ my @closestservers = ();
 foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
     my $passfilter = 1;
     my $failfilter = 0;
+    if ($optid) {
+        my $incfilter = 0;
+        if ( $servers{$name}{id} == $optid ) {
+            $incfilter++;
+            if ( $DBG > 2 ) {
+                printf( "== INCLUDE: %-5.5s\n", $name );
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
     if (@exccc) {
         foreach my $cc (@exccc) {
             my $country = code2country($cc);
