@@ -1094,6 +1094,114 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
         if   ( $incfilter > 0 ) { $passfilter++; }
         else                    { $failfilter++; }
     }
+    if (@excdskmgt) {
+        foreach my $dskmgt (@excdskmgt) {
+            if ( $servers{$name}{distance} > $dskmgt ) {
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@incdskmgt) {
+        my $incfilter = 0;
+        foreach my $dskmgt (@incdskmgt) {
+            if ( $servers{$name}{distance} > $dskmgt ) {
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    if (@excdskmlt) {
+        foreach my $dskmlt (@excdskmlt) {
+            if ( $servers{$name}{distance} < $dskmlt ) {
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@incdskmlt) {
+        my $incfilter = 0;
+        foreach my $dskmlt (@incdskmlt) {
+            if ( $servers{$name}{distance} < $dskmlt ) {
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    if (@excdsmigt) {
+        foreach my $dsmigt (@excdsmigt) {
+            my $dskmgt = ( $dsmigt * 1.60934 );
+            if ( $servers{$name}{distance} > $dskmgt ) {
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@incdsmigt) {
+        my $incfilter = 0;
+        foreach my $dsmigt (@incdsmigt) {
+            my $dskmgt = ( $dsmigt * 1.60934 );
+            if ( $servers{$name}{distance} > $dskmgt ) {
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    if (@excdsmilt) {
+        foreach my $dsmilt (@excdsmilt) {
+            my $dskmlt = ( $dsmilt * 1.60934 );
+            if ( $servers{$name}{distance} < $dskmlt ) {
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@incdsmilt) {
+        my $incfilter = 0;
+        foreach my $dsmilt (@incdsmilt) {
+            my $dskmlt = ( $dsmilt * 1.60934 );
+            if ( $servers{$name}{distance} < $dskmlt ) {
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
     my $info = $servers{$name}{distance};
     if ( @closestservers < $numservers && $passfilter > 0 && $failfilter < 1 ) {
         push( @closestservers, $name );
