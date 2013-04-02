@@ -1,0 +1,49 @@
+Command line options for %{NAMELOWER} can be used to specify filter rules to allow for flexible selection of which servers to use (include) and which servers to skip (exclude):
+
+*--include-name*='PATTERN'::
+    Use server names that match PATTERN.
+
+*--exclude-name*='PATTERN'::
+    Skip server names that match PATTERN.
+
+*--include-country*='PATTERN'::
+    Use servers in countries that match PATTERN.
+
+*--exclude-country*='PATTERN'::
+    Skip servers in countries that match PATTERN.
+
+*--include-cc*='PATTERN'::
+    Use servers whose country code matches PATTERN.
+
+*--exclude-cc*='PATTERN'::
+    Skip servers whose country code matches PATTERN.
+
+*--include-sponsor*='PATTERN'::
+    Use server sponsors that match PATTERN.
+
+*--exclude-sponsor*='PATTERN'::
+    Skip server sponsors that match PATTERN.
+
+*--include-distance-km-gt*='KILOMETERS'::
+    Use servers located more than KILOMETERS away from client.
+
+*--exclude-distance-km-gt*='KILOMETERS'::
+    Skip servers located more than KILOMETERS away from client.
+
+*--include-distance-mi-gt*='MILES'::
+    Use servers located more than MILES away from client.
+
+*--exclude-distance-mi-gt*='MILES'::
+    Skip servers located more than MILES away from client.
+
+*--include-distance-km-lt*='KILOMETERS'::
+    Use servers located less than KILOMETERS away from client.
+
+*--exclude-distance-km-lt*='KILOMETERS'::
+    Skip servers located less than KILOMETERS away from client.
+
+*--include-distance-mi-lt*='MILES'::
+    Use servers located less than MILES away from client.
+
+*--exclude-distance-mi-lt*='MILES'::
+    Skip servers located less than MILES away from client.

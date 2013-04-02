@@ -34,6 +34,8 @@ use GD;                                   # GD.pm - Interface to Gd Graphics
                                           # Library
 use Getopt::Long;                         # Getopt::Long - Extended processing
                                           # of command line options
+use Locale::Country;                      # Locale::Country - standard codes for
+                                          # country identification
 use Math::Trig qw(deg2rad);               # Math::Trig - trigonometric functions
 use Pod::Usage;                           # Pod::Usage, pod2usage() - print a
                                           # usage message from embedded pod
@@ -115,6 +117,7 @@ my $curloptverbose = 0;  # Set the parameter to 1 to get the library to display
 my $optcount;
 my $optcurlverbose;
 my $optdebug;
+my $optid;
 my $opthelp;
 my $optlist;
 my $optman;
@@ -125,31 +128,67 @@ my $opturl;
 my $optverbose;
 my $optversion;
 
+# Variables with multiple values stored as arrays
+my @incnm;
+my @excnm;
+my @inccntry;
+my @exccntry;
+my @inccc;
+my @exccc;
+my @incspnsr;
+my @excspnsr;
+my @incdskmgt;
+my @excdskmgt;
+my @incdsmigt;
+my @excdsmigt;
+my @incdskmlt;
+my @excdskmlt;
+my @incdsmilt;
+my @excdsmilt;
+
 GetOptions(
-    "c=i"       => \$optcount,
-    "count=i"   => \$optcount,
-    "C"         => \$optcurlverbose,
-    "curlvrbs"  => \$optcurlverbose,
-    "d"         => \$optdebug,
-    "debug"     => \$optdebug,
-    "h"         => \$opthelp,
-    "help"      => \$opthelp,
-    "l"         => \$optlist,
-    "list"      => \$optlist,
-    "m"         => \$optman,
-    "man"       => \$optman,
-    "p=i"       => \$optpings,
-    "pings=i"   => \$optpings,
-    "q"         => \$optquiet,
-    "quiet"     => \$optquiet,
-    "s=i"       => \$optservers,
-    "servers=i" => \$optservers,
-    "u=s"       => \$opturl,
-    "url=s"     => \$opturl,
-    "v"         => \$optverbose,
-    "verbose"   => \$optverbose,
-    "V"         => \$optversion,
-    "version"   => \$optversion
+    "c=i"                      => \$optcount,
+    "count=i"                  => \$optcount,
+    "C"                        => \$optcurlverbose,
+    "curlvrbs"                 => \$optcurlverbose,
+    "d"                        => \$optdebug,
+    "debug"                    => \$optdebug,
+    "exclude-cc=s"             => \@exccc,
+    "exclude-country=s"        => \@exccntry,
+    "exclude-distance-km-gt=f" => \@excdskmgt,
+    "exclude-distance-km-lt=f" => \@excdskmlt,
+    "exclude-distance-mi-gt=f" => \@excdsmigt,
+    "exclude-distance-mi-lt=f" => \@excdsmilt,
+    "exclude-name=s"           => \@excnm,
+    "exclude-sponsor=s"        => \@excspnsr,
+    "h"                        => \$opthelp,
+    "help"                     => \$opthelp,
+    "i=i"                      => \$optid,
+    "id=i"                     => \$optid,
+    "include-cc=s"             => \@inccc,
+    "include-country=s"        => \@inccntry,
+    "include-distance-km-gt=f" => \@incdskmgt,
+    "include-distance-km-lt=f" => \@incdskmlt,
+    "include-distance-mi-gt=f" => \@incdsmigt,
+    "include-distance-mi-lt=f" => \@incdsmilt,
+    "include-name=s"           => \@incnm,
+    "include-sponsor=s"        => \@incspnsr,
+    "l"                        => \$optlist,
+    "list"                     => \$optlist,
+    "m"                        => \$optman,
+    "man"                      => \$optman,
+    "p=i"                      => \$optpings,
+    "pings=i"                  => \$optpings,
+    "q"                        => \$optquiet,
+    "quiet"                    => \$optquiet,
+    "s=i"                      => \$optservers,
+    "servers=i"                => \$optservers,
+    "u=s"                      => \$opturl,
+    "url=s"                    => \$opturl,
+    "v"                        => \$optverbose,
+    "verbose"                  => \$optverbose,
+    "V"                        => \$optversion,
+    "version"                  => \$optversion
 ) or pod2usage(2);
 
 ################################################################################
@@ -1068,13 +1107,271 @@ sub hashValueDescendingDist {
 ################################################################################
 my @closestservers = ();
 foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
-    my $info = $servers{$name}{distance};
-    if ( @closestservers < $numservers ) {
-        push( @closestservers, $name );
+    my $passfilter = 1;
+    my $failfilter = 0;
+    if (@exccc) {
+        foreach my $cc (@exccc) {
+            my $country = code2country($cc);
+            if ( !$country ) {
+                print STDERR
+                  "\nUnable to find country code \"$cc\". Aborting!\n";
+                exit 1;
+            }
+            if ( $servers{$name}{cc} =~ m/$cc/i ) {
+                if ( $country !~ m/$servers{$name}{country}/i ) {
+                    print STDERR
+"\nCountry code \"$cc\" does not match country \"$servers{$name}{country}\". Excluding!\n";
+                    $failfilter++;
+                }
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
     }
-    if ( $DBG > 2 ) {
-        my $df = sprintf( "%05.11f", $info );
-        printf( "== serverdistance:: %5.5s: %17s ==\n", $name, $df );
+    if (@inccc) {
+        my $incfilter = 0;
+        foreach my $cc (@inccc) {
+            my $country = code2country($cc);
+            if ( !$country ) {
+                print STDERR
+                  "\nUnable to find country code \"$cc\". Aborting!\n";
+                exit 1;
+            }
+            if ( $servers{$name}{cc} =~ m/$cc/i ) {
+                if ( $country !~ m/$servers{$name}{country}/i ) {
+                    print STDERR
+"\nCountry code \"$cc\" does not match country \"$servers{$name}{country}\". Excluding!\n";
+                    $failfilter++;
+                }
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    if (@exccntry) {
+        foreach my $country (@exccntry) {
+            my $cc = country2code($country);
+            if ( !$cc ) {
+                print STDERR
+                  "\nUnable to find country code \"$country\". Aborting!\n";
+                exit 1;
+            }
+            if ( $servers{$name}{country} =~ m/$country/i ) {
+                if ( $cc !~ m/$servers{$name}{cc}/i ) {
+                    print STDERR
+"\nCountry code \"$country\" does not match country \"$servers{$name}{cc}\". Excluding!\n";
+                    $failfilter++;
+                }
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@inccntry) {
+        my $incfilter = 0;
+        foreach my $country (@inccntry) {
+            my $cc = country2code($country);
+            if ( !$cc ) {
+                print STDERR
+                  "\nUnable to find country code \"$country\". Aborting!\n";
+                exit 1;
+            }
+            if ( $servers{$name}{country} =~ m/$country/i ) {
+                if ( $cc !~ m/$servers{$name}{cc}/i ) {
+                    print STDERR
+"\nCountry code \"$country\" does not match country \"$servers{$name}{cc}\". Excluding!\n";
+                    $failfilter++;
+                }
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    if (@excnm) {
+        foreach my $nm (@excnm) {
+            if ( $servers{$name}{name} =~ m/$nm/i ) {
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@incnm) {
+        my $incfilter = 0;
+        foreach my $nm (@incnm) {
+            if ( $servers{$name}{name} =~ m/$nm/i ) {
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    if (@excspnsr) {
+        foreach my $spnsr (@excspnsr) {
+            if ( $servers{$name}{sponsor} =~ m/$spnsr/i ) {
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@incspnsr) {
+        my $incfilter = 0;
+        foreach my $spnsr (@incspnsr) {
+            if ( $servers{$name}{sponsor} =~ m/$spnsr/i ) {
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    if (@excdskmgt) {
+        foreach my $dskmgt (@excdskmgt) {
+            if ( $servers{$name}{distance} > $dskmgt ) {
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@incdskmgt) {
+        my $incfilter = 0;
+        foreach my $dskmgt (@incdskmgt) {
+            if ( $servers{$name}{distance} > $dskmgt ) {
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    if (@excdskmlt) {
+        foreach my $dskmlt (@excdskmlt) {
+            if ( $servers{$name}{distance} < $dskmlt ) {
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@incdskmlt) {
+        my $incfilter = 0;
+        foreach my $dskmlt (@incdskmlt) {
+            if ( $servers{$name}{distance} < $dskmlt ) {
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    if (@excdsmigt) {
+        foreach my $dsmigt (@excdsmigt) {
+            my $dskmgt = ( $dsmigt * 1.60934 );
+            if ( $servers{$name}{distance} > $dskmgt ) {
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@incdsmigt) {
+        my $incfilter = 0;
+        foreach my $dsmigt (@incdsmigt) {
+            my $dskmgt = ( $dsmigt * 1.60934 );
+            if ( $servers{$name}{distance} > $dskmgt ) {
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    if (@excdsmilt) {
+        foreach my $dsmilt (@excdsmilt) {
+            my $dskmlt = ( $dsmilt * 1.60934 );
+            if ( $servers{$name}{distance} < $dskmlt ) {
+                $failfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== EXCLUDE: %-5.5s\n", $name );
+                }
+            }
+            else {
+                $passfilter++;
+            }
+        }
+    }
+    if (@incdsmilt) {
+        my $incfilter = 0;
+        foreach my $dsmilt (@incdsmilt) {
+            my $dskmlt = ( $dsmilt * 1.60934 );
+            if ( $servers{$name}{distance} < $dskmlt ) {
+                $incfilter++;
+                if ( $DBG > 2 ) {
+                    printf( "== INCLUDE: %-5.5s\n", $name );
+                }
+            }
+        }
+        if   ( $incfilter > 0 ) { $passfilter++; }
+        else                    { $failfilter++; }
+    }
+    my $info = $servers{$name}{distance};
+    if ( @closestservers < $numservers && $passfilter > 0 && $failfilter < 1 ) {
+        push( @closestservers, $name );
+        if ( $DBG > 2 ) {
+            my $df = sprintf( "%05.11f", $info );
+            printf( "== serverdistance:: %5.5s: %17s ==\n", $name, $df );
+        }
     }
 }
 if ( $DBG > 1 ) {
@@ -1164,13 +1461,22 @@ if ($optlist) {
         $maxwidth{$serveratt} = length($serveratt);
         foreach my $server (@closestservers) {
             if ( $serveratt eq "distance" ) {
-                my $prettydistance = sprintf(
-                    "%.${DBG}f km (%.${DBG}f mi)",
-                    $servers{$server}{distance},
-                    ( $servers{$server}{distance} * 0.621371 )
-                );
-                if ( length($prettydistance) > $maxwidth{$serveratt} ) {
-                    $maxwidth{$serveratt} = length($prettydistance);
+                $maxwidth{distancekm} = 3;
+                $maxwidth{distancemi} = 3;
+                my $prettydistancekm =
+                  sprintf( "%.${DBG}f km", $servers{$server}{distance} );
+                my $prettydistancemi = sprintf( "%.${DBG}f mi",
+                    ( $servers{$server}{distance} * 0.621371 ) );
+                my $prettydistance =
+                  $prettydistancekm . " | " . $prettydistancemi;
+                if ( length($prettydistancekm) > $maxwidth{distancekm} ) {
+                    $maxwidth{distancekm} = length($prettydistancekm);
+                }
+                if ( length($prettydistancemi) > $maxwidth{distancemi} ) {
+                    $maxwidth{distancemi} = length($prettydistancemi);
+                }
+                if ( length($prettydistance) > $maxwidth{distance} ) {
+                    $maxwidth{distance} = length($prettydistance);
                 }
             }
             elsif (
@@ -1196,7 +1502,14 @@ if ($optlist) {
     printf("|");
     foreach my $serveratt (@serverattslist) {
         my $colwidth = $maxwidth{$serveratt};
-        printf( " %-${colwidth}.${colwidth}s |", $serveratt );
+        my $thwidth  = length($serveratt);
+        my $thpad    = ( ( $colwidth - $thwidth ) / 2 );
+        my $thnbsp   = "";
+        while ( length($thnbsp) < $thpad ) {
+            $thnbsp = $thnbsp . " ";
+        }
+        my $serverattth = $thnbsp . $serveratt;
+        printf( " %-${colwidth}.${colwidth}s |", $serverattth );
     }
     printf("\n");
     printf("$hr");
@@ -1210,12 +1523,15 @@ if ($optlist) {
                 $lj = "-";
             }
             if ( $serveratt eq "distance" ) {
-                my $prettydistance = sprintf(
-                    "%.${DBG}f km (%.${DBG}f mi)",
-                    $servers{$server}{distance},
-                    ( $servers{$server}{distance} * 0.621371 )
-                );
-                printf( " %${lj}${colwidth}.${colwidth}s |", $prettydistance );
+                my $prettydistancekm =
+                  sprintf( "%.${DBG}f km", $servers{$server}{distance} );
+                my $prettydistancemi = sprintf( "%.${DBG}f mi",
+                    ( $servers{$server}{distance} * 0.621371 ) );
+                my $colwidthkm = $maxwidth{distancekm};
+                my $colwidthmi = $maxwidth{distancemi};
+                printf(
+" %${lj}${colwidthkm}.${colwidthkm}s | %${lj}${colwidthmi}.${colwidthmi}s |",
+                    $prettydistancekm, $prettydistancemi );
             }
             else {
                 printf( " %${lj}${colwidth}.${colwidth}s |",
@@ -1265,110 +1581,140 @@ sub hashValueDescendingPing {
 }
 
 ################################################################################
-# Select best server based on ping from pool of closest servers
+# Select best server based on command line or ping from pool of closest servers
 ################################################################################
-if ( $DBG > 1 ) {
-    print "= Selecting best server based on ping...\n";
-    if ( $DBG > 2 ) {
+# Set invalid best server for catching errors
+my $bestserver = -1;
+if ($optid) {
+    if ( $DBG > 1 ) {
+        print "= Selecting best server based on command-line option...";
+    }
+    foreach my $serverid ( keys %servers ) {
+        my $id = $servers{$serverid}{id};
+        if ( $id eq $optid ) {
+            $bestserver = $id;
+        }
+    }
+    if ( $DBG > 1 ) {
         print "\n";
     }
 }
-foreach my $server (@closestservers) {
+else {
     if ( $DBG > 1 ) {
-        print "= Checking $servers{$server}{name} Hosted by ";
-        print "$servers{$server}{sponsor}$servers{$server}{neighbourhood}";
+        print "= Selecting best server based on ping...\n";
         if ( $DBG > 2 ) {
-            printf("\n================ SERVER:");
-            printf( " %5.5s ================\n", $server );
-            foreach my $serveratt (@serveratts) {
-                printf( "== %8.8s:",      $serveratt );
-                printf( " %-31.31s ==\n", $servers{$server}{$serveratt} );
-            }
-            print "===============================================\n";
+            print "\n";
         }
     }
-    my ( $scheme, $auth, $path, $query, $frag ) =
-      uri_split( $servers{$server}{url} );
-    my $dirname   = dirname($path);
-    my $url       = uri_join( $scheme, $auth, $dirname );
-    my $pingcount = 0;
-    $latencyresults{$server}{totalelapsed} = 0;
-    $latencyresults{$server}{totalpings}   = 0;
-    while ( $pingcount < $numpingtest ) {
+    foreach my $server (@closestservers) {
+        if ( $DBG > 1 ) {
+            print "= Checking $servers{$server}{name} Hosted by ";
+            print "$servers{$server}{sponsor}";
+            if ( $DBG > 2 ) {
+                printf("\n================ SERVER:");
+                printf( " %5.5s ================\n", $server );
+                foreach my $serveratt (@serveratts) {
+                    printf( "== %8.8s:",      $serveratt );
+                    printf( " %-31.31s ==\n", $servers{$server}{$serveratt} );
+                }
+                print "===============================================\n";
+            }
+        }
+        my ( $scheme, $auth, $path, $query, $frag ) =
+          uri_split( $servers{$server}{url} );
+        my $dirname   = dirname($path);
+        my $url       = uri_join( $scheme, $auth, $dirname );
+        my $pingcount = 0;
+        $latencyresults{$server}{totalelapsed} = 0;
+        $latencyresults{$server}{totalpings}   = 0;
+        while ( $pingcount < $numpingtest ) {
+
+            if ( $DBG > 1 ) {
+                print ".";
+                if ( $DBG > 2 ) {
+                    print "\n";
+                }
+            }
+
+            ( $sepoch, $usecepoch ) = gettimeofday();
+            $msecepoch = ( $usecepoch / 1000 );
+            $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
+            my $latencyuri = $url . "/latency.txt?x=" . $msepoch;
+            if ( $DBG > 2 ) {
+                print "== Retrieving $latencyuri latency $pingcount took ";
+            }
+
+            $browser->setopt( CURLOPT_URL, $latencyuri );
+            my $latencytxt;
+            $browser->setopt( CURLOPT_WRITEDATA, \$latencytxt );
+            ( my $s0, my $usec0 ) = gettimeofday();
+            $retcode = $browser->perform;
+            ( my $s1, my $usec1 ) = gettimeofday();
+            warn "\nCannot get $latencyuri -- $retcode "
+              . $browser->strerror($retcode) . " "
+              . $browser->errbuf . "\n"
+              unless ( $retcode == 0 );
+            warn "\nDid not receive TXT, got -- ",
+              $browser->getinfo(CURLINFO_CONTENT_TYPE)
+              unless $browser->getinfo(CURLINFO_CONTENT_TYPE) =~
+              m/^text\/plain/;
+            my $selapsed        = $s1 - $s0;
+            my $usecelapsed     = $usec1 - $usec0;
+            my $stomselapsed    = ( $selapsed * 1000 );
+            my $usectomselapsed = ( $usecelapsed / 1000 );
+            my $mselapsed       = $stomselapsed + $usectomselapsed;
+
+            if (   $latencytxt =~ m/^test=test/
+                && $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/plain/
+                && $retcode == 0 )
+            {
+                $latencyresults{$server}{totalelapsed} =
+                  $latencyresults{$server}{totalelapsed} + $mselapsed;
+                $latencyresults{$server}{totalpings}++;
+            }
+            if ( $DBG > 2 ) {
+                print "$mselapsed milliseconds. done. ==\n";
+            }
+
+            usleep( $latency{waittime} * 1000 );
+            $pingcount++;
+        }
+        if ( $DBG > 2 ) {
+            print "== $latencyresults{$server}{totalpings} runs took ";
+            print "$latencyresults{$server}{totalelapsed} milliseconds. ==\n";
+        }
+        $latencyresults{$server}{avgelapsed} =
+          $latencyresults{$server}{totalelapsed} /
+          $latencyresults{$server}{totalpings};
 
         if ( $DBG > 1 ) {
-            print ".";
-            if ( $DBG > 2 ) {
-                print "\n";
-            }
+            printf("done: =\n= \t");
+            printf( "%.${DBG}f ", $latencyresults{$server}{avgelapsed} );
+            printf("millisecond average. =\n");
         }
-
-        ( $sepoch, $usecepoch ) = gettimeofday();
-        $msecepoch = ( $usecepoch / 1000 );
-        $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
-        my $latencyuri = $url . "/latency.txt?x=" . $msepoch;
-        if ( $DBG > 2 ) {
-            print "== Retrieving $latencyuri latency $pingcount took ";
-        }
-
-        $browser->setopt( CURLOPT_URL, $latencyuri );
-        my $latencytxt;
-        $browser->setopt( CURLOPT_WRITEDATA, \$latencytxt );
-        ( my $s0, my $usec0 ) = gettimeofday();
-        $retcode = $browser->perform;
-        ( my $s1, my $usec1 ) = gettimeofday();
-        warn "\nCannot get $latencyuri -- $retcode "
-          . $browser->strerror($retcode) . " "
-          . $browser->errbuf . "\n"
-          unless ( $retcode == 0 );
-        warn "\nDid not receive TXT, got -- ",
-          $browser->getinfo(CURLINFO_CONTENT_TYPE)
-          unless $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/plain/;
-        my $selapsed        = $s1 - $s0;
-        my $usecelapsed     = $usec1 - $usec0;
-        my $stomselapsed    = ( $selapsed * 1000 );
-        my $usectomselapsed = ( $usecelapsed / 1000 );
-        my $mselapsed       = $stomselapsed + $usectomselapsed;
-
-        if (   $latencytxt =~ m/^test=test/
-            && $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^text\/plain/
-            && $retcode == 0 )
-        {
-            $latencyresults{$server}{totalelapsed} =
-              $latencyresults{$server}{totalelapsed} + $mselapsed;
-            $latencyresults{$server}{totalpings}++;
-        }
-        if ( $DBG > 2 ) {
-            print "$mselapsed milliseconds. done. ==\n";
-        }
-
-        usleep( $latency{waittime} * 1000 );
-        $pingcount++;
     }
     if ( $DBG > 2 ) {
-        print "== $latencyresults{$server}{totalpings} runs took ";
-        print "$latencyresults{$server}{totalelapsed} milliseconds. ==\n";
+        print "================ PING AVERAGE =================\n";
     }
-    $latencyresults{$server}{avgelapsed} =
-      $latencyresults{$server}{totalelapsed} /
-      $latencyresults{$server}{totalpings};
-
-    if ( $DBG > 1 ) {
-        printf("done: =\n= \t");
-        printf( "%.${DBG}f ", $latencyresults{$server}{avgelapsed} );
-        printf("millisecond average. =\n");
+    foreach my $name ( sort hashValueDescendingPing ( keys(%latencyresults) ) )
+    {
+        my $info = $latencyresults{$name}{avgelapsed};
+        if ( $DBG > 2 ) {
+            printf( "== pingaverage:: %5.5s: %-20.20s ==\n", $name, $info );
+        }
+        $bestserver = $name;
     }
 }
-my $bestserver = -1;
-if ( $DBG > 2 ) {
-    print "================ PING AVERAGE =================\n";
-}
-foreach my $name ( sort hashValueDescendingPing ( keys(%latencyresults) ) ) {
-    my $info = $latencyresults{$name}{avgelapsed};
-    if ( $DBG > 2 ) {
-        printf( "== pingaverage:: %5.5s: %-20.20s ==\n", $name, $info );
+if ( $bestserver == -1 ) {
+    if ($optid) {
+        print STDERR "Value \"$optid\" is an invalid server id ";
+        print STDERR "option.\nPlease select an id from the output of the ";
+        print STDERR "list option.\n";
     }
-    $bestserver = $name;
+    else {
+        print STDERR "Unable to find a useable server. Aborting!\n";
+    }
+    exit 1;
 }
 if ( $DBG > 0 ) {
     if ( $DBG > 2 ) {
@@ -1644,7 +1990,10 @@ foreach my $hwpixel (@hwpixels) {
             $browser->setopt( CURLOPT_POST,          1 );
             $browser->setopt( CURLOPT_POSTFIELDS,    $ulrandimage );
             $browser->setopt( CURLOPT_POSTFIELDSIZE, $ulrandimagesize );
-            $browser->setopt( CURLOPT_REFERER,       $flshuri );
+            my @postheaders = ();
+            $postheaders[0] = "Content-Type: image/png";
+            $browser->setopt( CURLOPT_HTTPHEADER, \@postheaders );
+            $browser->setopt( CURLOPT_REFERER,    $flshuri );
             my $ulspeedout;
             $browser->setopt( CURLOPT_WRITEDATA, \$ulspeedout );
             ( my $s0, my $usec0 ) = gettimeofday();
