@@ -67,18 +67,24 @@ my $release = "%{RELEASE}";       # Release string
 my $protocol = "http";            # Use unencrypted HTTP protocol
 my $domain   = "speedtest.net";   # Speedtest.net domain
 my $host     = "www";             # World-Wide Web host
+my $gndomain = "geonames.org";    # GeoNames domain
+my $gnhost   = "api";             # API host
+
+my $gnusername = "bdperkin";      # Username for GeoNames API
 
 ################################################################################
 # Generate composite constants
 ################################################################################
 my $wsnuri = "$protocol://$host.$domain";
 my $csnuri = "$protocol://c.$domain";
+my $gnouri = "$protocol://$gnhost.$gndomain";
 
 my $cnfguri = "$wsnuri/speedtest-config.php";
 my $srvruri = "$wsnuri/speedtest-servers.php";
 my $aapiuri = "$wsnuri/api/api.php";
 my $flshuri = "$csnuri/flash/speedtest.swf";
 my $rslturi = "$wsnuri/result/%s.png";
+my $gefnuri = "$gnouri/extendedFindNearby";
 
 ################################################################################
 # Specify module configuration options to be enabled
@@ -401,7 +407,7 @@ $client{ispulavg} = $configxp->find('/settings/client/@ispulavg')->string_value;
 $client{loggedin} = $configxp->find('/settings/client/@loggedin')->string_value;
 
 my $clientneighbourhoodurl =
-"http://api.geonames.org/extendedFindNearby?lat=$client{lat}&lng=$client{lon}&username=bdperkin";
+  "$gefnuri?lat=$client{lat}&lng=$client{lon}&username=$gnusername";
 if ( $DBG > 1 ) {
     print "\n= Retrieving geographic neighbourhood data for $client{isp}...";
     if ( $DBG > 2 ) {
@@ -428,35 +434,100 @@ my @geoatts               = (
     'placename',  'adminCode2', 'adminName2', 'adminCode1',
     'adminName1', 'countryCode'
 );
-foreach my $geoatt (@geoatts) {
-    my $att = "/geonames/address/" . $geoatt;
-    $client{$geoatt} = $clientneighbourhoodxp->find($att)->string_value;
-}
 my $clientneighbourhood = "";
-if ( $client{countryCode} ) {
-    $clientneighbourhood = $clientneighbourhood . " => $client{countryCode}";
-}
-if ( $client{adminCode1} || $client{adminName1} ) {
-    $clientneighbourhood = $clientneighbourhood . " =>";
-    if ( $client{adminCode1} ) {
-        $clientneighbourhood = $clientneighbourhood . " $client{adminCode1}";
+if ( $clientneighbourhoodxp->exists('/geonames/address') ) {
+    if ( $DBG > 2 ) {
+        print "== Address GeoName Available for $client{isp} ==\n";
     }
-    if ( $client{adminName1} ) {
-        $clientneighbourhood = $clientneighbourhood . " ($client{adminName1})";
+    foreach my $geoatt (@geoatts) {
+        my $att = "/geonames/address/" . $geoatt;
+        $client{$geoatt} = $clientneighbourhoodxp->find($att)->string_value;
+    }
+    if ( $client{countryCode} ) {
+        $clientneighbourhood =
+          $clientneighbourhood . " => $client{countryCode}";
+    }
+    if ( $client{adminCode1} || $client{adminName1} ) {
+        $clientneighbourhood = $clientneighbourhood . " =>";
+        if ( $client{adminCode1} ) {
+            $clientneighbourhood =
+              $clientneighbourhood . " $client{adminCode1}";
+        }
+        if ( $client{adminName1} ) {
+            $clientneighbourhood =
+              $clientneighbourhood . " ($client{adminName1})";
+        }
+    }
+    if ( $client{adminCode2} || $client{adminName2} ) {
+        $clientneighbourhood = $clientneighbourhood . " =>";
+        if ( $client{adminCode2} ) {
+            $clientneighbourhood =
+              $clientneighbourhood . " $client{adminCode2}";
+        }
+        if ( $client{adminName2} ) {
+            $clientneighbourhood =
+              $clientneighbourhood . " ($client{adminName2})";
+        }
+    }
+    if ( $client{placename} ) {
+        $clientneighbourhood = $clientneighbourhood . " => $client{placename}";
     }
 }
-if ( $client{adminCode2} || $client{adminName2} ) {
-    $clientneighbourhood = $clientneighbourhood . " =>";
-    if ( $client{adminCode2} ) {
-        $clientneighbourhood = $clientneighbourhood . " $client{adminCode2}";
+elsif ( $clientneighbourhoodxp->exists('/geonames/geoname') ) {
+    if ( $DBG > 2 ) {
+        print "== GeoName GeoName Available for $client{isp} ==\n";
     }
-    if ( $client{adminName2} ) {
-        $clientneighbourhood = $clientneighbourhood . " ($client{adminName2})";
+    my $geonamenodes = $clientneighbourhoodxp->find('/geonames/geoname');
+    $client{countryName} = "";
+    $client{adminName1}  = "";
+    $client{adminName2}  = "";
+    $client{placename}   = "";
+    foreach my $geoname ( $geonamenodes->get_nodelist ) {
+        my $gvalue = $geoname->find('name')->string_value;
+        my $gkey   = $geoname->find('fcode')->string_value;
+        $client{countryCode} = $geoname->find('countryCode')->string_value;
+        $client{countryName} = $geoname->find('countryName')->string_value;
+        if ($gvalue) {
+            $clientneighbourhood = $clientneighbourhood . " => $gvalue";
+        }
+        if ( $gkey =~ m/^PCLI/ ) {
+            $client{countryName} = $gvalue;
+        }
+        $client{adminCode1} = "";
+        if ( $gkey =~ m/^ADM1/ ) {
+            $client{adminName1} = $gvalue;
+        }
+        $client{adminCode2} = "";
+        if ( $gkey =~ m/^ADM2/ ) {
+            $client{adminName2} = $gvalue;
+        }
+        if ( $gkey =~ m/^PP/ ) {
+            $client{placename} = $gvalue;
+        }
     }
 }
-if ( $client{placename} ) {
-    $clientneighbourhood = $clientneighbourhood . " => $client{placename}";
+elsif ( $clientneighbourhoodxp->exists('/geonames/ocean') ) {
+    if ( $DBG > 2 ) {
+        print "== Ocean GeoName Available for $client{isp} ==\n";
+    }
+    foreach my $geoatt (@geoatts) {
+        $client{$geoatt} = "";
+    }
+    my $ocean =
+      $clientneighbourhoodxp->find('/geonames/ocean/name')->string_value;
+    if ($ocean) {
+        $client{placename} = $ocean;
+        $clientneighbourhood = $clientneighbourhood . " => $ocean";
+    }
 }
+else {
+    warn "Unknown geography description:\n$clientneighbourhoodxml\n";
+}
+$client{neighbourhood} = $clientneighbourhood;
+if ( $DBG > 1 ) {
+    print "= $clientneighbourhood =\n";
+}
+
 $client{clientneighbourhood} = $clientneighbourhood;
 
 # times settings hash
@@ -1173,13 +1244,13 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
             my $cc = country2code($country);
             if ( !$cc ) {
                 print STDERR
-                  "\nUnable to find country code \"$country\". Aborting!\n";
+                  "\nUnable to find country code for \"$country\". Aborting!\n";
                 exit 1;
             }
             if ( $servers{$name}{country} =~ m/$country/i ) {
                 if ( $cc !~ m/$servers{$name}{cc}/i ) {
                     print STDERR
-"\nCountry code \"$country\" does not match country \"$servers{$name}{cc}\". Excluding!\n";
+"\nCountry \"$country\" does not match country code \"$servers{$name}{cc}\". Excluding!\n";
                     $failfilter++;
                 }
                 $failfilter++;
@@ -1198,13 +1269,13 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
             my $cc = country2code($country);
             if ( !$cc ) {
                 print STDERR
-                  "\nUnable to find country code \"$country\". Aborting!\n";
+                  "\nUnable to find country code for \"$country\". Aborting!\n";
                 exit 1;
             }
             if ( $servers{$name}{country} =~ m/$country/i ) {
                 if ( $cc !~ m/$servers{$name}{cc}/i ) {
                     print STDERR
-"\nCountry code \"$country\" does not match country \"$servers{$name}{cc}\". Excluding!\n";
+"\nCountry \"$country\" does not match country code \"$servers{$name}{cc}\". Excluding!\n";
                     $failfilter++;
                 }
                 $incfilter++;
@@ -1397,7 +1468,7 @@ if ( $DBG > 1 ) {
 ################################################################################
 foreach my $server (@closestservers) {
     my $neighbourhoodurl =
-"http://api.geonames.org/extendedFindNearby?lat=$servers{$server}{lat}&lng=$servers{$server}{lon}&username=bdperkin";
+"$gefnuri?lat=$servers{$server}{lat}&lng=$servers{$server}{lon}&username=$gnusername";
     if ( $DBG > 1 ) {
         print
 "= Retrieving geographic neighbourhood data for $servers{$server}{name}...";
@@ -1423,38 +1494,132 @@ foreach my $server (@closestservers) {
         print "done. =\n";
     }
     my $neighbourhoodxp = XML::XPath->new($neighbourhoodxml);
-    foreach my $geoatt (@geoatts) {
-        my $att = "/geonames/address/" . $geoatt;
-        $servers{$server}{$geoatt} = $neighbourhoodxp->find($att)->string_value;
-    }
-    my $neighbourhood = "";
-    if ( $servers{$server}{countryCode} ) {
-        $neighbourhood = $neighbourhood . " => $servers{$server}{countryCode}";
-    }
-    if ( $servers{$server}{adminCode1} || $servers{$server}{adminName1} ) {
-        $neighbourhood = $neighbourhood . " =>";
-        if ( $servers{$server}{adminCode1} ) {
-            $neighbourhood = $neighbourhood . " $servers{$server}{adminCode1}";
+    my $neighbourhood   = "";
+    if ( $neighbourhoodxp->exists('/geonames/address') ) {
+        if ( $DBG > 2 ) {
+            print
+              "== Address GeoName Available for $servers{$server}{name} ==\n";
         }
-        if ( $servers{$server}{adminName1} ) {
+        foreach my $geoatt (@geoatts) {
+            my $att = "/geonames/address/" . $geoatt;
+            $servers{$server}{$geoatt} =
+              $neighbourhoodxp->find($att)->string_value;
+        }
+        if ( $servers{$server}{countryCode} ) {
+            my $country = code2country( $servers{$server}{countryCode} );
+            if ( !$country ) {
+                print STDERR
+"\nUnable to find country code \"$servers{$server}{countryCode}\". Aborting!\n";
+                exit 1;
+            }
+            if ( $servers{$server}{countryCode} !~ m/^$servers{$server}{cc}$/ )
+            {
+                print STDERR
+"\nGeographic country code \"$servers{$server}{countryCode}\" does not match server metadata country code \"$servers{$server}{cc}\"\n";
+            }
+            if ( $country !~ m/^$servers{$server}{country}$/ ) {
+                print STDERR
+"\nGeographic country \"$country\" does not match server metadata country \"$servers{$server}{country}\"\n";
+            }
             $neighbourhood =
-              $neighbourhood . " ($servers{$server}{adminName1})";
+              $neighbourhood . " => $servers{$server}{countryCode}";
         }
-    }
-    if ( $servers{$server}{adminCode2} || $servers{$server}{adminName2} ) {
-        $neighbourhood = $neighbourhood . " =>";
-        if ( $servers{$server}{adminCode2} ) {
-            $neighbourhood = $neighbourhood . " $servers{$server}{adminCode2}";
+        if ( $servers{$server}{adminCode1} || $servers{$server}{adminName1} ) {
+            $neighbourhood = $neighbourhood . " =>";
+            if ( $servers{$server}{adminCode1} ) {
+                $neighbourhood =
+                  $neighbourhood . " $servers{$server}{adminCode1}";
+            }
+            if ( $servers{$server}{adminName1} ) {
+                $neighbourhood =
+                  $neighbourhood . " ($servers{$server}{adminName1})";
+            }
         }
-        if ( $servers{$server}{adminName2} ) {
+        if ( $servers{$server}{adminCode2} || $servers{$server}{adminName2} ) {
+            $neighbourhood = $neighbourhood . " =>";
+            if ( $servers{$server}{adminCode2} ) {
+                $neighbourhood =
+                  $neighbourhood . " $servers{$server}{adminCode2}";
+            }
+            if ( $servers{$server}{adminName2} ) {
+                $neighbourhood =
+                  $neighbourhood . " ($servers{$server}{adminName2})";
+            }
+        }
+        if ( $servers{$server}{placename} ) {
             $neighbourhood =
-              $neighbourhood . " ($servers{$server}{adminName2})";
+              $neighbourhood . " => $servers{$server}{placename}";
         }
     }
-    if ( $servers{$server}{placename} ) {
-        $neighbourhood = $neighbourhood . " => $servers{$server}{placename}";
+    elsif ( $neighbourhoodxp->exists('/geonames/geoname') ) {
+        if ( $DBG > 2 ) {
+            print
+              "== GeoName GeoName Available for $servers{$server}{name} ==\n";
+        }
+        my $geonamenodes = $neighbourhoodxp->find('/geonames/geoname');
+        $servers{$server}{countryName} = "";
+        $servers{$server}{adminName1}  = "";
+        $servers{$server}{adminName2}  = "";
+        $servers{$server}{placename}   = "";
+        foreach my $geoname ( $geonamenodes->get_nodelist ) {
+            my $gvalue = $geoname->find('name')->string_value;
+            my $gkey   = $geoname->find('fcode')->string_value;
+            $servers{$server}{countryCode} =
+              $geoname->find('countryCode')->string_value;
+            $servers{$server}{countryName} =
+              $geoname->find('countryName')->string_value;
+            if ($gvalue) {
+                $neighbourhood = $neighbourhood . " => $gvalue";
+            }
+            if ( $gkey =~ m/^PCLI/ ) {
+                if ( $servers{$server}{countryCode} !~
+                    m/^$servers{$server}{cc}$/ )
+                {
+                    print STDERR
+"\nGeographic country code \"$servers{$server}{countryCode}\" does not match server metadata country code \"$servers{$server}{cc}\"\n";
+                }
+                if ( $servers{$server}{countryName} !~
+                    m/^$servers{$server}{country}$/ )
+                {
+                    print STDERR
+"\nGeographic country \"$servers{$server}{countryName}\" does not match server metadata country \"$servers{$server}{country}\"\n";
+                }
+                $servers{$server}{countryName} = $gvalue;
+            }
+            $servers{$server}{adminCode1} = "";
+            if ( $gkey =~ m/^ADM1/ ) {
+                $servers{$server}{adminName1} = $gvalue;
+            }
+            $servers{$server}{adminCode2} = "";
+            if ( $gkey =~ m/^ADM2/ ) {
+                $servers{$server}{adminName2} = $gvalue;
+            }
+            if ( $gkey =~ m/^PP/ ) {
+                $servers{$server}{placename} = $gvalue;
+            }
+        }
+    }
+    elsif ( $neighbourhoodxp->exists('/geonames/ocean') ) {
+        if ( $DBG > 2 ) {
+            print "== Ocean GeoName Available for $servers{$server}{name} ==\n";
+        }
+        foreach my $geoatt (@geoatts) {
+            $servers{$server}{$geoatt} = "";
+        }
+        my $ocean =
+          $neighbourhoodxp->find('/geonames/ocean/name')->string_value;
+        if ($ocean) {
+            $servers{$server}{placename} = $ocean;
+            $neighbourhood = $neighbourhood . " => $ocean";
+        }
+    }
+    else {
+        warn "Unknown geography description:\n$neighbourhoodxml\n";
     }
     $servers{$server}{neighbourhood} = $neighbourhood;
+    if ( $DBG > 1 ) {
+        print "= $neighbourhood =\n";
+    }
 }
 
 ################################################################################
