@@ -60,7 +60,7 @@ $ENV{PAGER} = "more";             # Keep pod2usage output happy
 
 my $name    = "inspectorates";    # Name string
 my $version = "0.0.10";           # Version number
-my $release = "1.fc18";           # Release string
+my $release = "1.fc19";           # Release string
 
 my $protocol = "http";            # Use unencrypted HTTP protocol
 my $domain   = "speedtest.net";   # Speedtest.net domain

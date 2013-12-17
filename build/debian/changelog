@@ -1,4 +1,4 @@
-inspectorates (0.0.10-1.fc18) experimental; urgency=low
+inspectorates (0.0.10-1.fc19) experimental; urgency=low
 
   * Converted from .rpm format to .deb by alien version unknown
   
@@ -13,4 +13,4 @@ inspectorates (0.0.10-1.fc18) experimental; urgency=low
     (bperkins@redhat.com)
   - Print a list of candidate servers. (bperkins@redhat.com)
 
- -- Brandon Perkins <bperkins@redhat.com>  Mon, 25 Mar 2013 16:13:13 -0400
+ -- Brandon Perkins <bperkins@redhat.com>  Tue, 17 Dec 2013 10:28:59 -0500
