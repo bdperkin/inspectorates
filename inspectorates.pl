@@ -268,7 +268,7 @@ if ( $DBG > 2 ) {
         if ( $modlength > $maxmodlength ) {
             $maxmodlength = $modlength;
         }
-    }
+    } ## end foreach my $name ( keys %INC)
     my $modverlength = ( $dbgtablewidth - $maxmodlength - 8 );
     foreach my $name ( sort ( keys %INC ) ) {
         $name =~ s/\//::/g;
@@ -277,16 +277,16 @@ if ( $DBG > 2 ) {
         my $modver     = eval("\$$modvername");
         printf(
 "== %${maxmodlength}.${maxmodlength}s: %-${modverlength}.${modverlength}s ==\n",
-            $name, $modver )
-          if defined $modver;
-    }
+            $name, $modver
+        ) if defined $modver;
+    } ## end foreach my $name ( sort ( keys...))
     $eqcount = 0;
     while ( $eqcount < $dbgtablewidth ) {
         printf("=");
         $eqcount++;
     }
     print "\n";
-}
+} ## end if ( $DBG > 2 )
 
 ################################################################################
 # Main function
@@ -305,12 +305,14 @@ my @curlversions = split( /\s/, $curlversion );
 my %libversions;
 foreach my $curlver (@curlversions) {
     my ( $lib, $ver ) = split( /\//, $curlver );
-    my ( $major, $minor, $patch ) = split( /\./, $ver );
-    $libversions{$lib}              = $ver;
-    $libversions{ $lib . '-major' } = $major;
-    $libversions{ $lib . '-minor' } = $minor;
-    $libversions{ $lib . '-patch' } = $patch;
-}
+    if ($ver) {
+        my ( $major, $minor, $patch ) = split( /\./, $ver );
+        $libversions{$lib}              = $ver;
+        $libversions{ $lib . '-major' } = $major;
+        $libversions{ $lib . '-minor' } = $minor;
+        $libversions{ $lib . '-patch' } = $patch;
+    } ## end if ($ver)
+} ## end foreach my $curlver (@curlversions)
 if ( $DBG > 2 ) {
     my $title = "curl, libcurl, & 3rd party library versions";
     $title =~ tr/a-z/A-Z/;
@@ -330,22 +332,22 @@ if ( $DBG > 2 ) {
         if ( $modlength > $maxmodlength ) {
             $maxmodlength = $modlength;
         }
-    }
+    } ## end foreach my $name ( keys %libversions)
     my $modverlength = ( $dbgtablewidth - $maxmodlength - 8 );
     foreach my $name ( sort ( keys %libversions ) ) {
         my $info = $libversions{$name};
         printf(
 "== %${maxmodlength}.${maxmodlength}s: %-${modverlength}.${modverlength}s ==\n",
-            $name, $info )
-          if defined $info;
-    }
+            $name, $info
+        ) if defined $info;
+    } ## end foreach my $name ( sort ( keys...))
     $eqcount = 0;
     while ( $eqcount < $dbgtablewidth ) {
         printf("=");
         $eqcount++;
     }
     print "\n";
-}
+} ## end if ( $DBG > 2 )
 
 $browser->setopt( CURLOPT_HEADER,      0 );
 $browser->setopt( CURLOPT_NOPROGRESS,  1 );
@@ -365,7 +367,7 @@ if ( $DBG > 1 ) {
     if ( $DBG > 2 ) {
         print "\n== GET $cnfguri ==\n";
     }
-}
+} ## end if ( $DBG > 1 )
 
 $browser->setopt( CURLOPT_URL, $cnfguri );
 my $configxml;
@@ -389,7 +391,7 @@ if ( $DBG > 1 ) {
     if ( $DBG > 2 ) {
         print "\n";
     }
-}
+} ## end if ( $DBG > 1 )
 
 my $configxp = XML::XPath->new($configxml);
 
@@ -413,7 +415,7 @@ if ( $DBG > 1 ) {
     if ( $DBG > 2 ) {
         print "\n== GET $clientneighbourhoodurl ==\n";
     }
-}
+} ## end if ( $DBG > 1 )
 $browser->setopt( CURLOPT_URL, $clientneighbourhoodurl );
 my $clientneighbourhoodxml;
 $browser->setopt( CURLOPT_WRITEDATA, \$clientneighbourhoodxml );
@@ -457,7 +459,7 @@ if ( $clientneighbourhoodxp->exists('/geonames/address') ) {
             $clientneighbourhood =
               $clientneighbourhood . " ($client{adminName1})";
         }
-    }
+    } ## end if ( $client{adminCode1...})
     if ( $client{adminCode2} || $client{adminName2} ) {
         $clientneighbourhood = $clientneighbourhood . " =>";
         if ( $client{adminCode2} ) {
@@ -468,12 +470,11 @@ if ( $clientneighbourhoodxp->exists('/geonames/address') ) {
             $clientneighbourhood =
               $clientneighbourhood . " ($client{adminName2})";
         }
-    }
+    } ## end if ( $client{adminCode2...})
     if ( $client{placename} ) {
         $clientneighbourhood = $clientneighbourhood . " => $client{placename}";
     }
-}
-elsif ( $clientneighbourhoodxp->exists('/geonames/geoname') ) {
+} elsif ( $clientneighbourhoodxp->exists('/geonames/geoname') ) {
     if ( $DBG > 2 ) {
         print "== GeoName GeoName Available for $client{isp} ==\n";
     }
@@ -504,9 +505,8 @@ elsif ( $clientneighbourhoodxp->exists('/geonames/geoname') ) {
         if ( $gkey =~ m/^PP/ ) {
             $client{placename} = $gvalue;
         }
-    }
-}
-elsif ( $clientneighbourhoodxp->exists('/geonames/ocean') ) {
+    } ## end foreach my $geoname ( $geonamenodes...)
+} elsif ( $clientneighbourhoodxp->exists('/geonames/ocean') ) {
     if ( $DBG > 2 ) {
         print "== Ocean GeoName Available for $client{isp} ==\n";
     }
@@ -519,8 +519,7 @@ elsif ( $clientneighbourhoodxp->exists('/geonames/ocean') ) {
         $client{placename} = $ocean;
         $clientneighbourhood = $clientneighbourhood . " => $ocean";
     }
-}
-else {
+} else {
     warn "Unknown geography description:\n$clientneighbourhoodxml\n";
 }
 $client{neighbourhood} = $clientneighbourhood;
@@ -595,23 +594,23 @@ if ( $DBG > 2 ) {
             if ( $keylength > $maxkeylength ) {
                 $maxkeylength = $keylength;
             }
-        }
+        } ## end foreach my $name ( keys %$confighash)
         my $vallength = ( $dbgtablewidth - $maxkeylength - 8 );
         foreach my $name ( sort ( keys %$confighash ) ) {
             my $value = $$confighash{$name};
             printf(
 "== %${maxkeylength}.${maxkeylength}s: %-${vallength}.${vallength}s ==\n",
-                $name, $value )
-              if defined $value;
-        }
-    }
+                $name, $value
+            ) if defined $value;
+        } ## end foreach my $name ( sort ( keys...))
+    } ## end foreach my $confighash (@confighashes)
     $eqcount = 0;
     while ( $eqcount < $dbgtablewidth ) {
         printf("=");
         $eqcount++;
     }
     printf("\n");
-}
+} ## end if ( $DBG > 2 )
 if ( $DBG > 0 ) {
     if ( $DBG > 1 ) {
         print "done. =\n";
@@ -619,7 +618,7 @@ if ( $DBG > 0 ) {
     print "Client IP Address: $client{ip}\n";
     print
 "Client Internet Service Provider: $client{isp}$client{clientneighbourhood}\n";
-}
+} ## end if ( $DBG > 0 )
 
 ################################################################################
 # Process specific Ookla Speedtest® connection testing server
@@ -657,7 +656,7 @@ if ($opturl) {
             $host = $host . "." . $fqdn[$namenum];
         }
         $namenum++;
-    }
+    } ## end while ( $namenum < $fqdnsize)
 
     $host =~ s/^\.//g;
     $domain  = $fqdn[ $fqdnsize - 2 ] . "." . $fqdn[ $fqdnsize - 1 ];
@@ -685,7 +684,7 @@ if ($opturl) {
                 if ( $DBG > 2 ) {
                     print "\n== GET $sttngsuri ==\n";
                 }
-            }
+            } ## end if ( $DBG > 1 )
 
             $browser->setopt( CURLOPT_URL,       $sttngsuri );
             $browser->setopt( CURLOPT_WRITEDATA, \$settingsxml );
@@ -698,8 +697,7 @@ if ($opturl) {
                 m/^(application|text)\/xml/ )
             {
                 $validsettings = 1;
-            }
-            else {
+            } else {
                 undef $settingsxml;
             }
             if ( $DBG > 1 ) {
@@ -707,16 +705,15 @@ if ($opturl) {
                     print "== ";
                     if ($validsettings) {
                         print "GOT SETTINGS";
-                    }
-                    else {
+                    } else {
                         print "NO SETTINGS FOUND";
                     }
                     print " ==\n";
-                }
+                } ## end if ( $DBG > 2 )
                 print "done. =\n";
-            }
-        }
-    }
+            } ## end if ( $DBG > 1 )
+        } ## end if ( $validsettings ==...)
+    } ## end foreach my $lang (@langs)
     if ( $validsettings == 0 ) {
         die "Cannot retrieve $domain settings!\n";
     }
@@ -805,7 +802,7 @@ if ($opturl) {
             $settingsservers{$settingsid}{$settingsserveratt} =
               $settingsserverid->find($settingsatt)->string_value;
         }
-    }
+    } ## end foreach my $settingsserverid...
 
     my @confighashes = (
         \%settings,         \%settingsclient, \%settingslatency,
@@ -842,7 +839,7 @@ if ($opturl) {
                 my $hdr = sprintf( "%s %s %s", $eqhr, $title, $eqhr );
                 printf( "%${dbgtablewidth}.${dbgtablewidth}s\n", $hdr );
             }
-        }
+        } ## end if ( $DBG > 1 )
         my $titlelength  = length($title);
         my $maxkeylength = 0;
         foreach my $name ( keys %$confighash ) {
@@ -850,7 +847,7 @@ if ($opturl) {
             if ( $keylength > $maxkeylength ) {
                 $maxkeylength = $keylength;
             }
-        }
+        } ## end foreach my $name ( keys %$confighash)
         my $vallength = ( $dbgtablewidth - $maxkeylength - 8 );
         foreach my $name ( sort ( keys %$confighash ) ) {
             my $info = $confighash->{$name};
@@ -859,9 +856,10 @@ if ($opturl) {
                     if ( $DBG > 2 ) {
                         printf(
 "== %${maxkeylength}.${maxkeylength}s: %-${vallength}.${vallength}s ==\n",
-                            $name, $info );
-                    }
-                }
+                            $name, $info
+                        );
+                    } ## end if ( $DBG > 2 )
+                } ## end if ( $DBG > 1 )
                 if ( defined $hashmap{$hashname}{$name} ) {
                     if ( $DBG > 1 ) {
                         if ( $DBG > 2 ) {
@@ -886,25 +884,26 @@ if ($opturl) {
                             printf(
 "== %${titlelength}.${titlelength}s %-${maxkeylength}.${maxkeylength}s: %${subvallength}.${subvallength}s %s %-${subvallength}.${subvallength}s ==\n",
                                 $hashname, $name, $hashmap{$hashname}{$name},
-                                $arrow, $info
+                                $arrow,    $info
                             );
-                        }
+                        } ## end if ( $DBG > 2 )
                         if ( $hashmap{$hashname}{$name} !~ $info ) {
                             my $shorthashname = $hashname;
                             $shorthashname =~ s/settings//;
                             printf(
                                 "= Override %7.7s %-8.8s: %6.6s to %-6.6s =\n",
-                                $shorthashname, $name,
-                                $hashmap{$hashname}{$name}, $info );
-                        }
-                    }
+                                $shorthashname,             $name,
+                                $hashmap{$hashname}{$name}, $info
+                            );
+                        } ## end if ( $hashmap{$hashname...})
+                    } ## end if ( $DBG > 1 )
                     if ( $hashmap{$hashname}{$name} !~ $info ) {
                         $hashmap{$hashname}{$name} = $info;
                     }
-                }
-            }
-        }
-    }
+                } ## end if ( defined $hashmap{...})
+            } ## end if ( $info !~ m/^$/ )
+        } ## end foreach my $name ( sort ( keys...))
+    } ## end foreach my $confighash (@confighashes)
     if ( $DBG > 1 ) {
         if ( $DBG > 2 ) {
             $eqcount = 0;
@@ -913,10 +912,10 @@ if ($opturl) {
                 $eqcount++;
             }
             print "\n";
-        }
+        } ## end if ( $DBG > 2 )
         print "done. =\n";
-    }
-}
+    } ## end if ( $DBG > 1 )
+} ## end if ($opturl)
 
 ################################################################################
 # Retrieve speedtest.net servers list
@@ -934,7 +933,7 @@ if ($opturl) {
         if ( $DBG > 2 ) {
             print "\n=============== SETTINGSSERVERS ===============\n";
         }
-    }
+    } ## end if ( $DBG > 1 )
     $serversxml = $serversxml . "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     $serversxml = $serversxml . "<settings>\n";
     $serversxml = $serversxml . "<servers>";
@@ -951,25 +950,25 @@ if ($opturl) {
             {
                 $settingsservers{$settingsname}{$settingsserveratt} =
                   $wsnuri . "/speedtest/upload.php";
-            }
+            } ## end if ( $settingsserveratt...)
             if (   $settingsserveratt eq "lat"
                 && $settingsservers{$settingsname}{$settingsserveratt} eq "" )
             {
                 $settingsservers{$settingsname}{$settingsserveratt} =
                   $client{lat};
-            }
+            } ## end if ( $settingsserveratt...)
             if (   $settingsserveratt eq "lon"
                 && $settingsservers{$settingsname}{$settingsserveratt} eq "" )
             {
                 $settingsservers{$settingsname}{$settingsserveratt} =
                   $client{lon};
-            }
+            } ## end if ( $settingsserveratt...)
             if (   $settingsserveratt eq "name"
                 && $settingsservers{$settingsname}{$settingsserveratt} eq "" )
             {
                 $settingsservers{$settingsname}{$settingsserveratt} =
                   $settings{customerregion};
-            }
+            } ## end if ( $settingsserveratt...)
             if (   $settingsserveratt eq "country"
                 && $settingsservers{$settingsname}{$settingsserveratt} eq "" )
             {
@@ -985,32 +984,34 @@ if ($opturl) {
             {
                 $settingsservers{$settingsname}{$settingsserveratt} =
                   $settings{customer};
-            }
+            } ## end if ( $settingsserveratt...)
             if (   $settingsserveratt eq "id"
                 && $settingsservers{$settingsname}{$settingsserveratt} eq "" )
             {
                 $settingsservers{$settingsname}{$settingsserveratt} =
                   $settingsgenid;
                 $settingsgenid++;
-            }
+            } ## end if ( $settingsserveratt...)
             if (   $settingsserveratt eq "id"
                 && $settingsservers{$settingsname}{$settingsserveratt} <=
                 $settingsgenid++ )
             {
                 $settingsgenid =
                   ( $settingsservers{$settingsname}{$settingsserveratt} + 1 );
-            }
+            } ## end if ( $settingsserveratt...)
 
             $serversxml = $serversxml
               . "$settingsserveratt=\"$settingsservers{$settingsname}{$settingsserveratt}\" ";
             if ( $DBG > 2 ) {
                 printf( "== \t%11.11s:", $settingsserveratt );
-                printf( " %-23.23s ==\n",
-                    $settingsservers{$settingsname}{$settingsserveratt} );
-            }
-        }
+                printf(
+                    " %-23.23s ==\n",
+                    $settingsservers{$settingsname}{$settingsserveratt}
+                );
+            } ## end if ( $DBG > 2 )
+        } ## end foreach my $settingsserveratt...
         $serversxml = $serversxml . " />\n";
-    }
+    } ## end foreach my $settingsname ( ...)
 
     $serversxml = $serversxml . "</servers>\n";
     $serversxml = $serversxml . "</settings>\n";
@@ -1018,14 +1019,13 @@ if ($opturl) {
         print "===============================================\n";
     }
 
-}
-else {
+} else {
     if ( $DBG > 1 ) {
         print "= Retrieving $domain servers list...";
         if ( $DBG > 2 ) {
             print "\n== GET $srvruri ==\n";
         }
-    }
+    } ## end if ( $DBG > 1 )
     $browser->setopt( CURLOPT_WRITEDATA, \$serversxml );
     $retcode = $browser->perform;
     die "\nCannot get $srvruri -- $retcode "
@@ -1035,7 +1035,7 @@ else {
     die "\nDid not receive XML, got -- ",
       $browser->getinfo(CURLINFO_CONTENT_TYPE)
       unless $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'text/xml';
-}
+} ## end else [ if ($opturl) ]
 if ( $DBG > 1 ) {
     print "done. =\n";
 }
@@ -1048,7 +1048,7 @@ if ( $DBG > 1 ) {
     if ( $DBG > 2 ) {
         print "\n";
     }
-}
+} ## end if ( $DBG > 1 )
 
 my $serversxp   = XML::XPath->new($serversxml);
 my $servernodes = $serversxp->find('/settings/servers/server');
@@ -1065,7 +1065,7 @@ foreach my $serverid ( $servernodes->get_nodelist ) {
         my $att = "@" . "$serveratt";
         $servers{$id}{$serveratt} = $serverid->find($att)->string_value;
     }
-}
+} ## end foreach my $serverid ( $servernodes...)
 
 # ping latency hash
 my %latencyresults;
@@ -1080,11 +1080,11 @@ if ( $DBG > 1 ) {
                 printf( "== \t%10.10s:",  $serveratt );
                 printf( " %-24.24s ==\n", $servers{$name}{$serveratt} );
             }
-        }
+        } ## end foreach my $name ( keys %servers)
         print "===============================================\n";
-    }
+    } ## end if ( $DBG > 2 )
     print "done. =\n";
-}
+} ## end if ( $DBG > 1 )
 
 ################################################################################
 # Determine the distance between the client and all test servers
@@ -1094,7 +1094,7 @@ if ( $DBG > 1 ) {
     if ( $DBG > 2 ) {
         print "\n================== DISTANCE ===================\n";
     }
-}
+} ## end if ( $DBG > 1 )
 
 push( @serveratts, 'distance' );
 
@@ -1123,14 +1123,14 @@ foreach my $serverid ( keys %servers ) {
     }
     $servers{$id}{distance} = $d;
     $totalservers++;
-}
+} ## end foreach my $serverid ( keys...)
 if ( $DBG > 1 ) {
     if ( $DBG > 2 ) {
         print "===============================================\n";
         print "== Total number of test servers: $totalservers ==\n";
     }
     print "done. =\n";
-}
+} ## end if ( $DBG > 1 )
 
 ################################################################################
 # Set number of test servers
@@ -1143,14 +1143,13 @@ if ($opturl) {
 if ($optservers) {
     if ( $optservers > 0 && $optservers <= $totalservers ) {
         $numservers = $optservers;
-    }
-    else {
+    } else {
         print STDERR "Value \"$optservers\" invalid for number of servers ";
         print STDERR "option.\nPlease select an integer between 1 and ";
         print STDERR "$totalservers.\n";
         pod2usage(1);
-    }
-}
+    } ## end else [ if ( $optservers > 0 &&...)]
+} ## end if ($optservers)
 if ( $DBG > 1 ) {
     if ( $DBG > 2 ) {
         print "== Number of Test Servers Set to $numservers ==\n";
@@ -1160,7 +1159,7 @@ if ( $DBG > 1 ) {
     if ( $DBG > 2 ) {
         print "\n================== DISTANCE ===================\n";
     }
-}
+} ## end if ( $DBG > 1 )
 
 ################################################################################
 # Hash sorting functions
@@ -1187,10 +1186,10 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
             if ( $DBG > 2 ) {
                 printf( "== INCLUDE: %-5.5s\n", $name );
             }
-        }
+        } ## end if ( $servers{$name}{id...})
         if   ( $incfilter > 0 ) { $passfilter++; }
         else                    { $failfilter++; }
-    }
+    } ## end if ($optid)
     if (@exccc) {
         foreach my $cc (@exccc) {
             my $country = code2country($cc);
@@ -1209,12 +1208,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== EXCLUDE: %-5.5s\n", $name );
                 }
-            }
-            else {
+            } else {
                 $passfilter++;
             }
-        }
-    }
+        } ## end foreach my $cc (@exccc)
+    } ## end if (@exccc)
     if (@inccc) {
         my $incfilter = 0;
         foreach my $cc (@inccc) {
@@ -1234,11 +1232,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== INCLUDE: %-5.5s\n", $name );
                 }
-            }
-        }
+            } ## end if ( $servers{$name}{cc...})
+        } ## end foreach my $cc (@inccc)
         if   ( $incfilter > 0 ) { $passfilter++; }
         else                    { $failfilter++; }
-    }
+    } ## end if (@inccc)
     if (@exccntry) {
         foreach my $country (@exccntry) {
             my $cc = country2code($country);
@@ -1257,12 +1255,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== EXCLUDE: %-5.5s\n", $name );
                 }
-            }
-            else {
+            } else {
                 $passfilter++;
             }
-        }
-    }
+        } ## end foreach my $country (@exccntry)
+    } ## end if (@exccntry)
     if (@inccntry) {
         my $incfilter = 0;
         foreach my $country (@inccntry) {
@@ -1282,11 +1279,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== INCLUDE: %-5.5s\n", $name );
                 }
-            }
-        }
+            } ## end if ( $servers{$name}{country...})
+        } ## end foreach my $country (@inccntry)
         if   ( $incfilter > 0 ) { $passfilter++; }
         else                    { $failfilter++; }
-    }
+    } ## end if (@inccntry)
     if (@excnm) {
         foreach my $nm (@excnm) {
             if ( $servers{$name}{name} =~ m/$nm/i ) {
@@ -1294,12 +1291,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== EXCLUDE: %-5.5s\n", $name );
                 }
-            }
-            else {
+            } else {
                 $passfilter++;
             }
-        }
-    }
+        } ## end foreach my $nm (@excnm)
+    } ## end if (@excnm)
     if (@incnm) {
         my $incfilter = 0;
         foreach my $nm (@incnm) {
@@ -1308,11 +1304,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== INCLUDE: %-5.5s\n", $name );
                 }
-            }
-        }
+            } ## end if ( $servers{$name}{name...})
+        } ## end foreach my $nm (@incnm)
         if   ( $incfilter > 0 ) { $passfilter++; }
         else                    { $failfilter++; }
-    }
+    } ## end if (@incnm)
     if (@excspnsr) {
         foreach my $spnsr (@excspnsr) {
             if ( $servers{$name}{sponsor} =~ m/$spnsr/i ) {
@@ -1320,12 +1316,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== EXCLUDE: %-5.5s\n", $name );
                 }
-            }
-            else {
+            } else {
                 $passfilter++;
             }
-        }
-    }
+        } ## end foreach my $spnsr (@excspnsr)
+    } ## end if (@excspnsr)
     if (@incspnsr) {
         my $incfilter = 0;
         foreach my $spnsr (@incspnsr) {
@@ -1334,11 +1329,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== INCLUDE: %-5.5s\n", $name );
                 }
-            }
-        }
+            } ## end if ( $servers{$name}{sponsor...})
+        } ## end foreach my $spnsr (@incspnsr)
         if   ( $incfilter > 0 ) { $passfilter++; }
         else                    { $failfilter++; }
-    }
+    } ## end if (@incspnsr)
     if (@excdskmgt) {
         foreach my $dskmgt (@excdskmgt) {
             if ( $servers{$name}{distance} > $dskmgt ) {
@@ -1346,12 +1341,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== EXCLUDE: %-5.5s\n", $name );
                 }
-            }
-            else {
+            } else {
                 $passfilter++;
             }
-        }
-    }
+        } ## end foreach my $dskmgt (@excdskmgt)
+    } ## end if (@excdskmgt)
     if (@incdskmgt) {
         my $incfilter = 0;
         foreach my $dskmgt (@incdskmgt) {
@@ -1360,11 +1354,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== INCLUDE: %-5.5s\n", $name );
                 }
-            }
-        }
+            } ## end if ( $servers{$name}{distance...})
+        } ## end foreach my $dskmgt (@incdskmgt)
         if   ( $incfilter > 0 ) { $passfilter++; }
         else                    { $failfilter++; }
-    }
+    } ## end if (@incdskmgt)
     if (@excdskmlt) {
         foreach my $dskmlt (@excdskmlt) {
             if ( $servers{$name}{distance} < $dskmlt ) {
@@ -1372,12 +1366,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== EXCLUDE: %-5.5s\n", $name );
                 }
-            }
-            else {
+            } else {
                 $passfilter++;
             }
-        }
-    }
+        } ## end foreach my $dskmlt (@excdskmlt)
+    } ## end if (@excdskmlt)
     if (@incdskmlt) {
         my $incfilter = 0;
         foreach my $dskmlt (@incdskmlt) {
@@ -1386,11 +1379,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== INCLUDE: %-5.5s\n", $name );
                 }
-            }
-        }
+            } ## end if ( $servers{$name}{distance...})
+        } ## end foreach my $dskmlt (@incdskmlt)
         if   ( $incfilter > 0 ) { $passfilter++; }
         else                    { $failfilter++; }
-    }
+    } ## end if (@incdskmlt)
     if (@excdsmigt) {
         foreach my $dsmigt (@excdsmigt) {
             my $dskmgt = ( $dsmigt * 1.60934 );
@@ -1399,12 +1392,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== EXCLUDE: %-5.5s\n", $name );
                 }
-            }
-            else {
+            } else {
                 $passfilter++;
             }
-        }
-    }
+        } ## end foreach my $dsmigt (@excdsmigt)
+    } ## end if (@excdsmigt)
     if (@incdsmigt) {
         my $incfilter = 0;
         foreach my $dsmigt (@incdsmigt) {
@@ -1414,11 +1406,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== INCLUDE: %-5.5s\n", $name );
                 }
-            }
-        }
+            } ## end if ( $servers{$name}{distance...})
+        } ## end foreach my $dsmigt (@incdsmigt)
         if   ( $incfilter > 0 ) { $passfilter++; }
         else                    { $failfilter++; }
-    }
+    } ## end if (@incdsmigt)
     if (@excdsmilt) {
         foreach my $dsmilt (@excdsmilt) {
             my $dskmlt = ( $dsmilt * 1.60934 );
@@ -1427,12 +1419,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== EXCLUDE: %-5.5s\n", $name );
                 }
-            }
-            else {
+            } else {
                 $passfilter++;
             }
-        }
-    }
+        } ## end foreach my $dsmilt (@excdsmilt)
+    } ## end if (@excdsmilt)
     if (@incdsmilt) {
         my $incfilter = 0;
         foreach my $dsmilt (@incdsmilt) {
@@ -1442,11 +1433,11 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
                 if ( $DBG > 2 ) {
                     printf( "== INCLUDE: %-5.5s\n", $name );
                 }
-            }
-        }
+            } ## end if ( $servers{$name}{distance...})
+        } ## end foreach my $dsmilt (@incdsmilt)
         if   ( $incfilter > 0 ) { $passfilter++; }
         else                    { $failfilter++; }
-    }
+    } ## end if (@incdsmilt)
     my $info = $servers{$name}{distance};
     if ( @closestservers < $numservers && $passfilter > 0 && $failfilter < 1 ) {
         push( @closestservers, $name );
@@ -1454,14 +1445,14 @@ foreach my $name ( sort hashValueAscendingDist ( keys(%servers) ) ) {
             my $df = sprintf( "%05.11f", $info );
             printf( "== serverdistance:: %5.5s: %17s ==\n", $name, $df );
         }
-    }
-}
+    } ## end if ( @closestservers <...)
+} ## end foreach my $name ( sort hashValueAscendingDist...)
 if ( $DBG > 1 ) {
     if ( $DBG > 2 ) {
         print "===============================================\n";
     }
     print "done. =\n";
-}
+} ## end if ( $DBG > 1 )
 
 ################################################################################
 # Get more geographic data on closest servers
@@ -1475,7 +1466,7 @@ foreach my $server (@closestservers) {
         if ( $DBG > 2 ) {
             print "\n== GET $neighbourhoodurl ==\n";
         }
-    }
+    } ## end if ( $DBG > 1 )
     $browser->setopt( CURLOPT_URL, $neighbourhoodurl );
     my $neighbourhoodxml;
     $browser->setopt( CURLOPT_WRITEDATA, \$neighbourhoodxml );
@@ -1489,7 +1480,7 @@ foreach my $server (@closestservers) {
     {
         die "\nDid not receive XML, got -- ",
           $browser->getinfo(CURLINFO_CONTENT_TYPE);
-    }
+    } ## end if ( $browser->getinfo...)
     if ( $DBG > 1 ) {
         print "done. =\n";
     }
@@ -1523,7 +1514,7 @@ foreach my $server (@closestservers) {
             }
             $neighbourhood =
               $neighbourhood . " => $servers{$server}{countryCode}";
-        }
+        } ## end if ( $servers{$server}...)
         if ( $servers{$server}{adminCode1} || $servers{$server}{adminName1} ) {
             $neighbourhood = $neighbourhood . " =>";
             if ( $servers{$server}{adminCode1} ) {
@@ -1534,7 +1525,7 @@ foreach my $server (@closestservers) {
                 $neighbourhood =
                   $neighbourhood . " ($servers{$server}{adminName1})";
             }
-        }
+        } ## end if ( $servers{$server}...)
         if ( $servers{$server}{adminCode2} || $servers{$server}{adminName2} ) {
             $neighbourhood = $neighbourhood . " =>";
             if ( $servers{$server}{adminCode2} ) {
@@ -1545,13 +1536,12 @@ foreach my $server (@closestservers) {
                 $neighbourhood =
                   $neighbourhood . " ($servers{$server}{adminName2})";
             }
-        }
+        } ## end if ( $servers{$server}...)
         if ( $servers{$server}{placename} ) {
             $neighbourhood =
               $neighbourhood . " => $servers{$server}{placename}";
         }
-    }
-    elsif ( $neighbourhoodxp->exists('/geonames/geoname') ) {
+    } elsif ( $neighbourhoodxp->exists('/geonames/geoname') ) {
         if ( $DBG > 2 ) {
             print
               "== GeoName GeoName Available for $servers{$server}{name} ==\n";
@@ -1577,15 +1567,15 @@ foreach my $server (@closestservers) {
                 {
                     print STDERR
 "\nGeographic country code \"$servers{$server}{countryCode}\" does not match server metadata country code \"$servers{$server}{cc}\"\n";
-                }
+                } ## end if ( $servers{$server}...)
                 if ( $servers{$server}{countryName} !~
                     m/^$servers{$server}{country}$/ )
                 {
                     print STDERR
 "\nGeographic country \"$servers{$server}{countryName}\" does not match server metadata country \"$servers{$server}{country}\"\n";
-                }
+                } ## end if ( $servers{$server}...)
                 $servers{$server}{countryName} = $gvalue;
-            }
+            } ## end if ( $gkey =~ m/^PCLI/)
             $servers{$server}{adminCode1} = "";
             if ( $gkey =~ m/^ADM1/ ) {
                 $servers{$server}{adminName1} = $gvalue;
@@ -1597,9 +1587,8 @@ foreach my $server (@closestservers) {
             if ( $gkey =~ m/^PP/ ) {
                 $servers{$server}{placename} = $gvalue;
             }
-        }
-    }
-    elsif ( $neighbourhoodxp->exists('/geonames/ocean') ) {
+        } ## end foreach my $geoname ( $geonamenodes...)
+    } elsif ( $neighbourhoodxp->exists('/geonames/ocean') ) {
         if ( $DBG > 2 ) {
             print "== Ocean GeoName Available for $servers{$server}{name} ==\n";
         }
@@ -1612,15 +1601,14 @@ foreach my $server (@closestservers) {
             $servers{$server}{placename} = $ocean;
             $neighbourhood = $neighbourhood . " => $ocean";
         }
-    }
-    else {
+    } else {
         warn "Unknown geography description:\n$neighbourhoodxml\n";
     }
     $servers{$server}{neighbourhood} = $neighbourhood;
     if ( $DBG > 1 ) {
         print "= $neighbourhood =\n";
     }
-}
+} ## end foreach my $server (@closestservers)
 
 ################################################################################
 # Print a list of candidate servers
@@ -1641,8 +1629,10 @@ if ($optlist) {
                 $maxwidth{distancemi} = 3;
                 my $prettydistancekm =
                   sprintf( "%.${DBG}f km", $servers{$server}{distance} );
-                my $prettydistancemi = sprintf( "%.${DBG}f mi",
-                    ( $servers{$server}{distance} * 0.621371 ) );
+                my $prettydistancemi = sprintf(
+                    "%.${DBG}f mi",
+                    ( $servers{$server}{distance} * 0.621371 )
+                );
                 my $prettydistance =
                   $prettydistancekm . " | " . $prettydistancemi;
                 if ( length($prettydistancekm) > $maxwidth{distancekm} ) {
@@ -1654,15 +1644,14 @@ if ($optlist) {
                 if ( length($prettydistance) > $maxwidth{distance} ) {
                     $maxwidth{distance} = length($prettydistance);
                 }
-            }
-            elsif (
+            } elsif (
                 length( $servers{$server}{$serveratt} ) >
                 $maxwidth{$serveratt} )
             {
                 $maxwidth{$serveratt} = length( $servers{$server}{$serveratt} );
-            }
-        }
-    }
+            } ## end elsif ( length( $servers{...}))
+        } ## end foreach my $server (@closestservers)
+    } ## end foreach my $serveratt (@serverattslist)
     my $hr = "+";
     foreach my $serveratt (@serverattslist) {
         my $hyphen = 0;
@@ -1671,7 +1660,7 @@ if ($optlist) {
             $hyphen++;
         }
         $hr = "$hr" . "-+";
-    }
+    } ## end foreach my $serveratt (@serverattslist)
     $hr = "$hr" . "\n";
 
     printf("$hr");
@@ -1686,7 +1675,7 @@ if ($optlist) {
         }
         my $serverattth = $thnbsp . $serveratt;
         printf( " %-${colwidth}.${colwidth}s |", $serverattth );
-    }
+    } ## end foreach my $serveratt (@serverattslist)
     printf("\n");
     printf("$hr");
 
@@ -1701,22 +1690,26 @@ if ($optlist) {
             if ( $serveratt eq "distance" ) {
                 my $prettydistancekm =
                   sprintf( "%.${DBG}f km", $servers{$server}{distance} );
-                my $prettydistancemi = sprintf( "%.${DBG}f mi",
-                    ( $servers{$server}{distance} * 0.621371 ) );
+                my $prettydistancemi = sprintf(
+                    "%.${DBG}f mi",
+                    ( $servers{$server}{distance} * 0.621371 )
+                );
                 my $colwidthkm = $maxwidth{distancekm};
                 my $colwidthmi = $maxwidth{distancemi};
                 printf(
 " %${lj}${colwidthkm}.${colwidthkm}s | %${lj}${colwidthmi}.${colwidthmi}s |",
-                    $prettydistancekm, $prettydistancemi );
-            }
-            else {
-                printf( " %${lj}${colwidth}.${colwidth}s |",
-                    $servers{$server}{$serveratt} );
-            }
-        }
+                    $prettydistancekm, $prettydistancemi
+                );
+            } else {
+                printf(
+                    " %${lj}${colwidth}.${colwidth}s |",
+                    $servers{$server}{$serveratt}
+                );
+            } ## end else [ if ( $serveratt eq "distance")]
+        } ## end foreach my $serveratt (@serverattslist)
         printf("\n");
         $rows++;
-    }
+    } ## end foreach my $server (@closestservers)
     printf("$hr");
     my $plural = "s";
     if ( $rows == 1 ) {
@@ -1725,7 +1718,7 @@ if ($optlist) {
     printf( "%d row$plural in set\n\n", $rows );
 
     exit 0;
-}
+} ## end if ($optlist)
 
 ################################################################################
 # Set number of ping tests against candidate servers
@@ -1734,13 +1727,12 @@ if ($optlist) {
 if ($optpings) {
     if ( $optpings > 0 ) {
         $numpingtest = $optpings;
-    }
-    else {
+    } else {
         print STDERR "Value \"$optpings\" invalid for number of ping tests ";
         print STDERR "option.\nPlease select an integer greater than zero.\n";
         pod2usage(1);
     }
-}
+} ## end if ($optpings)
 if ( $DBG > 2 ) {
     print "== Number of Ping Tests Set to $numpingtest ==\n";
 }
@@ -1770,18 +1762,17 @@ if ($optid) {
         if ( $id eq $optid ) {
             $bestserver = $id;
         }
-    }
+    } ## end foreach my $serverid ( keys...)
     if ( $DBG > 1 ) {
         print "\n";
     }
-}
-else {
+} else {
     if ( $DBG > 1 ) {
         print "= Selecting best server based on ping...\n";
         if ( $DBG > 2 ) {
             print "\n";
         }
-    }
+    } ## end if ( $DBG > 1 )
     foreach my $server (@closestservers) {
         if ( $DBG > 1 ) {
             print "= Checking $servers{$server}{name} Hosted by ";
@@ -1794,8 +1785,8 @@ else {
                     printf( " %-31.31s ==\n", $servers{$server}{$serveratt} );
                 }
                 print "===============================================\n";
-            }
-        }
+            } ## end if ( $DBG > 2 )
+        } ## end if ( $DBG > 1 )
         my ( $scheme, $auth, $path, $query, $frag ) =
           uri_split( $servers{$server}{url} );
         my $dirname   = dirname($path);
@@ -1810,7 +1801,7 @@ else {
                 if ( $DBG > 2 ) {
                     print "\n";
                 }
-            }
+            } ## end if ( $DBG > 1 )
 
             ( $sepoch, $usecepoch ) = gettimeofday();
             $msecepoch = ( $usecepoch / 1000 );
@@ -1847,14 +1838,14 @@ else {
                 $latencyresults{$server}{totalelapsed} =
                   $latencyresults{$server}{totalelapsed} + $mselapsed;
                 $latencyresults{$server}{totalpings}++;
-            }
+            } ## end if ( $latencytxt =~ m/^test=test/...)
             if ( $DBG > 2 ) {
                 print "$mselapsed milliseconds. done. ==\n";
             }
 
             usleep( $latency{waittime} * 1000 );
             $pingcount++;
-        }
+        } ## end while ( $pingcount < $numpingtest)
         if ( $DBG > 2 ) {
             print "== $latencyresults{$server}{totalpings} runs took ";
             print "$latencyresults{$server}{totalelapsed} milliseconds. ==\n";
@@ -1868,7 +1859,7 @@ else {
             printf( "%.${DBG}f ", $latencyresults{$server}{avgelapsed} );
             printf("millisecond average. =\n");
         }
-    }
+    } ## end foreach my $server (@closestservers)
     if ( $DBG > 2 ) {
         print "================ PING AVERAGE =================\n";
     }
@@ -1879,19 +1870,18 @@ else {
             printf( "== pingaverage:: %5.5s: %-20.20s ==\n", $name, $info );
         }
         $bestserver = $name;
-    }
-}
+    } ## end foreach my $name ( sort hashValueDescendingPing...)
+} ## end else [ if ($optid) ]
 if ( $bestserver == -1 ) {
     if ($optid) {
         print STDERR "Value \"$optid\" is an invalid server id ";
         print STDERR "option.\nPlease select an id from the output of the ";
         print STDERR "list option.\n";
-    }
-    else {
+    } else {
         print STDERR "Unable to find a useable server. Aborting!\n";
     }
     exit 1;
-}
+} ## end if ( $bestserver == -1)
 if ( $DBG > 0 ) {
     if ( $DBG > 2 ) {
         print "===============================================\n";
@@ -1907,7 +1897,7 @@ if ( $DBG > 0 ) {
     if ( $DBG > 1 ) {
         print "done. =\n";
     }
-}
+} ## end if ( $DBG > 0 )
 
 ################################################################################
 # Set number of latency tests against selected server
@@ -1919,14 +1909,13 @@ $numpingcount = $latency{testlength};
 if ($optcount) {
     if ( $optcount >= 0 ) {
         $numpingcount = $optcount;
-    }
-    else {
+    } else {
         print STDERR "Value \"$optcount\" invalid for number of samples to ";
         print STDERR "use for calculating HTTP latency (default = ";
         print STDERR "$numpingcount), 0 will disable the latency test.\n";
         pod2usage(1);
-    }
-}
+    } ## end else [ if ( $optcount >= 0 ) ]
+} ## end if ($optcount)
 if ( $DBG > 2 ) {
     print "== Count of Latency Tests Set to $numpingcount ==\n";
 }
@@ -1946,8 +1935,8 @@ if ( $DBG > 1 ) {
             printf( " %-31.31s ==\n", $servers{$bestserver}{$serveratt} );
         }
         print "===============================================\n";
-    }
-}
+    } ## end if ( $DBG > 2 )
+} ## end if ( $DBG > 1 )
 my ( $scheme, $auth, $path, $query, $frag ) =
   uri_split( $servers{$bestserver}{url} );
 my $dirname   = dirname($path);
@@ -1992,7 +1981,7 @@ while ( $pingcount < $numpingcount ) {
         $latencyresults{$bestserver}{totalelapsed} =
           $latencyresults{$bestserver}{totalelapsed} + $mselapsed;
         $latencyresults{$bestserver}{totalpings}++;
-    }
+    } ## end if ( $latencytxt =~ m/^test=test/...)
     if ( $DBG > 1 ) {
         if ( $DBG > 2 ) {
             print "$mselapsed milliseconds. done. ==\n";
@@ -2002,11 +1991,11 @@ while ( $pingcount < $numpingcount ) {
           $latencyresults{$bestserver}{totalpings};
         printf( "Ping: %.${DBG}f", $latencyresults{$bestserver}{avgelapsed} );
         printf(" ms\r");
-    }
+    } ## end if ( $DBG > 1 )
 
     usleep( $latency{waittime} * 1000 );
     $pingcount++;
-}
+} ## end while ( $pingcount < $numpingcount)
 $latencyresults{$bestserver}{avgelapsed} =
   $latencyresults{$bestserver}{totalelapsed} /
   $latencyresults{$bestserver}{totalpings};
@@ -2020,7 +2009,7 @@ if ( $DBG > 1 ) {
     }
     printf( "done: %.${DBG}f ", $latencyresults{$bestserver}{avgelapsed} );
     printf("millisecond average. =\n");
-}
+} ## end if ( $DBG > 1 )
 
 ################################################################################
 # DOWNLOAD test against selected server
@@ -2059,7 +2048,7 @@ foreach my $hwpixel (@hwpixels) {
         my $ycount = 3;
         my $y      = 1;
         while ( $y < $ycount ) {
-            print "∨";    ## ∧ (logical and) and ∨ (logical or) characters
+            print "∨"; ## ∧ (logical and) and ∨ (logical or) characters
             ( $sepoch, $usecepoch ) = gettimeofday();
             $msecepoch = ( $usecepoch / 1000 );
             $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
@@ -2098,19 +2087,19 @@ foreach my $hwpixel (@hwpixels) {
                 $totaldlsize =
                   $totaldlsize + ( length($dlspeedjpg) * 8 / 1000000 );
                 $avgdlspeed = $totaldlsize / $totaldltime;
-            }
+            } ## end if ( $browser->getinfo...)
             undef $dlspeedjpg;
             if ( $DBG > 1 ) {
                 if ( $DBG > 2 ) {
                     print "$mselapsed milliseconds. done. ==\n";
                 }
                 printf( "Download Speed: %.${DBG}f Mbps\r", $avgdlspeed );
-            }
+            } ## end if ( $DBG > 1 )
             $y++;
-        }
+        } ## end while ( $y < $ycount )
         print "\r";
-    }
-}
+    } ## end if ( $mbpsl <= $avgdlspeed...)
+} ## end foreach my $hwpixel (@hwpixels)
 
 printf( "Download Speed: %.${DBG}f Mbps\n", $avgdlspeed );
 if ( $DBG > 1 ) {
@@ -2153,7 +2142,7 @@ foreach my $hwpixel (@hwpixels) {
         my $ulrandimagesize = length($ulrandimage);
 
         while ( $y < $ycount ) {
-            print "∧";    ## ∧ (logical and) and ∨ (logical or) characters
+            print "∧"; ## ∧ (logical and) and ∨ (logical or) characters
             ( $sepoch, $usecepoch ) = gettimeofday();
             $msecepoch = ( $usecepoch / 1000 );
             $msepoch = sprintf( "%010d%03.0f", $sepoch, $msecepoch );
@@ -2201,9 +2190,9 @@ foreach my $hwpixel (@hwpixels) {
                       . " and CURLINFO_CONTENT_LENGTH_UPLOAD="
                       . $browser->getinfo(CURLINFO_CONTENT_LENGTH_UPLOAD)
                       . ". =\n";
-                }
+                } ## end if ( $DBG > 1 )
                 $postsizeissue = 1;
-            }
+            } ## end if ( $ulrandimagesize ...)
             if (   $stnsize > $browser->getinfo(CURLINFO_SIZE_UPLOAD)
                 || $stnsize >
                 $browser->getinfo(CURLINFO_CONTENT_LENGTH_UPLOAD) )
@@ -2215,9 +2204,9 @@ foreach my $hwpixel (@hwpixels) {
                       . " and CURLINFO_CONTENT_LENGTH_UPLOAD="
                       . $browser->getinfo(CURLINFO_CONTENT_LENGTH_UPLOAD)
                       . ". Got $stnsize. =\n";
-                }
+                } ## end if ( $DBG > 1 )
                 $postsizeissue = 1;
-            }
+            } ## end if ( $stnsize > $browser...)
             my $selapsed        = $s1 - $s0;
             my $usecelapsed     = $usec1 - $usec0;
             my $stomselapsed    = ( $selapsed * 1000 );
@@ -2233,19 +2222,19 @@ foreach my $hwpixel (@hwpixels) {
                 $totalulsize =
                   $totalulsize + ( $ulrandimagesize * 8 / 1000000 );
                 $avgulspeed = $totalulsize / $totalultime;
-            }
+            } ## end if ( $browser->getinfo...)
             undef $ulspeedout;
             if ( $DBG > 1 ) {
                 if ( $DBG > 2 ) {
                     print "$mselapsed milliseconds. done. ==\n";
                 }
                 printf( "Upload Speed: %.${DBG}f Mbps\r", $avgulspeed );
-            }
+            } ## end if ( $DBG > 1 )
             $y++;
-        }
+        } ## end while ( $y < $ycount )
         print "\r";
-    }
-}
+    } ## end if ( $mbpsl <= $avgulspeed...)
+} ## end foreach my $hwpixel (@hwpixels)
 
 printf( "Upload Speed: %.${DBG}f Mbps\n", $avgulspeed );
 if ( $DBG > 1 ) {
