@@ -378,7 +378,7 @@ die "\nCannot get $cnfguri -- $retcode "
   . $browser->errbuf . "\n"
   unless ( $retcode == 0 );
 die "\nDid not receive XML, got -- ", $browser->getinfo(CURLINFO_CONTENT_TYPE)
-  unless $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'text/xml';
+  unless $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^(application|text)\/xml/;
 if ( $DBG > 1 ) {
     print "done. =\n";
 }
@@ -1034,7 +1034,7 @@ if ($opturl) {
       unless ( $retcode == 0 );
     die "\nDid not receive XML, got -- ",
       $browser->getinfo(CURLINFO_CONTENT_TYPE)
-      unless $browser->getinfo(CURLINFO_CONTENT_TYPE) eq 'text/xml';
+      unless $browser->getinfo(CURLINFO_CONTENT_TYPE) =~ m/^(application|text)\/xml/;
 } ## end else [ if ($opturl) ]
 if ( $DBG > 1 ) {
     print "done. =\n";
